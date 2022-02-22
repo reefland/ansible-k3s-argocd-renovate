@@ -31,16 +31,23 @@
       chdir: "/home/{{install.os.non_root_user.name}}"
       creates: k3s_install.log
   
-  - name: Create non-root user .kube directory
+  - name: Create non-root user.kube directory
     file:
       path: "/home/{{install.os.non_root_user.name}}/.kube"
       state: directory
-      mode: 700
-
+      mode: 0700
+      
   - name: Create non-root user config file
     ansible.builtin.shell:
       cmd: "kubectl config view --raw > /home/{{install.os.non_root_user.name}}/.kube/config"
-      creates: "/home/{{install.os.non_root_user.name}}/.kube/config"
+
+  - name: Fix non-root user.kube/config directory permissions
+    file:
+      path: "/home/{{install.os.non_root_user.name}}/.kube/config"
+      state: file
+      mode: 0600
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
 
   tags:
     - install_k3s
