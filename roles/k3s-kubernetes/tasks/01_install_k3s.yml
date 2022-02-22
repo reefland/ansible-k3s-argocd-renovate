@@ -30,5 +30,17 @@
       cmd: "{{ install.k3s.cli_options|join(' ') }} /home/{{install.os.non_root_user.name}}/k3s_install.sh > /home/{{install.os.non_root_user.name}}/k3s_install.log"
       chdir: "/home/{{install.os.non_root_user.name}}"
       creates: k3s_install.log
+  
+  - name: Create non-root user .kube directory
+    file:
+      path: "/home/{{install.os.non_root_user.name}}/.kube"
+      state: directory
+      mode: 700
+
+  - name: Create non-root user config file
+    ansible.builtin.shell:
+      cmd: "kubectl config view --raw > /home/{{install.os.non_root_user.name}}/.kube/config"
+      creates: "/home/{{install.os.non_root_user.name}}/.kube/config"
+
   tags:
     - install_k3s
