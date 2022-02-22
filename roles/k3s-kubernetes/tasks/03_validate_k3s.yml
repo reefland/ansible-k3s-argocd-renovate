@@ -1,0 +1,24 @@
+---
+###[ Test k3s Running ]############################################################################
+- name: Confirm K3s Running and deployed default Block
+  block:
+  - name: Get kubectl node status
+    command:
+      cmd: "kubectl get node"
+    register: kubestl_status
+  
+  - name: Fail if status is "No resources found"
+    fail:
+      msg: |
+        Something went wrong, k3s is reporting no resources.
+    when:
+      - kubestl_status.stdout == "No resources found"
+
+  - name: Shows kubestl status
+    debug:
+      msg: "{{kubestl_status.stdout}}"
+
+  when: 
+    - install.k3s.confirm_running|default(false)|bool == true
+  tags:
+    - validate_k3s

@@ -1,0 +1,34 @@
+---
+# Setup non-root user, download k3s installation script and run it
+
+- name: Install k3s Kubernetes Distribution Block
+  block:
+  - name: Add non-root user that will be used with Kubernetes
+    ansible.builtin.user:
+      name: "{{install.os.non_root_user.name}}"
+      shell: "{{install.os.non_root_user.shell}}"
+      groups: "{{install.os.non_root_user.groups}}"
+      append: yes
+      createhome: yes
+
+  - name: Allow non-root user to have passwordless sudo convenience
+    ansible.builtin.lineinfile:
+      dest: /etc/sudoers
+      line: "{{install.os.non_root_user.name}} ALL=(ALL) NOPASSWD: ALL"
+      validate: "visudo -cf %s"
+    when:
+      - install.os.allow_passwordless_sudo|default(false) == true
+
+  - name: Download k3s install script
+    get_url:
+      url: "{{install.k3s.url}}"
+      dest: "/home/{{install.os.non_root_user.name}}/k3s_install.sh"
+      mode: ug+x
+
+  - name: Execute k3s_install.sh and create k3s_install.log
+    ansible.builtin.shell:
+      cmd: "{{ install.k3s.cli_options|join(' ') }} /home/{{install.os.non_root_user.name}}/k3s_install.sh > /home/{{install.os.non_root_user.name}}/k3s_install.log"
+      chdir: "/home/{{install.os.non_root_user.name}}"
+      creates: k3s_install.log
+  tags:
+    - install_k3s
