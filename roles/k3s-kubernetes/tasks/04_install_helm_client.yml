@@ -1,0 +1,32 @@
+---
+#
+# Add helm client repository and install the Helm client
+#
+
+###[ Install Helm Package Manager Client ]#########################################################
+- name: Install Helm Client Block
+  block:
+  - name: Add Helm Signing Certificate
+    apt_key:
+      url: https://baltocdn.com/helm/signing.asc
+      state: present
+
+  - name: Install apt-transport-https
+    apt:
+      name: apt-transport-https
+      state: present
+
+  - name: Add Helm Repository to APT Sources
+    apt_repository: 
+      repo: deb https://baltocdn.com/helm/stable/debian all main
+      state: present
+      mode: 0644
+      update_cache: yes
+
+  - name: Install Helm Client
+    apt:
+      name: helm
+      state: present
+
+  tags:
+    - install_helm_client

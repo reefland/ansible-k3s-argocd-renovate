@@ -1,0 +1,117 @@
+---
+# Detect ZFS UUID from ZFS on Root installations if enabled
+- name: Detect ZFS Dataset UUID Block
+  block:
+  - name: Detect ZFS Dataset UUID
+    shell:
+      cmd: "{{containerd.zfs.zfs_uuid_detect_cmd}}"
+    register: UUID
+
+  - name: Fail if UUID not detected
+    fail:
+      msg: |
+        Unable to detected ZFS Dataset UUID. Set "install.containerd.zfs.detect_uuid" to false
+          or modify variable "containerd.zfs.zfs_uuid_detect_cmd" used to detect the UUID.
+    when:
+      - UUID.stdout|length == 0
+  
+  - name: Update uuid variable to detected UUID
+    set_fact:
+        install.containerd.zfs.uuid = install.containerd.zfs.uuid + UUID.stdout
+    when:
+      - UUID.stdout|length > 0
+    
+  when:
+    - install.containerd.zfs.detect_uuid|default(false)|bool == true
+  tags:
+    - install_containerd
+
+# Install containerd packages and configure for ZFS support
+
+- name: Install and Configure containerd Block
+  block:
+  - name: Install containerd packages
+    apt:
+      name: "{{install.containerd.packages}}"
+      state: present
+
+  - name: Create path /etc/containerd
+    file:
+      path: "{{install.containerd.config_path}}"
+      state: directory
+
+  - name: Start Containerd Service
+    ansible.builtin.systemd:
+      state: started
+      name: containerd
+
+  - name: Generate Default Containerd Configuration
+    shell:
+      cmd: "containerd config default > {{containerd.config_file}}"
+
+  - name: Confirm ZFS snapshotter has status ok
+    shell:
+      cmd: "ctr --address /run/containerd/containerd.sock plugins ls | grep zfs"
+    register: zfs_snapshotter
+
+  - name: Fail if ZFS snapshooter status is not ok
+    fail:
+      msg: "ZFS Snapshotter status not OK: {{zfs_snapshotter.stdout}}"
+    when:
+      - zfs_snapshotter.stdout.find('snapshotter') == -1 or
+        zfs_snapshotter.stdout.find('zfs') == -1 or
+        zfs_snapshotter.stdout.find('ok') == -1
+
+  - name: Stop Containerd Service
+    ansible.builtin.systemd:
+      state: stopped
+      name: containerd
+
+  - name: Update snapshotter to zfs
+    replace: 
+      path: "{{containerd.config_file}}"
+      regexp: '(?m)snapshotter.*"overlayfs"'
+      replace: 'snapshotter = "zfs"'
+      
+  - name: Update CNI Binary location
+    replace: 
+      path: "{{containerd.config_file}}"
+      regexp: '(?m)bin_dir.*"/opt/cni/bin"'
+      replace: 'bin_dir = "{{containerd.cni_dir_path}}"'
+
+  - name: Create ZFS Mountpoint for Containerd
+    community.general.zfs:
+      name: "{{install.containerd.zfs.pool}}/{{install.containerd.zfs.dataset_prefix}}{{install.containerd.zfs.uuid}}{{install.containerd.zfs.dataset_postfix}}"
+      extra_zfs_properties:
+        mountpoint: "{{containerd.zfs.zfs_mount_point}}"
+      state: present
+
+  - name: Copy Flannel Conflist File
+    copy:
+      src: "files/10-flannel.conflist"
+      dest: "{{install.containerd.flannel_conflist_path}}"
+
+  - name: Create directory for ks3.service configuration overrides
+    file:
+      path: "{{k3s.service_override_path}}"
+      state: directory
+
+  - name: Copy k3s.service override file to systemd path
+    copy:
+      src: "files/k3s-override.conf"
+      dest: "{{k3s.service_override_path}}/override.conf"
+
+  - name: Restart Containerd Service
+    ansible.builtin.systemd:
+      daemon_reload: yes
+      state: started
+      name: containerd
+
+  - name: Restart k3s Service
+    ansible.builtin.systemd:
+      daemon_reload: yes
+      state: started
+      name: k3s
+
+  tags:
+    - install_containerd

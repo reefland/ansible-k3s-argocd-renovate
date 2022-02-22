@@ -1,0 +1,2 @@
+---
+kube_apiserver: "https://testlinux.rich-durso.us:6443"

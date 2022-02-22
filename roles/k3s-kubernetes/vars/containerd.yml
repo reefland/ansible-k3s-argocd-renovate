@@ -1,0 +1,14 @@
+---
+containerd:
+  # location of containerd configuration file
+  config_file: "{{install.containerd.config_path}}/config.toml"
+  
+  # Directory of Container Network Plugins
+  cni_dir_path: "/usr/lib/cni"
+
+  zfs:
+    # ZFS Mount point for Containerd
+    zfs_mount_point: "/var/lib/containerd/io.containerd.snapshotter.v1.zfs"
+
+    zfs_uuid_detect_cmd: "zfs list -o name | grep -E -o '{{install.containerd.zfs.pool}}/{{install.containerd.zfs.dataset_prefix}}{{install.containerd.zfs.uuid}}[^/]*{6}$' | rev | cut -c 1-6 | rev"
+    
