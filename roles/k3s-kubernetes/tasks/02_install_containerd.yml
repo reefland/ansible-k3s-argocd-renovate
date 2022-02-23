@@ -115,11 +115,11 @@
 
   - name: Create non-root user config file
     ansible.builtin.shell:
-      cmd: "kubectl config view --raw > /home/{{install.os.non_root_user.name}}/.kube/config"
+      cmd: "kubectl config view --raw > {{kubeconfig_path}}"
 
   - name: Fix non-root user.kube/config directory permissions
     file:
-      path: "/home/{{install.os.non_root_user.name}}/.kube/config"
+      path: "{{kubeconfig_path}}"
       state: file
       mode: 0600
       owner: "{{install.os.non_root_user.name}}"
