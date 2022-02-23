@@ -25,29 +25,23 @@
       dest: "/home/{{install.os.non_root_user.name}}/k3s_install.sh"
       mode: ug+x
 
-  - name: Execute k3s_install.sh and create k3s_install.log
-    ansible.builtin.shell:
-      cmd: "{{ install.k3s.cli_options|join(' ') }} /home/{{install.os.non_root_user.name}}/k3s_install.sh > /home/{{install.os.non_root_user.name}}/k3s_install.log"
-      chdir: "/home/{{install.os.non_root_user.name}}"
-      creates: k3s_install.log
-  
   - name: Create non-root user.kube directory
     file:
       path: "/home/{{install.os.non_root_user.name}}/.kube"
       state: directory
       mode: 0700
-      
-  - name: Create non-root user config file
-    ansible.builtin.shell:
-      cmd: "kubectl config view --raw > /home/{{install.os.non_root_user.name}}/.kube/config"
-
-  - name: Fix non-root user.kube/config directory permissions
-    file:
-      path: "/home/{{install.os.non_root_user.name}}/.kube/config"
-      state: file
-      mode: 0600
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
+
+  - name: Add export KUBECONFIG to .profile
+    ansible.builtin.lineinfile:
+      dest: "/home/{{install.os.non_root_user.name}}/.profile"
+      line: "export KUBECONFIG=~/.kube/config"
+
+  - name: Execute k3s_install.sh and create k3s_install.log
+    ansible.builtin.shell:
+      cmd: "{{ install.k3s.cli_options|join(' ') }} /home/{{install.os.non_root_user.name}}/k3s_install.sh > /home/{{install.os.non_root_user.name}}/k3s_install.log"
+      chdir: "/home/{{install.os.non_root_user.name}}"
 
   tags:
     - install_k3s
