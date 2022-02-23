@@ -15,7 +15,6 @@
 
   - name: Clean and add node_token to facts
     set_fact:
-#      node_token: "{{ node_token_output.content }}"
       node_token: "{{ node_token_output.content | b64decode | regex_replace('\n', '')}}"
     when: node_token_file.stat.exists == true
   tags: ["always"]
@@ -39,8 +38,8 @@
     - 03_validate_k3s
     - 04_install_helm_client
     - 05_install_cert_manager
-#    - 05_config_traefik_dns_certs
-#    - 05_install_democratric-csi
+    - 06_config_traefik_dns_certs
+#    - 07_install_democratric-csi
 
   loop_control:
     loop_var: task_names
