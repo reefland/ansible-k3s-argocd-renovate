@@ -1,15 +1,25 @@
 ---
+- name: Check if node-token file exists
+  stat:
+    path: /var/lib/rancher/k3s/server/node-token
+  register: node_token_file
+  tags: ["always"]
+  
 - name: Get Node Token and Add to Facts Block
   block:
   - name: Gather Node Token
-    command: "cat /var/lib/rancher/k3s/server/node-token"
+    slurp:
+      path: "/var/lib/rancher/k3s/server/node-token"
     register: node_token_output
+    when: node_token_file.stat.exists == true
 
   - name: Clean and add node_token to facts
     set_fact:
-      node_token: "{{ node_token_output.stdout_lines[0] }}"
+#      node_token: "{{ node_token_output.content }}"
+      node_token: "{{ node_token_output.content | b64decode | regex_replace('\n', '')}}"
+    when: node_token_file.stat.exists == true
   tags: ["always"]
-    
+  
 - name: Include Var Files
   include_vars: "{{ item }}.yml"
   tags: ["always"]

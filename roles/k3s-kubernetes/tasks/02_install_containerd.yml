@@ -113,17 +113,23 @@
       state: started
       name: k3s
 
-  - name: Create non-root user config file
-    ansible.builtin.shell:
-      cmd: "kubectl config view --raw > {{kubeconfig_path}}"
-
-  - name: Fix non-root user.kube/config directory permissions
-    file:
-      path: "{{kubeconfig_path}}"
-      state: file
+  - name: Copy config to non-root user config file
+    copy:
+      src: "/etc/rancher/k3s/k3s.yaml"
+      dest: "{{kubeconfig_path}}"
+      remote_src: yes
       mode: 0600
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
+
+  - name: Copy config to root user config file
+    copy:
+      src: "/etc/rancher/k3s/k3s.yaml"
+      dest: "/root/.kube/config"
+      remote_src: yes
+      mode: 0600
+      owner: "root"
+      group: "root"
 
   tags:
     - install_containerd

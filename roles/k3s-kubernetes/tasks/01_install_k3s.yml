@@ -3,6 +3,17 @@
 
 - name: Install k3s Kubernetes Distribution Block
   block:
+
+  - name: Install Kubernetes packages for Ansible
+    apt:
+      name: "{{install.k3s.packages}}"
+      state: present
+
+  - name: Install Kubernetes pip3 packages for Ansible
+    pip:
+      name: "{{install.k3s.packages_pip}}"
+      state: present
+
   - name: Add non-root user that will be used with Kubernetes
     ansible.builtin.user:
       name: "{{install.os.non_root_user.name}}"
@@ -25,13 +36,21 @@
       dest: "/home/{{install.os.non_root_user.name}}/k3s_install.sh"
       mode: ug+x
 
-  - name: Create non-root user.kube directory
+  - name: Create non-root user .kube directory
     file:
       path: "/home/{{install.os.non_root_user.name}}/.kube"
       state: directory
       mode: 0700
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
+
+  - name: Create root .kube directory
+    file:
+      path: "/root/.kube"
+      state: directory
+      mode: 0700
+      owner: "root"
+      group: "root"
 
   - name: Add export KUBECONFIG to .profile
     ansible.builtin.lineinfile:

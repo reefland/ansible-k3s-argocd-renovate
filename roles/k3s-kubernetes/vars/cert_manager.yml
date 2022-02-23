@@ -1,0 +1,10 @@
+---
+###[ Cert Manager Settings]################################################################
+# Cert Manager, is a native certificate management controller for Kubernetes.  It is used
+# as it stores everything as secrets instead of as files (as native Traefik will)
+#
+cert_manager:
+  # Name space to be created for Cert Manager installation
+  namespace: "cert-manager"
+
+  helm_chart_url: "https://charts.jetstack.io"
