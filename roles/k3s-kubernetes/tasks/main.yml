@@ -1,4 +1,5 @@
 ---
+###[ Detect & Capture Node Token when available ]##################################################
 - name: Check if node-token file exists
   stat:
     path: /var/lib/rancher/k3s/server/node-token
@@ -18,7 +19,16 @@
       node_token: "{{ node_token_output.content | b64decode | regex_replace('\n', '')}}"
     when: node_token_file.stat.exists == true
   tags: ["always"]
-  
+###################################################################################################
+
+###[ Detect ZFS UUID from ZFS on Root installations ]##############################################
+- name: Detect ZFS Dataset UUID
+  shell:
+    cmd: "{{containerd.zfs.zfs_uuid_detect_cmd}}"
+  register: UUID
+
+###################################################################################################
+
 - name: Include Var Files
   include_vars: "{{ item }}.yml"
   tags: ["always"]

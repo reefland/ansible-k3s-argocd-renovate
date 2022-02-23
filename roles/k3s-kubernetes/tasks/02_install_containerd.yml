@@ -1,12 +1,7 @@
 ---
-# Detect ZFS UUID from ZFS on Root installations if enabled
+# Detect ZFS UUID from ZFS on Root installations
 - name: Detect ZFS Dataset UUID Block
   block:
-  - name: Detect ZFS Dataset UUID
-    shell:
-      cmd: "{{containerd.zfs.zfs_uuid_detect_cmd}}"
-    register: UUID
-
   - name: Fail if UUID not detected
     fail:
       msg: |
