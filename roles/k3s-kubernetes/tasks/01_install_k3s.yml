@@ -25,7 +25,7 @@
   - name: Allow non-root user to have passwordless sudo convenience
     ansible.builtin.lineinfile:
       dest: /etc/sudoers
-      line: "{{install.os.non_root_user.name}} ALL=(ALL) NOPASSWD: ALL"
+      line: "{{install.os.non_root_user.name}} ALL=(ALL) NOPASSWD: /usr/local/bin/kubectl"
       validate: "visudo -cf %s"
     when:
       - install.os.allow_passwordless_sudo|default(false) == true
