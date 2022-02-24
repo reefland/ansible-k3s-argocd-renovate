@@ -1,1 +1,73 @@
 ---
+install:
+  ###[ Linux OS Configuration ]################################################################
+  os:
+    non_root_user:
+      name: "kube"
+      shell: "/bin/bash"
+      groups: "sudo"
+
+    allow_passwordless_sudo: true
+
+  ###[ Domain Names for LetsEncrypt Certificates ]############################################
+  domains:
+    - "rich-durso.us"
+    - "*.rich-durso.us"
+
+  k3s:
+    # Packages required for Ansible to issue Kubernetes and commands
+    packages:
+      - python3-pip
+    packages_pip:
+      - openshift
+      - pyyaml
+      - kubernetes
+
+    # CLI options passed directly to install script "as-is":
+    cli_options:
+      # Do not start service after installation as it will have issues with ZFS
+      - INSTALL_K3S_SKIP_START=true
+      # This is to pin a specific version of k3s for initial installation
+      # - INSTALL_K3S_VERSION=
+      # Select installation channel to use (stable, latest, testing)
+      - INSTALL_K3S_CHANNEL="latest"
+      # Send Flags to K3s Service
+      - INSTALL_K3S_EXEC="--container-runtime-endpoint unix:///run/containerd/containerd.sock"
+
+    url: "https://get.k3s.io"
+
+    # If enabled, will fail ansible deployment when "kubectl get node" returns "No resources found"
+    confirm_running: true
+  
+  ###[ Containerd Installation Settings ]#####################################################
+  containerd:
+    packages:
+      - containerd
+      - containernetworking-plugins
+      - iptables
+    
+    # Location generate config.toml file
+    config_path: "/etc/containerd"
+
+    # Location to place flannel.conflist
+    flannel_conflist_path: "/etc/cni/net.d"
+
+    # Hint to find the ZFS pool & dataset to create containerd mount point
+    zfs:
+      # detect_uuid will determine the UUID name used for the dataset name and include it.
+      # ZFS on Root guide uses a random set of characters (UUID) in the naming convention
+      # such as:  "rpool/ROOT/ubuntu_3wgs2q" where "3wgs2q" is the UUID to detect.
+      
+      # You can set to false and set your own or set uuid to empty string.
+
+      # End result would be a dataset name such as:  rpool/ROOT/ubuntu_3wgs2q/var/lib/containerd
+      detect_uuid: false
+      pool: "rpool"
+      dataset_prefix: "containerd"            # "ROOT/ubuntu"
+      uuid: ""                                # "_"
+      dataset_postfix: ""                     # "/var/lib/containerd"
+  
+  ### [ Cert Manager Installation Settings ]#################################################
+  cert_manager:
+    # Select release to use:  https://github.com/cert-manager/cert-manager/releases
+    install_version: "v1.7.1"
