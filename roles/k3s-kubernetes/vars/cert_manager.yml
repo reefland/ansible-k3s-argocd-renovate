@@ -7,6 +7,5 @@ cert_manager:
   # Name space to be created for Cert Manager installation
   namespace: "cert-manager"
 
-  # helm_chart_url: "https://charts.jetstack.io"
-
-  install_url: "https://github.com/jetstack/cert-manager/releases/download/{{install.cert_manager.install_version}}/cert-manager.crds.yaml"
+  install_url: "https://github.com/jetstack/cert-manager/releases/download/{{install.cert_manager.install_version}}/cert-manager.yaml"
+  

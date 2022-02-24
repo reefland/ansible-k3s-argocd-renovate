@@ -5,7 +5,7 @@
 #
 
 ###[ Install Cert Manager ]########################################################################
-- name: Install Cert Manager to Kubernetes Block
+- name: Install Cert-manager to Kubernetes Block
   block:
 
 #  - name: Install Cert Manager from Helm Chart
@@ -25,16 +25,26 @@
 # $ kubectl describe crd clusterissuers.cert-manager.io
 # Error from server (NotFound): customresourcedefinitions.apiextensions.k8s.io "clusterissuers.cert-manager.io" not found
 
-  - name: Fetch Static Manifest to Install Cert Manager
+  - name: Fetch Static Manifest to Install Cert-Manager
     ansible.builtin.get_url:
       url: "{{cert_manager.install_url}}"
       dest: "/home/{{install.os.non_root_user.name}}/cert-manager-{{install.cert_manager.install_version}}-manifest.yaml"
       mode: '0664'
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
 
-  - name: Install Cert manager via static Manifest
+  - name: Create Cert-manager Namespace
     kubernetes.core.k8s:
-     state: present
-     src: "/home/{{install.os.non_root_user.name}}/cert-manager-{{install.cert_manager.install_version}}-manifest.yaml"
+      state: present
+      name: cert-manager
+      kind: Namespace
+
+  - name: Install Cert-manager via static Manifest
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/cert-manager-{{install.cert_manager.install_version}}-manifest.yaml"
+      wait: yes
+      wait_timeout: 300
 
   tags:
     - install_cert_manager
