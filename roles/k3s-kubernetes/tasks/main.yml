@@ -1,34 +1,5 @@
 ---
-###[ Detect & Capture Node Token when available ]##################################################
-- name: Check if node-token file exists
-  stat:
-    path: /var/lib/rancher/k3s/server/node-token
-  register: node_token_file
-  tags: ["always"]
-  
-- name: Get Node Token and Add to Facts Block
-  block:
-  - name: Gather Node Token
-    slurp:
-      path: "/var/lib/rancher/k3s/server/node-token"
-    register: node_token_output
-    when: node_token_file.stat.exists == true
-
-  - name: Clean and add node_token to facts
-    set_fact:
-      node_token: "{{ node_token_output.content | b64decode | regex_replace('\n', '')}}"
-    when: node_token_file.stat.exists == true
-  tags: ["always"]
-###################################################################################################
-
-###[ Detect ZFS UUID from ZFS on Root installations ]##############################################
-- name: Detect ZFS Dataset UUID
-  shell:
-    cmd: "{{containerd.zfs.zfs_uuid_detect_cmd}}"
-  register: UUID
-
-###################################################################################################
-
+###[ Load up the variable files ]##################################################################
 - name: Include Var Files
   include_vars: "{{ item }}.yml"
   tags: ["always"]
@@ -38,6 +9,36 @@
       - containerd
       - helm
       - cert_manager
+
+###[ Detect ZFS UUID from ZFS on Root installations ]##############################################
+- name: Detect ZFS Dataset UUID
+  shell:
+    cmd: "{{containerd.zfs.zfs_uuid_detect_cmd}}"
+  register: UUID
+
+###################################################################################################
+
+###[ Detect & Capture Node Token when available ]##################################################
+- name: Check if node-token file exists
+  stat:
+    path: "{{k3s.node_token_path}}"
+  register: node_token_file
+  tags: ["always"]
+  
+- name: Get Node Token and Add to Facts Block
+  block:
+  - name: Gather Node Token
+    slurp:
+      path: "{{k3s.node_token_path}}"
+    register: node_token_output
+    when: node_token_file.stat.exists == true
+
+  - name: Clean and add node_token to facts
+    set_fact:
+      node_token: "{{ node_token_output.content | b64decode | regex_replace('\n', '')}}"
+    when: node_token_file.stat.exists == true
+  tags: ["always"]
+###################################################################################################
 
 - name: Include Task Files
   include_tasks: "{{task_names}}.yml"
@@ -53,3 +54,4 @@
 
   loop_control:
     loop_var: task_names
+

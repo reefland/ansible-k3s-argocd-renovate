@@ -1,17 +1,21 @@
 ---
+kubeconfig_path: "/home/{{install.os.non_root_user.name}}/.kube/config"
+
 k3s:
-  # Location to create to modify k3s systemd service 
+  # Location to set for modified k3s systemd service 
   service_override_path: "/etc/systemd/system/k3s.service.d"
 
+  node_token_path: "/var/lib/rancher/k3s/server/node-token"
+
   traefik:
-      # Define the name of the API token key stored in k3s_traefik_api_secrets.yml
-      le_api_token_name: "{{CF_DNS_API_TOKEN}}"
+    # Define the name of the API token key stored in k3s_traefik_api_secrets.yml
+    le_api_token_name: "{{CF_DNS_API_TOKEN}}"
 
-      # Define the name of the email address key associated to the API token stored in k3s_traefik_api_secrets.yml
-      le_api_token_email: "{{CF_AUTH_EMAIL}}"
+    # Define the name of the email address key associated to the API token stored in k3s_traefik_api_secrets.yml
+    le_api_token_email: "{{CF_AUTH_EMAIL}}"
 
-      # Define the name of the Let's Encrypt Email Address key stored in k3s_traefik_api_secrets.yml
-      le_email_auth: "{{LE_AUTH_EMAIL}}"
+    # Define the name of the Let's Encrypt Email Address key stored in k3s_traefik_api_secrets.yml
+    le_email_auth: "{{LE_AUTH_EMAIL}}"
 
-      le_staging_server: "https://acme-staging-v02.api.letsencrypt.org/directory"
-      le_production_server: "https://acme-v02.api.letsencrypt.org/directory"
+    le_staging_server: "https://acme-staging-v02.api.letsencrypt.org/directory"
+    le_production_server: "https://acme-v02.api.letsencrypt.org/directory"
