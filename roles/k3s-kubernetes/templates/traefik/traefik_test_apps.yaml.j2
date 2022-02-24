@@ -48,7 +48,7 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: Host(`testlinux.rich-durso.us`) && PathPrefix(`/notls`)
+  - match: Host(`{{ansible_fqdn|lower}}`) && PathPrefix(`/notls`)
     kind: Rule
     services:
     - name: whoami
@@ -64,7 +64,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-  - match: Host(`testlinux.rich-durso.us`) && PathPrefix(`/tls`)
+  - match: Host(`{{ansible_fqdn|lower}}`) && PathPrefix(`/tls`)
     kind: Rule
     services:
     - name: whoami

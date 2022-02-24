@@ -152,10 +152,85 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
         staging: true
     ```
 
-    Don't change this value. Once verified to be working, the playbook can be run to switch to production certificates:
+    Don't change this value. Once staging certificates are verified to be working, the playbook can be run to switch to production certificates:
 
     ```shell
     ansible-playbook -i inventory kubernetes.yml --tags="config_traefik_dns_certs" --extra-vars '{le_staging:false}' 
+    ```
+
+    To test generated certificates, a deployment script for `whoami` is created (namespace `default`):
+
+    ```shell
+    sudo su - kube
+    cd ~/traefik
+
+    # Deploy apps & create ingress rules
+    kubectl apply -f traefik_test_apps.yaml
+
+    # Confirm pods are running:
+    kubectl get pods -n default
+
+      NAME                      READY   STATUS    RESTARTS      AGE
+      whoami-5b69cdcd49-2gfts   1/1     Running   2 (23m ago)   6h9m
+      whoami-5b69cdcd49-bg5j4   1/1     Running   2 (23m ago)   6h9m
+
+    # Simple test without certificates (notice URI of "/notls")
+    curl http://$(hostname -f):80/notls
+
+    Hostname: whoami-5b69cdcd49-2gfts
+    IP: 127.0.0.1
+    IP: ::1
+    IP: 10.42.0.37
+    IP: fe80::c43:7ff:fe31:3b61
+    RemoteAddr: 10.42.0.34:52596
+    GET /notls HTTP/1.1
+    Host: testlinux.example.com
+    User-Agent: curl/7.68.0
+    Accept: */*
+    Accept-Encoding: gzip
+    X-Forwarded-For: 10.42.0.36
+    X-Forwarded-Host: testlinux.example.com
+    X-Forwarded-Port: 80
+    X-Forwarded-Proto: http
+    X-Forwarded-Server: traefik-6bb96f9bd8-72cj8
+    X-Real-Ip: 10.42.0.36
+
+    # This will work ONLY with a production cert, it will FAIL with a staging cert:
+    curl https://$(hostname -f):/tls
+
+    # This will work with EITHER staging OR production cert:
+    curl -k https://$(hostname -f):/tls
+
+    # Show certificate information:
+    kubectl describe certificates wildcard-cert -n kube-system
+
+    Spec:
+      Dns Names:
+        example.com
+        *.example.com
+      Issuer Ref:
+        Kind:       ClusterIssuer
+        Name:       letsencrypt-prod
+      Secret Name:  wildcard-secret
+    Status:
+      Conditions:
+        Last Transition Time:  2022-02-24T18:09:47Z
+        Message:               Certificate is up to date and has not expired
+        Observed Generation:   1
+        Reason:                Ready
+        Status:                True
+        Type:                  Ready
+      Not After:               2022-05-25T17:09:46Z
+      Not Before:              2022-02-24T17:09:47Z
+      Renewal Time:            2022-04-25T17:09:46Z
+
+    # To delete the "whoami" deployment and ingress rules:
+    kubectl delete -f traefik_test_apps.yaml
+
+    deployment.apps "whoami" deleted
+    service "whoami" deleted
+    ingressroute.traefik.containo.us "simpleingressroute" deleted
+    ingressroute.traefik.containo.us "ingressroutetls" deleted
     ```
 
 7. Define the version of Cert Manager to be installed. Available version number can be found [here](https://artifacthub.io/packages/helm/cert-manager/cert-manager).
@@ -163,7 +238,6 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
     ```yml
     cert_manager:
       install_version: "v1.7.1"
-
     ```
 
 ---
