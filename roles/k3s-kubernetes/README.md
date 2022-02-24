@@ -141,7 +141,7 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
     LE_AUTH_EMAIL: you@domain.com
     ```
 
-    Be sure to encrypt when completed `ansible-vault encrypt k3s_traefik_api_secrets.yml`
+    Be sure to encrypt this secret when completed `ansible-vault encrypt k3s_traefik_api_secrets.yml`
 
     By default staging certificates are generated and controlled by:
 
@@ -152,13 +152,10 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
         staging: true
     ```
 
-    It is recommended this not be changed and once verified to be working, the following can be run on Kubernetes to switch to production certificates:
+    Don't change this value. Once verified to be working, the playbook can be run to switch to production certificates:
 
     ```shell
-    cd /home/kube/traefik
-    kubectl apply -f letsencrypt_prod.yaml
-    kubectl apply -f letsencrypt_prod_wildcard_cert.yaml
-    kubectl apply -f traefik_default_tls_store.yaml
+    ansible-playbook -i inventory kubernetes.yml --tags="config_traefik_dns_certs" --extra-vars '{le_staging:false}' 
     ```
 
 7. Define the version of Cert Manager to be installed. Available version number can be found [here](https://artifacthub.io/packages/helm/cert-manager/cert-manager).
