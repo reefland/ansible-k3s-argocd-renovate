@@ -17,8 +17,7 @@
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
 
-
-  - name: "Copy Traefik Template Files"
+  - name: Copy Traefik Template Files
     template:
      src: "templates/traefik/{{item}}.j2"
      dest: "/home/{{install.os.non_root_user.name}}/traefik/{{item}}"
@@ -32,5 +31,20 @@
       - traefik_default_tls_store.yaml
       - letsencrypt_prod.yaml
       - letsencrypt_prod_wildcard_cert.yaml
+
+  - name: Apply Traefik Staging Certificate
+    kubernetes.core.k8s:
+     state: present
+     src: "/home/{{install.os.non_root_user.name}}/traefik/{{item}}"
+     wait: yes
+     wait_timeout: 300
+    with_items:
+      - cloudflare_api_token_secret.yaml
+      - letsencrypt_staging_wildcard_cert.yaml
+      - letsencrypt_staging.yaml
+      - traefik_default_tls_store.yaml
+    when:
+      - k3s.traefik.staging|default(false)|bool == true
+
   tags:
    - config_traefik_dns_certs

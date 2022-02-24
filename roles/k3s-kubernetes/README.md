@@ -5,7 +5,8 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * non-root user account for Kubernetes, passwordless access to `kubectl` by default.
 * condainerd to provide zfs snapshotter support
 * Helm Client
-* Cert Manager
+* Cert-manager
+* Traefik ingress Letsencrypt wildcard certificates for domains to staging or prod (Cloudflare DNS validator)
 
 ## Notes
 
@@ -13,6 +14,8 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
   * See: https://github.com/k3s-io/k3s/discussions/3980
 * To get around this ZFS issue, this will also install `containerd` and `container network plugins` packages and configure them to support ZFS. The k3s configuration is then updated to use containerd. 
   * Based on: https://blog.nobugware.com/post/2019/k3s-containterd-zfs/
+* Cert-manager is installed since Traefik's Let's Encrypt support retrieves certificates and stores them in files. Cert-manager retrieves certificates and stores them in Kubernetes secrets.
+* Traefik's Letsencrypt is configured for staging certificates, but you can default it to prod or use provided scripts to switch from staging to prod.
 
 ## Environments Tested
 
@@ -119,7 +122,46 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
       flannel_conflist_path: "/etc/cni/net.d"
     ```
 
-6. Define the version of Cert Manager to be installed. Available version number can be found [here](https://artifacthub.io/packages/helm/cert-manager/cert-manager).
+6. Configure Letsencrypt certificate generation for Traefik.  The file `vars/k3s_traefik_api_secrets.yml` needs to be configured to provide three variables:
+
+    * `CF_DNS_API_TOKEN` - CloudFlare API token value
+    * `CF_AUTH_EMAIL` - CloudFlare Email address associated with the API token
+    * `LE_AUTH_EMAIL` - Letsencrypt Email Address for expiration Notifications
+
+    ```yml
+    # Cloudflare API token used by Traefik
+    # Requires Zone / Zone / Read
+    # Requires Zone / DNS / Edit Permissions
+    CF_DNS_API_TOKEN: abs123 ... 456xyz
+
+    # Email address associated to DNS API key
+    CF_AUTH_EMAIL: you@domain.com
+
+    # Email address associated to Let's Encrypt
+    LE_AUTH_EMAIL: you@domain.com
+    ```
+
+    Be sure to encrypt when completed `ansible-vault encrypt k3s_traefik_api_secrets.yml`
+
+    By default staging certificates are generated and controlled by:
+
+    ```yaml
+    k3s:
+      traefik:
+        # Generate Staging Certificates
+        staging: true
+    ```
+
+    It is recommended this not be changed and once verified to be working, the following can be run on Kubernetes to switch to production certificates:
+
+    ```shell
+    cd /home/kube/traefik
+    kubectl apply -f letsencrypt_prod.yaml
+    kubectl apply -f letsencrypt_prod_wildcard_cert.yaml
+    kubectl apply -f traefik_default_tls_store.yaml
+    ```
+
+7. Define the version of Cert Manager to be installed. Available version number can be found [here](https://artifacthub.io/packages/helm/cert-manager/cert-manager).
 
     ```yml
     cert_manager:

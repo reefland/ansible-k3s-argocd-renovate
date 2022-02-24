@@ -8,6 +8,9 @@ k3s:
   node_token_path: "/var/lib/rancher/k3s/server/node-token"
 
   traefik:
+    # Generate Staging Certificates
+    staging: true
+    
     # Define the name of the API token key stored in k3s_traefik_api_secrets.yml
     le_api_token_name: "{{CF_DNS_API_TOKEN}}"
 
