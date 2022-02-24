@@ -1,0 +1,17 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {% if k3s.traefik.staging|default(true)|bool == true %}letsencrypt-staging{% else %}letsencrypt-prod{% endif %}{{''}}
+  namespace: cert-manager
+spec:
+  acme:
+    email: {{k3s.traefik.le_email_auth}}
+    server: {% if k3s.traefik.staging|default(true)|bool == true %}{{k3s.traefik.le_staging_server}}{% else %}{{k3s.traefik.le_production_server}}{% endif %}{{''}}
+    privateKeySecretRef:
+      name: issuer-{% if k3s.traefik.staging|default(true)|bool == true %}letsencrypt-staging{% else %}letsencrypt-prod{% endif %}{{''}}
+    solvers:
+    - dns01:
+        cloudflare:
+          apiTokenSecretRef:
+            key: api-token
+            name: cloudflare-api-token-secret

@@ -1,4 +1,14 @@
 ---
+####################################################################################################
+# This script is for installing k3s distribution of Kubernetes. k3s does not have native support
+# for ZFS file system (will produce overlayfs errors).  
+# See: https://github.com/k3s-io/k3s/discussions/3980
+#
+# This script by default will also install containerd and container network plugins packages which
+# is configured to support ZFS.  Then k3s configuration will be updated to use containerd.
+# Based on: https://blog.nobugware.com/post/2019/k3s-containterd-zfs/
+
+
 ###[ Load up the variable files ]##################################################################
 - name: Include Var Files
   include_vars: "{{ item }}.yml"

@@ -1,6 +1,9 @@
 ---
 kubeconfig_path: "/home/{{install.os.non_root_user.name}}/.kube/config"
 
+# to create prod certificates --extra-vars '{le_staging:false}'
+le_staging: true
+
 k3s:
   # Location to set for modified k3s systemd service 
   service_override_path: "/etc/systemd/system/k3s.service.d"
@@ -8,8 +11,8 @@ k3s:
   node_token_path: "/var/lib/rancher/k3s/server/node-token"
 
   traefik:
-    # Generate Staging Certificates
-    staging: true
+    # Generate Staging Certificates - the "le_staging" allows for CLI override.
+    staging: "ternary(({{le_staging|default(true)}})|true,false)"
     
     # Define the name of the API token key stored in k3s_traefik_api_secrets.yml
     le_api_token_name: "{{CF_DNS_API_TOKEN}}"

@@ -10,4 +10,4 @@ spec:
   dnsNames: {{install.domains}}
   issuerRef:
     kind: ClusterIssuer
-    name: letsencrypt-staging
+    name: {% if k3s.traefik.staging|default(true)|bool == true %}letsencrypt-staging{% else %}letsencrypt-prod{% endif %}
