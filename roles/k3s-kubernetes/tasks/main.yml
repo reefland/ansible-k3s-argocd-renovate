@@ -11,14 +11,25 @@
 
 ###[ Load up the variable files ]##################################################################
 - name: Include Var Files
-  include_vars: "{{ item }}.yml"
+  include_vars: "{{ item }}"
   tags: ["always"]
   loop:
-      - k3s
-      - k3s_traefik_api_secrets
-      - containerd
-      - helm
-      - cert_manager
+      - k3s.yml
+      - containerd.yml
+      - helm.yml
+      - cert_manager.yml
+
+###[ Load up the secret files ]####################################################################
+- name: Include Secret Files
+  include_vars: "{{ lookup('first_found',params) }}"
+  vars:
+    params:
+      files:
+        - k3s_traefik_api_secrets.yml
+      paths: "defaults"
+  tags: ["always"]
+  no_log: "{{install.no_log|default(true)}}"
+  
 
 ###[ Detect ZFS UUID from ZFS on Root installations ]##############################################
 - name: Detect ZFS Dataset UUID
@@ -41,26 +52,28 @@
     slurp:
       path: "{{k3s.node_token_path}}"
     register: node_token_output
+    no_log: "{{install.no_log|default(true)}}"
     when: node_token_file.stat.exists == true
 
   - name: Clean and add node_token to facts
     set_fact:
       node_token: "{{ node_token_output.content | b64decode | regex_replace('\n', '')}}"
+    no_log: "{{install.no_log|default(true)}}"
     when: node_token_file.stat.exists == true
   tags: ["always"]
 ###################################################################################################
 
 - name: Include Task Files
-  include_tasks: "{{task_names}}.yml"
+  include_tasks: "{{task_names}}"
   tags: ["always"]
   loop:
-    - 01_install_k3s
-    - 02_install_containerd
-    - 03_validate_k3s
-    - 04_install_helm_client
-    - 05_install_cert_manager
-    - 06_config_traefik_dns_certs
-#    - 07_install_democratric-csi
+    - 01_install_k3s.yml
+    - 02_install_containerd.yml
+    - 03_validate_k3s.yml
+    - 04_install_helm_client.yml
+    - 05_install_cert_manager.yml
+    - 06_config_traefik_dns_certs.yml
+    - 07_install_democratric-csi.yml
 
   loop_control:
     loop_var: task_names

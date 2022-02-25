@@ -1,6 +1,11 @@
 ---
 install:
-  ###[ Linux OS Configuration ]################################################################
+  ###[ Ansible Configuration Options ]#############################################################
+  # Do not log sensitive information / tokens, etc.  Maybe be handy to set to "false" during
+  # troubleshooting if you need to see ansible vault secret values.
+  no_log: true
+  
+  ###[ Linux OS Configuration ]####################################################################
   os:
     non_root_user:
       name: "kube"
@@ -9,7 +14,7 @@ install:
 
     allow_passwordless_sudo: true
 
-  ###[ Domain Names for LetsEncrypt Certificates ]############################################
+  ###[ Domain Names for LetsEncrypt Certificates ]#################################################
   domains:
     - "rich-durso.us"
     - "*.rich-durso.us"
@@ -39,7 +44,7 @@ install:
     # If enabled, will fail ansible deployment when "kubectl get node" returns "No resources found"
     confirm_running: true
   
-  ###[ Containerd Installation Settings ]#####################################################
+  ###[ Containerd Installation Settings ]##########################################################
   containerd:
     packages:
       - containerd
@@ -67,7 +72,30 @@ install:
       uuid: ""                                # "_"
       dataset_postfix: ""                     # "/var/lib/containerd"
   
-  ### [ Cert Manager Installation Settings ]#################################################
+  ###[ Cert Manager Installation Settings ]########################################################
   cert_manager:
     # Select release to use:  https://github.com/cert-manager/cert-manager/releases
     install_version: "v1.7.1"
+
+  ###[ Democratric CSI Installation Settings ]#####################################################
+  democratic_csi:
+    # Available: https://github.com/democratic-csi/democratic-csi/tree/master/examples
+    provisioner: "freenas-iscsi"
+
+    packages:
+      - open-iscsi
+      - lsscsi
+      - sg3-utils
+      - multipath-tools
+      - scsitools
+
+    truenas:
+      protocol: http
+      host:
+      port:
+
+    iscsi:
+      # See templates/democratic_csi/freenas-iscsi.yml.js for all options that can be set
+      fsType: "xfs"   # block-based storage can be ext3, ext4, xfs
+
+    
