@@ -1,10 +1,5 @@
 ---
 install:
-  ###[ Ansible Configuration Options ]#############################################################
-  # Do not log sensitive information / tokens, etc.  Maybe be handy to set to "false" during
-  # troubleshooting if you need to see ansible vault secret values.
-  no_log: true
-  
   ###[ Linux OS Configuration ]####################################################################
   os:
     non_root_user:
@@ -90,9 +85,12 @@ install:
       - scsitools
 
     truenas:
-      protocol: http
-      host:
-      port:
+      http_connection:
+        protocol: "https"
+        port: 443
+        allowInsecure: false
+        host: "{{democratic_csi.http_connection}}"
+        api_key: "{{democratic_csi.http_api_key}}"
 
     iscsi:
       # See templates/democratic_csi/freenas-iscsi.yml.js for all options that can be set
