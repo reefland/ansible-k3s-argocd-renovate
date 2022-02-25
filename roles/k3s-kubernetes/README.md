@@ -15,11 +15,11 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * To get around this ZFS issue, this will also install `containerd` and `container network plugins` packages and configure them to support ZFS. The k3s configuration is then updated to use containerd. 
   * Based on: https://blog.nobugware.com/post/2019/k3s-containterd-zfs/
 * Cert-manager is installed since Traefik's Let's Encrypt support retrieves certificates and stores them in files. Cert-manager retrieves certificates and stores them in Kubernetes secrets.
-* Traefik's Letsencrypt is configured for staging certificates, but you can default it to prod or use provided scripts to switch from staging to prod.
+* Traefik's Letsencrypt is configured for staging certificates, but you can default it to prod or use provided CLI parameter below to switch from staging to prod.
 
 ## Environments Tested
 
-* Ubuntu 20.04 based [ZFS on Root](https://gitea.rich-durso.us/reefland/ansible/src/branch/master/roles/zfs_on_root) installation.
+* Ubuntu 20.04.4 based [ZFS on Root](https://gitea.rich-durso.us/reefland/ansible/src/branch/master/roles/zfs_on_root) installation.
 
 ---
 
