@@ -75,25 +75,71 @@ install:
   ###[ Democratric CSI Installation Settings ]#####################################################
   democratic_csi:
     # Available: https://github.com/democratic-csi/democratic-csi/tree/master/examples
-    provisioner: "freenas-iscsi"
-
-    packages:
-      - open-iscsi
-      - lsscsi
-      - sg3-utils
-      - multipath-tools
-      - scsitools
-
-    truenas:
-      http_connection:
-        protocol: "https"
-        port: 443
-        allowInsecure: false
-        host: "{{democratic_csi.http_connection}}"
-        api_key: "{{democratic_csi.http_api_key}}"
-
     iscsi:
-      # See templates/democratic_csi/freenas-iscsi.yml.js for all options that can be set
-      fsType: "xfs"   # block-based storage can be ext3, ext4, xfs
+      provisioner: "freenas-iscsi"
 
-    
+      packages:
+        - open-iscsi
+        - lsscsi
+        - sg3-utils
+        - multipath-tools
+        - scsitools
+
+      truenas:
+        # See file "truenas_api_secrets.yml" to set secrets (and be sure to use ansible vault to encrypt!)
+        http_connection:
+          protocol: "https"
+          port: 443
+          allow_insecure: false
+          host: "{{democratic_csi.http_hostname}}"
+          api_key: "{{democratic_csi.http_api_key}}"
+
+        ssh_connection:
+          host: "{{democratic_csi.ssh_hostname}}"
+          port: 22
+          user: "{{democratic_csi.ssh_username}}"
+          
+          # Must use a password or private key
+          #password: "{{democratic_csi.ssh_password}}"
+          private_key: "{{democratic_csi.ssh_private_key}}"
+
+        zfs:
+          fs_type: "xfs"   # zvol block-based storage can be formatted as ext3, ext4, xfs
+          
+          # Assumes pool named "main", dataset named "k8s", child dataset "iscsi"
+          # Any additional provisioners such as NFS would be at the same level as "iscsi" (sibling of it)
+          # IMPORTANT:
+          #   total volume name (zvol/<datasetParentName>/<pvc name>) length cannot exceed 63 chars
+          #   https://www.ixsystems.com/documentation/freenas/11.2-U5/storage.html#zfs-zvol-config-opts-tab
+          #   standard volume naming overhead is 46 chars
+          #   Which means names **MUST-BE** 17 characters or LESS!!!!
+          dataset:
+            parent_name: "main/k8s/iscsi/v"
+            snapshot_ds_name: "main/k8s/iscsi/s"
+
+            zvol_compression: "lz4"     # "" (inherit), lz4, gzip-9, etc
+            zvol_Blocksize: ""          # 512, 1K, 2K, 4K, 8K, 16K, 64K, 128K default is 16K
+          
+        iscsi:
+          host: "{{democratic_csi.iscsi_hostname}}"
+          port: 3260
+          
+          #interface: ""                 # leave empty to omit usage of -I with iscsiadm
+          name_prefix: csi-
+          name_suffix: "-clustera"
+          
+          target_group:
+            portal_group: 1             # get the correct ID from the "portal" section in the UI
+            initiator_group: 1          # get the correct ID from the "initiators" section in the UI
+            auth_type: "None"           # None, CHAP, or CHAP Mutual
+
+            # get the correct ID from the "Authorized Access" section of the UI
+            auth_group: ""              # only required if using CHAP
+          
+          extent:
+            block_size: 4096            # 512, 1024, 2048, or 4096
+            rpm: "5400"                 # "" (let FreeNAS decide, currently defaults to SSD), Unknown, SSD, 5400, 7200, 10000, 15000
+            avail_threshold: 0          # 0-100 (0 == ignore)
+      
+          
+

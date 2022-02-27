@@ -21,7 +21,7 @@
 #      wait: yes     # time out waiting on job/cert-manager-startupapicheck to complete
 #      wait_timeout: 5m
 
-# CRDs were not being created using Helm
+# CRDs for Cert-manager were not being created using Helm:
 # $ kubectl describe crd clusterissuers.cert-manager.io
 # Error from server (NotFound): customresourcedefinitions.apiextensions.k8s.io "clusterissuers.cert-manager.io" not found
 
