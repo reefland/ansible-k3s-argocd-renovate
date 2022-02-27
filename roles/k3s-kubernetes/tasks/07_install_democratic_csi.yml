@@ -1,0 +1,49 @@
+---
+#
+# Add iSCSI and NFS persistent storage with TrueNas integration via democratic-csi packages.
+#
+# based on: https://jonathangazeley.com/2021/01/05/using-truenas-to-provide-persistent-storage-for-kubernetes/
+
+###[ Install democratic-csi packages ]############################################################
+- name: Install democratic-csi Repository via Helm Block
+  block:
+  - name: Install iSCSI Support packages
+    apt:
+      name: "{{install.democratic_csi.iscsi.packages}}"
+      state: present
+
+  - name: Copy multipath.Conf File
+    copy:
+      src: "files/multipath.conf"
+      dest: "/etc/multipath.conf"
+
+  - name: Add democratic-csi Repository to Helm
+    kubernetes.core.helm_repository:
+      name: democratic-csi
+      repo_url: https://democratic-csi.github.io/charts/
+
+  - name: Enable and Start multipath-tools Service
+    ansible.builtin.systemd:
+      enabled: yes
+      state: restarted
+      name: multipath-tools
+
+  - name: Enable and Start open-iscsi Service
+    ansible.builtin.systemd:
+      enabled: yes
+      state: restarted
+      name: open-iscsi
+
+  - name: Copy democratic-csi Template Files
+    template:
+     src: "templates/democratic_csi/{{item}}.j2"
+     dest: "/home/{{install.os.non_root_user.name}}/{{item}}"
+     owner: "{{install.os.non_root_user.name}}"
+     group: "{{install.os.non_root_user.name}}"
+     mode: '0660'
+    loop:
+      - "{{install.democratic_csi.iscsi.provisioner}}.yaml"
+  tags:
+    - install_democratic_csi
+  when:
+    -  install.democratic_csi.iscsi.provisioner is defined

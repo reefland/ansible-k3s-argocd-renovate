@@ -1,0 +1,21 @@
+democratic_csi:
+  # Define the name of the TrueNAS HTTP/S hostname key stored in truenas_api_secrets.yml
+  http_hostname: "{{TN_HTTP_HOST|default(' NOT_SET_IN__truenas_api_secrets.yml')}}"
+
+  # Define the name of the TrueNAS HTTP/S API key stored in truenas_api_secrets.yml
+  http_api_key: "{{TN_HTTP_API_KEY|default(' NOT_SET_IN__truenas_api_secrets.yml')}}"
+
+  # Define the name of the TrueNAS SSH hostname key stored in truenas_api_secrets.yml
+  ssh_hostname: "{{TN_SSH_HOST|default(' NOT_SET_IN__truenas_api_secrets.yml')}}"
+
+  # Define the name of the TrueNAS SSH username key stored in truenas_api_secrets.yml
+  ssh_username: "{{TN_SSH_USER|default(' NOT_SET_IN__truenas_api_secrets.yml')}}"
+
+  # Define the name of the TrueNAS SSH username's password in truenas_api_secrets.yml
+  ssh_password: "{{TN_SSH_PASSWD|default(' NOT_SET_IN__truenas_api_secrets.yml')}}"
+
+  # Define the name of the TrueNAS SSH private key stored in truenas_api_secrets.yml
+  ssh_private_key: "{{TN_SSH_PRIV_KEY|default(' NOT_SET_IN__truenas_api_secrets.yml')}}"
+
+  # Define the name of the TrueNAS iSCSI hostname key stored in truenas_api_secrets.yml
+  iscsi_hostname:  "{{TN_ISCSI_HOST|default(' NOT_SET_IN__truenas_api_secrets.yml')}}"
