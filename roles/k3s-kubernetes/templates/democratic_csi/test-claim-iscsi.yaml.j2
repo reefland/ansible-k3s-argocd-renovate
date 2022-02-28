@@ -3,9 +3,9 @@ apiVersion: v1
 metadata:
   name: test-claim-iscsi
   annotations:
-    volume.beta.kubernetes.io/storage-class: "freenas-iscsi-csi"
+    volume.beta.kubernetes.io/storage-class: "{{install.democratic_csi.iscsi.provisioner}}-csi"
 spec:
-  storageClassName: freenas-iscsi-csi
+  storageClassName: {{install.democratic_csi.iscsi.provisioner}}-csi
   accessModes:
     - ReadWriteOnce
   resources:

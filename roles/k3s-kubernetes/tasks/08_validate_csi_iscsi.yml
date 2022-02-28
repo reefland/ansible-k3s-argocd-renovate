@@ -1,0 +1,67 @@
+---
+#
+# Validate the democratic-csi installation is running as expected.
+#
+
+###[ Validate democratic-csi Kubernetes Installation ]#############################################
+- name: Validate democratic-csi Kubernetes Installation Block
+  block:
+  - name: Check Pods are Running (multiple types are expected)
+    k8s_info:
+      kind: Pod
+      namespace: "{{install.democratic_csi.iscsi.namespace}}"
+      field_selectors:
+        - "status.phase=Running"
+    register: csi_pods_details
+
+  # Set Fact if we can detect the controller pod running
+  - set_fact:
+      csi_controller_running: true
+    loop: "{{csi_pods_details.resources}}"
+    when: item.metadata.labels['app.kubernetes.io/csi-role'] == "controller"
+
+  # Set Fact if we can detect the node pod running
+  - set_fact:
+      csi_node_running: true
+    loop: "{{csi_pods_details.resources}}"
+    when: item.metadata.labels['app.kubernetes.io/csi-role'] == "node"
+
+  - name: Fail if democratic-csi controller pod not running
+    fail:
+      msg: |
+        Unable to detect democratic-csi controller pod is running, try:
+        
+        kubectl get pods -n {{install.democratic_csi.iscsi.namespace}} -o wide
+    when: csi_controller_running is not defined
+
+  - name: Fail if democratic-csi node pod not running
+    fail:
+      msg: "Unable to detect democratic-csi node pod is running"
+    when: csi_node_running is not defined
+
+  - name: "Check if iSCSI Storageclass is created"
+    k8s_info:
+      kind: StorageClass
+      namespace: "{{install.democratic_csi.iscsi.namespace}}"
+      field_selectors:
+        - "metadata.name={{install.democratic_csi.iscsi.provisioner}}-csi"
+    register: csi_storageclass_details
+
+  # Set Fact if we can detect the storage class
+  - set_fact:
+      csi_storage_class: true
+    loop: "{{csi_storageclass_details.resources}}"
+    when: item.provisioner == "org.democratic-csi.iscsi"
+
+  - name: Fail if democratic-csi iSCSI storage class not detected
+    fail:
+      msg: |
+        Unable to detect democratic-csi iSCSI storage class, try:
+        
+        kubectl get sc -n {{install.democratic_csi.iscsi.namespace}}
+    when: csi_storage_class is not defined
+
+  tags:
+    - validate_csi_iscsi
+  when:
+    -  install.democratic_csi.iscsi.provisioner is defined
