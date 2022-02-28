@@ -1,4 +1,9 @@
 democratic_csi:
+  # Define the Repo URL to download from:
+  repo_url: "https://democratic-csi.github.io/charts/"
+
+  repo_download: "democratic-csi/democratic-csi"
+
   # Define the name of the TrueNAS HTTP/S hostname key stored in truenas_api_secrets.yml
   http_hostname: "{{TN_HTTP_HOST|default(' NOT_SET_IN__truenas_api_secrets.yml')}}"
 

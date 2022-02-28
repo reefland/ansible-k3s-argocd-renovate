@@ -20,7 +20,7 @@
   - name: Add democratic-csi Repository to Helm
     kubernetes.core.helm_repository:
       name: democratic-csi
-      repo_url: https://democratic-csi.github.io/charts/
+      repo_url: "{{democratic_csi.repo_url}}"
 
   - name: Enable and Start multipath-tools Service
     ansible.builtin.systemd:
@@ -34,15 +34,34 @@
       state: restarted
       name: open-iscsi
 
+  - name: Create directory for democratic-csi yaml files for non-root user
+    file:
+      path: "/home/{{install.os.non_root_user.name}}/democratic-csi"
+      state: directory
+      mode: 0700
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+
   - name: Copy democratic-csi Template Files
     template:
-     src: "templates/democratic_csi/{{item}}.j2"
-     dest: "/home/{{install.os.non_root_user.name}}/{{item}}"
-     owner: "{{install.os.non_root_user.name}}"
-     group: "{{install.os.non_root_user.name}}"
-     mode: '0660'
+      src: "templates/democratic_csi/{{item}}.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/democratic-csi/{{item}}"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0660'
     loop:
-      - "{{install.democratic_csi.iscsi.provisioner}}.yaml"
+      - "test-claim-iscsi.yaml"
+
+  - name: "Copy and Validate iSCSI Provisioner - {{install.democratic_csi.iscsi.provisioner}}.yaml"
+    template:
+      src: "templates/democratic_csi/{{install.democratic_csi.iscsi.provisioner}}.yaml.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/democratic-csi/{{install.democratic_csi.iscsi.provisioner}}.yaml"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0660'
+      validate: "helm upgrade --dry-run --install --create-namespace --values %s --namespace {{install.democratic_csi.iscsi.namespace}} {{install.democratic_csi.iscsi.release}} {{democratic_csi.repo_download}}"
+      backup: yes
+
   tags:
     - install_democratic_csi
   when:

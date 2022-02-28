@@ -8,7 +8,7 @@ storageClasses:
   volumeBindingMode: Immediate
   allowVolumeExpansion: true
   parameters:
-    fsType: {{install.democratic_csi.iscsi.truenas.zfs.fs_type}}
+    fsType: {{install.democratic_csi.iscsi.extent.fs_type}}
   mountOptions: []
   secrets:
     provisioner-secret:
@@ -24,50 +24,48 @@ driver:
     driver: freenas-iscsi
     instance_id:
     httpConnection:
-      protocol: {{install.democratic_csi.iscsi.truenas.http_connection.protocol}}
-      host: {{install.democratic_csi.iscsi.truenas.http_connection.host}}
-      port: {{install.democratic_csi.iscsi.truenas.http_connection.port}}
-      apiKey: {% if install.democratic_csi.iscsi.truenas.http_connection.api_key is defined %}{{install.democratic_csi.iscsi.truenas.http_connection.api_key}}{% endif %}{{''}}
-      allowInsecure: {{install.democratic_csi.iscsi.truenas.http_connection.allow_insecure}}
+      protocol: {{install.democratic_csi.truenas.http_connection.protocol}}
+      host: {{install.democratic_csi.truenas.http_connection.host}}
+      port: {{install.democratic_csi.truenas.http_connection.port}}
+      apiKey: {% if install.democratic_csi.truenas.http_connection.api_key is defined %}{{install.democratic_csi.truenas.http_connection.api_key}}{% endif %}{{''}}
+      allowInsecure: {{install.democratic_csi.truenas.http_connection.allow_insecure}}
       #apiVersion: 2
     sshConnection:
-      host: {{install.democratic_csi.iscsi.truenas.ssh_connection.host}}
-      port: {{install.democratic_csi.iscsi.truenas.ssh_connection.port}}
-      username: {{install.democratic_csi.iscsi.truenas.ssh_connection.user}}
-{% if install.democratic_csi.iscsi.truenas.ssh_connection.password is defined %}      password: {{install.democratic_csi.iscsi.truenas.ssh_connection.password}}{% endif %}{{''}}
-{% if install.democratic_csi.iscsi.truenas.ssh_connection.private_key is defined %}{% filter indent(width=8) %}      privateKey: |
-{{install.democratic_csi.iscsi.truenas.ssh_connection.private_key}}{% endfilter %}{% endif %}{{''}}
-{% if install.democratic_csi.iscsi.truenas.ssh_connection.password is not defined and install.democratic_csi.iscsi.truenas.ssh_connection.private_key is not defined %}  *** MUST DEFINE PASSWORD or CERTIFICATE in truenas_api_secrets.yml ***{% endif %}{{''}}
+      host: {{install.democratic_csi.truenas.ssh_connection.host}}
+      port: {{install.democratic_csi.truenas.ssh_connection.port}}
+      username: {{install.democratic_csi.truenas.ssh_connection.user}}
+{% if install.democratic_csi.truenas.ssh_connection.password is defined %}      password: {{install.democratic_csi.truenas.ssh_connection.password}}{% endif %}{{''}}
+{% if install.democratic_csi.truenas.ssh_connection.private_key is defined %}{% filter indent(width=8) %}      privateKey: |
+{{install.democratic_csi.truenas.ssh_connection.private_key}}{% endfilter %}{% endif %}{{''}}
+{% if install.democratic_csi.truenas.ssh_connection.password is not defined and install.democratic_csi.truenas.ssh_connection.private_key is not defined %}  *** MUST DEFINE PASSWORD or CERTIFICATE in truenas_api_secrets.yml ***{% endif %}{{''}}
     zfs:
-      datasetParentName: {{install.democratic_csi.iscsi.truenas.zfs.dataset.parent_name}}
-      detachedSnapshotsDatasetParentName: {{install.democratic_csi.iscsi.truenas.zfs.dataset.snapshot_ds_name}}
-      zvolCompression: {{install.democratic_csi.iscsi.truenas.zfs.dataset.zvol_compression}}
+      datasetParentName: {{install.democratic_csi.iscsi.zfs.datasets.parent_name}}
+      detachedSnapshotsDatasetParentName: {{install.democratic_csi.iscsi.zfs.datasets.snapshot_ds_name}}
+      zvolCompression: {{install.democratic_csi.iscsi.zfs.zvol.compression}}
       zvolDedup:
-      zvolEnableReservation: false
-      zvolBlocksize: {{install.democratic_csi.iscsi.truenas.zfs.dataset.zvol_Blocksize}}
+      zvolEnableReservation: {{install.democratic_csi.iscsi.zfs.zvol.enable_reservation}}
+      zvolBlocksize: {{install.democratic_csi.iscsi.zfs.zvol.blocksize}}
     iscsi:
-      targetPortal: "{{install.democratic_csi.iscsi.truenas.iscsi.host}}:{{install.democratic_csi.iscsi.truenas.iscsi.port}}"
+      targetPortal: "{{install.democratic_csi.truenas.iscsi_connection.host}}:{{install.democratic_csi.truenas.iscsi_connection.port}}"
       targetPortals: [] # [ "server[:port]", "server[:port]", ... ]
-      interface:{% if install.democratic_csi.iscsi.truenas.iscsi.interface is defined %} {{install.democratic_csi.iscsi.truenas.iscsi.interface}}{% endif %}{{''}}
+      interface:{% if install.democratic_csi.truenas.iscsi_connection.interface is defined %} {{install.democratic_csi.truenas.iscsi_connection.interface}}{% endif %}{{''}}
 
-      namePrefix: {{install.democratic_csi.iscsi.truenas.iscsi.name_prefix}}
-      nameSuffix: "{{install.democratic_csi.iscsi.truenas.iscsi.name_suffix}}"
-
+      namePrefix: {{install.democratic_csi.iscsi.name_prefix}}
+      nameSuffix: "{{install.democratic_csi.iscsi.name_suffix}}"
       # add as many as needed
       targetGroups:
         # get the correct ID from the "portal" section in the UI
-        - targetGroupPortalGroup: {{install.democratic_csi.iscsi.truenas.iscsi.target_group.portal_group}}
+        - targetGroupPortalGroup: {{install.democratic_csi.iscsi.target_group.portal_group}}
           # get the correct ID from the "initiators" section in the UI
-          targetGroupInitiatorGroup: {{install.democratic_csi.iscsi.truenas.iscsi.target_group.initiator_group}}
+          targetGroupInitiatorGroup: {{install.democratic_csi.iscsi.target_group.initiator_group}}
           # None, CHAP, or CHAP Mutual
-          targetGroupAuthType: {{install.democratic_csi.iscsi.truenas.iscsi.target_group.auth_type}}
+          targetGroupAuthType: {{install.democratic_csi.iscsi.target_group.auth_type}}
           # get the correct ID from the "Authorized Access" section of the UI
           # only required if using Chap
-          targetGroupAuthGroup: {{install.democratic_csi.iscsi.truenas.iscsi.target_group.auth_group}}
-
+          targetGroupAuthGroup: {{install.democratic_csi.iscsi.target_group.auth_group}}
       extentInsecureTpc: true
       extentXenCompat: false
       extentDisablePhysicalBlocksize: true
-      extentBlocksize: {{install.democratic_csi.iscsi.truenas.iscsi.extent.block_size}}
-      extentRpm: "{{install.democratic_csi.iscsi.truenas.iscsi.extent.rpm}}"
-      extentAvailThreshold: {{install.democratic_csi.iscsi.truenas.iscsi.extent.avail_threshold}}
+      extentBlocksize: {{install.democratic_csi.iscsi.extent.block_size}}
+      extentRpm: "{{install.democratic_csi.iscsi.extent.rpm}}"
+      extentAvailThreshold: {{install.democratic_csi.iscsi.extent.avail_threshold}}
