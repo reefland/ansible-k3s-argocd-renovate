@@ -7,15 +7,20 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * Helm Client
 * Cert-manager
 * Traefik ingress Letsencrypt wildcard certificates for domains to staging or prod (Cloudflare DNS validator)
+* [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide Persistent Volume Claim storage via iSCSI to TrueNAS
 
 ## Notes
 
-* `k3s` does not have native support for ZFS file system, it will produce `overlayfs` error message. 
-  * See: https://github.com/k3s-io/k3s/discussions/3980
-* To get around this ZFS issue, this will also install `containerd` and `container network plugins` packages and configure them to support ZFS. The k3s configuration is then updated to use containerd. 
-  * Based on: https://blog.nobugware.com/post/2019/k3s-containterd-zfs/
+* `k3s` does not have native support for ZFS file system, it will produce `overlayfs` error message.
+  * See: [https://github.com/k3s-io/k3s/discussions/3980](https://github.com/k3s-io/k3s/discussions/3980)
+* To get around this ZFS issue, this will also install `containerd` and `container network plugins` packages and configure them to support ZFS. The k3s configuration is then updated to use containerd.
+  * Based on: [https://blog.nobugware.com/post/2019/k3s-containterd-zfs/](https://blog.nobugware.com/post/2019/k3s-containterd-zfs/)
 * Cert-manager is installed since Traefik's Let's Encrypt support retrieves certificates and stores them in files. Cert-manager retrieves certificates and stores them in Kubernetes secrets.
 * Traefik's Letsencrypt is configured for staging certificates, but you can default it to prod or use provided CLI parameter below to switch from staging to prod.
+* democratic-csi uses a combination of the TrueNAS API over SSL/TLS and non-privileged SSH to dynamically allocate persistent storage zvols on TrueNAS upon request when storage claims are made.
+  * The API key is admin access equivalent it needs to be protected (save in ansible vault, restrict access to the `yaml` file generated.)
+  * non-privileged SSH has some limitations. ZFS delegation is used to give permissions to the non-privileged account. However some actions have no equivalent delegation to assign and can not be done unless an account with sudo access is provided such as an iSCSI zvol resize.
+  * Be aware that iSCSI only allows a single claim to have write access at a time.  Multiple claims can have read-only access
 
 ## Environments Tested
 
@@ -27,9 +32,10 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 
 * python3-pip (required for Ansible managed nodes)
 * pip packages - openshift, pyyaml, kubernetes (required for Ansible to execute K8s module)
-* k3s (Runs official script https://get.k3s.io)
+* k3s (Runs official script [https://get.k3s.io](https://get.k3s.io))
 * containerd, containernetworking-plugins, iptables
 * helm, apt-transport-https (required for helm client install)
+* open-iscsi, lsscsi, sg3-utils, multipath-tools, scsitools (required for iSCSI support)
 
 ---
 
@@ -239,6 +245,221 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
     cert_manager:
       install_version: "v1.7.1"
     ```
+
+8. Configure TrueNAS for democratic-csi Configuration.
+
+NOTE: That TrueNAS core requires the use of both API key and SSH access.  TrueNAS Scale only requires API access.
+
+* 1st - Generate a SSH key.  
+  * The public key will be placed in the TrueNAS user account and the private key will be placed in an ansible vault configuration file (`vars/secrets/truenas_api_secrets.yml` variable `TN_SSH_PRIV_KEY`).
+
+  ```shell
+  ssh-keygen -a 100 -t ed25519 -f ~/.ssh/k8s.<remote_hostname>
+  ```
+
+* 2nd - Generate a TrueNAS API Key from the Admin Console Web Interface.
+  * Click Gear Icon in upper left corner and select API Keys
+    * Click `[Add]` and give the API key a name such as `k8sStorageKey` (can be named anything).
+    * Click `[Add]` to create the API key. **IMPORTANT** _make note of the API Key generated you will need it!_
+* 3rd - Create a TrueNAS non-privileged user account in the Admin Console
+  * Navigate to Accounts > Users and click `[Add]`, provide details:
+
+  ```text
+  - Full Name: Kubernetes Storage Account
+  - Username:  k8s
+  - Email: <blank>
+  - Password: (leave blank will be disabled)
+  - User ID: (leave default)
+  - Primary Group: k8s
+  - Auxiliary Groups: <blank>
+  - Home directory: `/mnt/main/users/k8s`  (wherever you place user account datasets)
+      - Permissions:
+      - User: Read, Write Execute
+      - Group: Read Execute
+      - Other: none
+
+  - SSH Public Key:  (paste contents of the k8s.<remote_hostname>.pub file created above in here)
+  - Disable Password: Yes
+  - Shell: `/usr/local/bin/bash`
+  - Microsoft Account: unchecked
+  - Samba Authentication: unchecked
+  ```
+
+* 4th - Create Datasets
+  * Dataset names are IMPORTANT, the combination of pool and datasets names and slashes must be under `17` characters.  (There are length limits and character overhead in the protocol documented below.)
+  * Navigate to Storage > Click the triple dot on the storage pool > select Add Dataset.
+  * Create two nested datasets in the root of the storage pool named "**k8s**" and "**iscsi**". My ZFS pool is named 'main', thus my path would become (`main/k8s/iscsi`)
+    * Create two sibling datasets under "**iscsi**" named "**v**" (`main/k8s/iscsi/v`) and "**s**" (`main/k8s/iscsi/s`).
+    * (Dataset `v` will hold the zvols created for persistent storage whereas dataset `s` will hold detached snapshots of the `v` dataset)
+  * I used the following defaults for each snapshot:
+
+  ```text
+  - Sync: Inherit (standard)
+  - Compression: Inherit (lz4)
+  - Enable Atime: Inherit (off)
+  - Encryption: Inherit (encrypted)
+  - Record Size: Inherit (129Kib)
+  - ACL Mode: Passthrough
+  ```
+
+  To create these manually from the TrueNAS CLI instead of the Admin Console:
+
+  ```shell
+  zfs create -o org.freenas:description="Persistent Storage for Kubernetes" main/k8s
+  zfs create -o org.freenas:description="Container to hold iSCSI zvols and snapshots" main/k8s/iscsi
+  zfs create -o org.freenas:description="Storage Container to hold zvols" main/k8s/iscsi/v
+  zfs create -o org.freenas:description="Storage Container to hold detached snapshots" main/k8s/iscsi/s
+  ```
+
+![TrueNAS Datasets Created](images/zfs_iscsi_datasets.png)
+
+* 5th - Delegate ZFS Permissions to non-root account "k8s" for dataset `main/k8s/iscsi`
+  * NOTE: The delegations below may still be excessive for what is required.
+  * See [ZFS allow](https://openzfs.github.io/openzfs-docs/man/8/zfs-allow.8.html) for more details.
+
+  ```shell
+  zfs allow -u k8s aclmode,canmount,checksum,clone,create,destroy,devices,exec,groupquota,groupused,mount,mountpoint,nbmand,normalization,promote,quota,readonly,recordsize,refquota,refreservation,receive,rename,reservation,rollback,send,setuid,share,snapdir,snapshot,userprop,userquota,userused,utf8only,version,volblocksize,volsize,vscan,xattr main/k8s/iscsi
+  ```
+
+* 6th - Define Ansible Secrets within `vars/secrets/truenas_api_secrets.yml`:
+  * Set the TrueNAS HTTP hostname (just hostname NOT URL)
+
+  ```yml
+  # Set the FQDN of the TrueNAS hostname to connect to, by default the SSH and ISCSI hostnames
+  # will also use this value, but you can change them below.
+  TN_HTTP_HOST:  truenas.mydomain.com
+  ```
+
+  * Set the TrueNAS API Key created above:
+
+  ```yml
+  # Set the value of the API Key from TrueNAS.  
+  # From TrueNAS Admin Console, click Gear Icon (top right) and Select "API Keys", click [Add].
+  # Place the generated API Key value here:
+  TN_HTTP_API_KEY: 1-abcd ... tI5
+  ```
+
+  * Set the TrueNAS SSH hostname, below assumes it is the same as HTTP hostname:
+
+  ```yml
+  # Set the value of the SSH TrueNAS hostname to connect to:
+  TN_SSH_HOST: "{{TN_HTTP_HOST}}"
+  ```
+
+  * Set the user name for the SSH connection. This should be a non-root account, ideally without sudo privileges but sudo can be needed for some TrueNAS core options.
+
+  ```yml
+  # Set the value of the username for the SSH connection
+  TN_SSH_USER: k8s
+  ```
+
+  * A SSH password or Private Key must be defined.  Don't use a password.  The password is commented out for a reason, don't do it.
+
+  ```yml
+  # Set the value of the username's password for the SSh connection
+  # Do not use this, use a certificate instead (see below)
+  #TN_SSH_PASSWD: null
+  ```
+  
+  * Set the SSH Private. Super easy. Just cut & paste, no need to be silly and use a password (Seriously no password). Just fill it between the BEGIN and END markers. (NOTE: the key needs to be indented 2 characters as show)
+
+  ```yml
+  TN_SSH_PRIV_KEY: |
+    -----BEGIN OPENSSH PRIVATE KEY-----
+    b3B...
+    QyN...
+    dgA...
+    AAA...
+    Hbv...
+    -----END OPENSSH PRIVATE KEY-----
+  ```
+
+  * Set the TrueNAS iSCSI hostname, below assumes it is the same as HTTP hostname:
+
+  ```yml
+  # Set the value of the iSCSI TrueNAS hostname to connect to:
+  TN_ISCSI_HOST: "{{TN_HTTP_HOST}}"
+  ```
+
+  * Don't forget to encrypt the secret file once everything is populated:
+
+  ```shell
+  ansible-vault encrypt roles/k3s-kubernetes/vars/secrets/truenas_api_secrets.yml 
+  ```
+
+* 7th - update values in `defaults/main.yml`.
+
+  * Set http protocol settings to connect to TrueNAS (http or https), port number (80, 443), and if insecure connections are allowed:
+
+  ```yml
+  democratic_csi:
+    truenas:
+      http_connection:
+        protocol: "https"
+        port: 443
+        allow_insecure: false
+  ```
+
+  * Set the SSH port to connect to TrueNAS:
+
+  ```yml
+     ssh_connection:
+        port: 22
+  ```
+
+  * Set the iSCSI port to connect to TrueNAS:
+
+  ```yml
+     iscsi_connection:
+        port: 3260
+  ```
+
+  * Confirm the dataset and detached snapshot dataset names match what you created above:
+
+  ```yml
+        zfs:
+        # Assumes pool named "main", dataset named "k8s", child dataset "iscsi"
+        # Any additional provisioners such as NFS would be at the same level as "iscsi" (sibling of it)
+        # IMPORTANT:
+        #   total volume name (zvol/<datasetParentName>/<pvc name>) length cannot exceed 63 chars
+        #   https://www.ixsystems.com/documentation/freenas/11.2-U5/storage.html#zfs-zvol-config-opts-tab
+        #   standard volume naming overhead is 46 chars
+        #   Which means names **MUST-BE** 17 characters or LESS!!!!
+        datasets:
+          parent_name: "main/k8s/iscsi/v"
+          snapshot_ds_name: "main/k8s/iscsi/s"
+  ```
+
+  * Settings for the iSCSI zvols to create can be adjusted:
+
+  ```yml
+        zvol:
+          compression: "lz4"     # "" (inherit), lz4, gzip-9, etc
+          blocksize: ""          # 512, 1K, 2K, 4K, 8K, 16K, 64K, 128K default is 16K
+          enable_reservation: false
+  ```
+
+  * Settings for the iSCSI target group and iSCSI authentication:
+
+  ```yml
+      target_group:
+        portal_group: 1             # get the correct ID from the "portal" section in the UI
+        initiator_group: 1          # get the correct ID from the "initiators" section in the UI
+        auth_type: "None"           # None, CHAP, or CHAP Mutual
+
+        # get the correct ID from the "Authorized Access" section of the UI
+        auth_group: ""              # only required if using CHAP
+  ```
+  
+  * Settings for the iSCSI extents created:
+
+  ```yml
+      extent:
+        fs_type: "xfs"              # zvol block-based storage can be formatted as ext3, ext4, xfs
+        block_size: 4096            # 512, 1024, 2048, or 4096
+        rpm: "5400"                 # "" (let FreeNAS decide, currently defaults to SSD), Unknown, SSD, 5400, 7200, 10000, 15000
+        avail_threshold: 0          # 0-100 (0 == ignore)
+  ```
 
 ---
 

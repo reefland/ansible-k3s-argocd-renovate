@@ -101,7 +101,7 @@ install:
     iscsi:
       provisioner: "freenas-iscsi"
       namespace: "democratic-csi"
-      release: "zfs-iscsi"
+      release: "truenas-iscsi"
 
       packages:
         - open-iscsi
