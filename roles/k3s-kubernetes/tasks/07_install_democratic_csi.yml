@@ -59,8 +59,21 @@
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
       mode: '0660'
-      validate: "helm upgrade --dry-run --install --create-namespace --values %s --namespace {{install.democratic_csi.iscsi.namespace}} {{install.democratic_csi.iscsi.release}} {{democratic_csi.repo_download}}"
+      validate: "helm upgrade --dry-run --install --create-namespace --values %s --namespace {{install.democratic_csi.iscsi.namespace}} {{install.democratic_csi.iscsi.release}} {{democratic_csi.repo_chart_ref}}"
       backup: yes
+
+  - name: Install democratic-csi iSCSI Provisioner via Helm
+    kubernetes.core.helm:
+      update_repo_cache: yes
+      atomic: yes
+      create_namespace: yes
+      chart_ref: "{{democratic_csi.repo_chart_ref}}"
+      release_name: "{{install.democratic_csi.iscsi.release}}"
+      release_namespace: "{{install.democratic_csi.iscsi.namespace}}"
+      release_state: present
+      values_files: "/home/{{install.os.non_root_user.name}}/democratic-csi/{{install.democratic_csi.iscsi.provisioner}}.yaml"
+      wait: yes
+      wait_timeout: 5m
 
   tags:
     - install_democratic_csi
