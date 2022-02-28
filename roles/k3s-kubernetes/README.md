@@ -461,6 +461,15 @@ NOTE: That TrueNAS core requires the use of both API key and SSH access.  TrueNA
         avail_threshold: 0          # 0-100 (0 == ignore)
   ```
 
+  * Adjust if you want a iSCSi storage test claim performed once all validations have completed:
+
+  ```yml
+      test_claim:
+        enabled: true               # true = attempt iscsi storage claim
+        mode: "ReadWriteOnce"       # storage claim access mode
+        size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
+        remove: true                # true = remove claim when test is completed (false leaves it alone)
+  ```
 ---
 
 ## How do I Run it

@@ -61,6 +61,49 @@
         kubectl get sc -n {{install.democratic_csi.iscsi.namespace}}
     when: csi_storage_class is not defined
 
+  ###[ Perform iSCSI Test Claim and Validate Block ]###############################################
+  - name: Perform iSCSI Test Claim and Validate Block
+    block:
+    - name: Perform iSCSI test claim
+      kubernetes.core.k8s:
+        src: "/home/{{install.os.non_root_user.name}}/democratic-csi/test-claim-iscsi.yaml"
+        state: present
+        namespace: "{{install.democratic_csi.iscsi.namespace}}"
+        wait: yes
+        wait_timeout: 120
+
+    - name: "Check if iSCSI test claim is created"
+      k8s_info:
+        kind: PersistentVolumeClaim
+        namespace: "{{install.democratic_csi.iscsi.namespace}}"
+        field_selectors:
+          - "metadata.name=test-claim-iscsi"
+      register: csi_iscsi_storage_claim_details
+
+    # Set Fact if we can detect storage claim phase "Bound"
+    - set_fact:
+        csi_iscsi_storage_claim: true
+      loop: "{{csi_iscsi_storage_claim_details.resources}}"
+      when: item.status.phase == "Bound"
+
+    - name: Fail if democratic-csi iSCSI storage claim not detected
+      fail:
+        msg: |
+          Unable to detect democratic-csi iSCSI storage claim, try:
+          
+          kubectl get pvc -n {{install.democratic_csi.iscsi.namespace}}
+      when: csi_iscsi_storage_claim is not defined
+
+    - name: Remove iSCSI test claim - validations passed
+      kubernetes.core.k8s:
+        src: "/home/{{install.os.non_root_user.name}}/democratic-csi/test-claim-iscsi.yaml"
+        state: absent
+        namespace: "{{install.democratic_csi.iscsi.namespace}}"
+        wait: yes
+        wait_timeout: 120
+
+    when: install.democratic_csi.iscsi.test_claim.enabled|default(false)|bool == true
+
   tags:
     - validate_csi_iscsi
   when:
