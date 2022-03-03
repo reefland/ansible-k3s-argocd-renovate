@@ -70,8 +70,10 @@
     - 04_install_helm_client.yml
     - 05_install_cert_manager.yml
     - 06_config_traefik_dns_certs.yml
-    - 07_install_democratic_csi.yml
+    - 07_install_democratic_csi_iscsi.yml
     - 08_validate_csi_iscsi.yml
+    - 09_install_democratic_csi_nfs.yml
+    - 10_validate_csi_nfs.yml
 
   loop_control:
     loop_var: task_names

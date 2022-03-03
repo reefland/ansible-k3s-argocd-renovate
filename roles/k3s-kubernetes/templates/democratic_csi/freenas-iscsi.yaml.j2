@@ -1,12 +1,31 @@
 csiDriver:
+  # should be globally unique for a given cluster
   name: "org.democratic-csi.iscsi"
+
+#########################################################################################
+# The following will pull from the developer's "next" branch, for testing new features.
+#controller:
+#  driver:
+#    image: democraticcsi/democratic-csi:next
+#    imagePullPolicy: Always
+#    logLevel: debug
+
+#node:
+#  driver:
+#    image: democraticcsi/democratic-csi:next
+#    imagePullPolicy: Always
+#    logLevel: debug
+#########################################################################################
+# To confirm if the "next" image is being used by the containers:
+# kubectl get pods -n democratic-csi -o jsonpath="{.items[*].spec.containers[*].image}" | tr -s '[[:space:]]' '\n' | grep next | uniq
+#########################################################################################
 
 storageClasses:
 - name: freenas-iscsi-csi
-  defaultClass: false
-  reclaimPolicy: Delete
+  defaultClass: {{install.democratic_csi.iscsi.storage_class.default_class}}
+  reclaimPolicy: {{install.democratic_csi.iscsi.storage_class.reclaim_policy}}
   volumeBindingMode: Immediate
-  allowVolumeExpansion: true
+  allowVolumeExpansion: {{install.democratic_csi.iscsi.storage_class.volume_expansion}}
   parameters:
     fsType: {{install.democratic_csi.iscsi.extent.fs_type}}
   mountOptions: []
@@ -39,6 +58,10 @@ driver:
 {{install.democratic_csi.truenas.ssh_connection.private_key}}{% endfilter %}{% endif %}{{''}}
 {% if install.democratic_csi.truenas.ssh_connection.password is not defined and install.democratic_csi.truenas.ssh_connection.private_key is not defined %}  *** MUST DEFINE PASSWORD or CERTIFICATE in truenas_api_secrets.yml ***{% endif %}{{''}}
     zfs:
+      # Set a comment on the zvol to identify what it belongs to
+      datasetProperties:
+        {% raw %}"org.freenas:description": "{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}"{% endraw %}
+
       datasetParentName: {{install.democratic_csi.iscsi.zfs.datasets.parent_name}}
       detachedSnapshotsDatasetParentName: {{install.democratic_csi.iscsi.zfs.datasets.snapshot_ds_name}}
       zvolCompression: {{install.democratic_csi.iscsi.zfs.zvol.compression}}
@@ -52,6 +75,11 @@ driver:
 
       namePrefix: {{install.democratic_csi.iscsi.name_prefix}}
       nameSuffix: "{{install.democratic_csi.iscsi.name_suffix}}"
+{% raw %}
+      # Set a comment on the target and extent to identify what it belongs to
+      extentCommentTemplate: "{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}-{{ parameters.[csi.storage.k8s.io/pvc/name] }}"
+      nameTemplate: "{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}-{{ parameters.[csi.storage.k8s.io/pvc/name] }}"
+{% endraw %}
       # add as many as needed
       targetGroups:
         # get the correct ID from the "portal" section in the UI

@@ -24,3 +24,6 @@ democratic_csi:
 
   # Define the name of the TrueNAS iSCSI hostname key stored in truenas_api_secrets.yml
   iscsi_hostname:  "{{TN_ISCSI_HOST|default(' NOT_SET_IN__truenas_api_secrets.yml')}}"
+
+  # Define the name of the TrueNAS NFS hostname key stored in truenas_api_secrets.yml
+  nfs_hostname:  "{{TN_NFS_HOST|default(' NOT_SET_IN__truenas_api_secrets.yml')}}"

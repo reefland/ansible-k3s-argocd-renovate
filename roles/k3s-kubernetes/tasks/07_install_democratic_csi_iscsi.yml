@@ -1,6 +1,6 @@
 ---
 #
-# Add iSCSI and NFS persistent storage with TrueNas integration via democratic-csi packages.
+# Add iSCSI persistent storage with TrueNas integration via democratic-csi packages.
 #
 # based on: https://jonathangazeley.com/2021/01/05/using-truenas-to-provide-persistent-storage-for-kubernetes/
 
@@ -76,6 +76,7 @@
       wait_timeout: 5m
 
   tags:
-    - install_democratic_csi
+    - install_democratic_csi_iscsi
   when:
-    -  install.democratic_csi.iscsi.provisioner is defined
+    - install.democratic_csi.iscsi.provisioner is defined
+    - install.democratic_csi.iscsi.install_this|default(false)|bool == true

@@ -72,7 +72,7 @@ install:
     # Select release to use:  https://github.com/cert-manager/cert-manager/releases
     install_version: "v1.7.1"
 
-  ###[ Democratric CSI Installation Settings ]#####################################################
+  ###[ Democratic CSI Installation Settings ]######################################################
   democratic_csi:
     truenas:
       # See file "truenas_api_secrets.yml" to set secrets (and be sure to use ansible vault to encrypt!)
@@ -97,8 +97,14 @@ install:
         port: 3260
         #interface: ""                 # leave empty to omit usage of -I with iscsiadm
 
+      nfs_connection:
+        host: "{{democratic_csi.nfs_hostname}}"
+
+    ###[ Democratic CSI iSCSI Settings ]###########################################################
     # Available: https://github.com/democratic-csi/democratic-csi/tree/master/examples
     iscsi:
+      install_this: true            # Install the iSCSI provisioner
+
       provisioner: "freenas-iscsi"
       namespace: "democratic-csi"
       release: "truenas-iscsi"
@@ -109,6 +115,11 @@ install:
         - sg3-utils
         - multipath-tools
         - scsitools
+
+      storage_class:
+        default_class: false
+        reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
+        volume_expansion: true
 
       zfs:
         # Assumes pool named "main", dataset named "k8s", child dataset "iscsi"
@@ -123,8 +134,8 @@ install:
           snapshot_ds_name: "main/k8s/iscsi/s"
         
         zvol:
-          compression: "lz4"     # "" (inherit), lz4, gzip-9, etc
-          blocksize: ""          # 512, 1K, 2K, 4K, 8K, 16K, 64K, 128K default is 16K
+          compression: "lz4"        # "" (inherit), lz4, gzip-9, etc
+          blocksize: ""             # 512, 1K, 2K, 4K, 8K, 16K, 64K, 128K default is 16K
           enable_reservation: false
 
       name_prefix: csi-
@@ -147,6 +158,46 @@ install:
       # Once installed and validated, a test claim can be processed.
       test_claim:
         enabled: true               # true = attempt iscsi storage claim
+        mode: "ReadWriteOnce"       # storage claim access mode
+        size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
+        remove: true                # true = remove claim when test is completed (false leaves it alone)
+
+    ###[ Democratic CSI NFS Settings ]#############################################################
+    nfs:
+      install_this: true            # Install the NFS provisioner
+
+      provisioner: "freenas-nfs"
+      namespace: "democratic-csi"
+      release: "truenas-nfs"
+
+      packages:
+        - libnfs-utils
+
+      storage_class:
+        default_class: false
+        reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
+        volume_expansion: true
+
+      zfs:
+        sudo_enabled: true          # TrueNAS Core 12 requires non-root account have sudo access
+
+        # Assumes pool named "main", dataset named "k8s", child dataset "nfs"
+        # Any additional provisioners such as iSCSI would be at the same level as "nfs" (sibling of it)
+        datasets:
+          parent_name: "main/k8s/nfs/v"
+          snapshot_ds_name: "main/k8s/nfs/s"        
+
+          enable_quotas: true
+          enable_reservation: false
+
+          permissions:
+            mode: '"0777"'
+            user_id_num: 0          # 0 = root, needs User UID not a name (API needs a number)
+            group_id_num: 0         # 0 = wheel, needs Group GUID not a name (API needs a number)
+
+      # Once installed and validated, a test claim can be processed.
+      test_claim:
+        enabled: true               # true = attempt nfs storage claim
         mode: "ReadWriteOnce"       # storage claim access mode
         size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
         remove: true                # true = remove claim when test is completed (false leaves it alone)

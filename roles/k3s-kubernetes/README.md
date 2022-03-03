@@ -7,7 +7,7 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * Helm Client
 * Cert-manager
 * Traefik ingress Letsencrypt wildcard certificates for domains to staging or prod (Cloudflare DNS validator)
-* [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide Persistent Volume Claim storage via iSCSI to TrueNAS
+* [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide Persistent Volume Claim storage via iSCSI and NFS to TrueNAS
 
 ## Notes
 
@@ -17,14 +17,22 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
   * Based on: [https://blog.nobugware.com/post/2019/k3s-containterd-zfs/](https://blog.nobugware.com/post/2019/k3s-containterd-zfs/)
 * Cert-manager is installed since Traefik's Let's Encrypt support retrieves certificates and stores them in files. Cert-manager retrieves certificates and stores them in Kubernetes secrets.
 * Traefik's Letsencrypt is configured for staging certificates, but you can default it to prod or use provided CLI parameter below to switch from staging to prod.
-* democratic-csi uses a combination of the TrueNAS API over SSL/TLS and non-privileged SSH to dynamically allocate persistent storage zvols on TrueNAS upon request when storage claims are made.
-  * The API key is admin access equivalent it needs to be protected (save in ansible vault, restrict access to the `yaml` file generated.)
-  * non-privileged SSH has some limitations. ZFS delegation is used to give permissions to the non-privileged account. However some actions have no equivalent delegation to assign and can not be done unless an account with sudo access is provided such as an iSCSI zvol resize.
-  * Be aware that iSCSI only allows a single claim to have write access at a time.  Multiple claims can have read-only access
+* democratic-csi (CSI -- Container Storage Interface defines a standard interface for container orchestration systems (like Kubernetes) to expose arbitrary storage systems to their container workloads.)  
+  * Uses a combination of the TrueNAS API over SSL/TLS and SSH to dynamically allocate persistent storage zvols on TrueNAS upon request when storage claims are made.
+  * The API key is admin access equivalent.  This needs to be protected (save in ansible vault, restrict access to the `yaml` file generated.)  
+  * TrueNAS Core
+    * iSCSI with SSH can use a non-privileged user
+    * NFS with SSH will require user with password-less sudo (instructions below)
+    * ZFS delegation is used to give ZFS abilities to the SSH user. These abilities (permissions) are scoped to the specific dataset used for democratic-csi.  
+    * The SSH user account is used for ZFS operations not available within the TrueNAS API.
+  * Be aware that:
+    * iSCSI only allows a single claim to have write access at a time.  Multiple claims can have read-only access
+    * NFS can have multiple writers.
 
 ## Environments Tested
 
 * Ubuntu 20.04.4 based [ZFS on Root](https://gitea.rich-durso.us/reefland/ansible/src/branch/master/roles/zfs_on_root) installation.
+* TrueNAS Core 12-U8
 
 ---
 
@@ -35,7 +43,8 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * k3s (Runs official script [https://get.k3s.io](https://get.k3s.io))
 * containerd, containernetworking-plugins, iptables
 * helm, apt-transport-https (required for helm client install)
-* open-iscsi, lsscsi, sg3-utils, multipath-tools, scsitools (required for iSCSI support)
+* open-iscsi, lsscsi, sg3-utils, multipath-tools, scsitools (required when iSCSI support is enabled)
+* libnfs-utils (required for NFS support is enabled)
 
 ---
 
@@ -248,7 +257,7 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 
 8. Configure TrueNAS for democratic-csi Configuration.
 
-NOTE: That TrueNAS core requires the use of both API key and SSH access.  TrueNAS Scale only requires API access.
+NOTE: That TrueNAS core requires the use of both API key and SSH access.  (TrueNAS Scale only requires API access)
 
 * 1st - Generate a SSH key.  
   * The public key will be placed in the TrueNAS user account and the private key will be placed in an ansible vault configuration file (`vars/secrets/truenas_api_secrets.yml` variable `TN_SSH_PRIV_KEY`).
@@ -286,40 +295,65 @@ NOTE: That TrueNAS core requires the use of both API key and SSH access.  TrueNA
   ```
 
 * 4th - Create Datasets
-  * Dataset names are IMPORTANT, the combination of pool and datasets names and slashes must be under `17` characters.  (There are length limits and character overhead in the protocol documented below.)
-  * Navigate to Storage > Click the triple dot on the storage pool > select Add Dataset.
-  * Create two nested datasets in the root of the storage pool named "**k8s**" and "**iscsi**". My ZFS pool is named 'main', thus my path would become (`main/k8s/iscsi`)
-    * Create two sibling datasets under "**iscsi**" named "**v**" (`main/k8s/iscsi/v`) and "**s**" (`main/k8s/iscsi/s`).
-    * (Dataset `v` will hold the zvols created for persistent storage whereas dataset `s` will hold detached snapshots of the `v` dataset)
-  * I used the following defaults for each snapshot:
+  * **IMPORTANT**: Dataset names for iSCSI are length limited. The combination of pool and datasets names and slashes must be under `17` characters.  (There are length limits and character overhead in the protocol documented below.)
+  * Click `Shell` towards the lower left of the TrueNAS Admin Web Console.
+    * The commands further down will create the directory structure in zpool `main` as shown below:
 
-  ```text
-  - Sync: Inherit (standard)
-  - Compression: Inherit (lz4)
-  - Enable Atime: Inherit (off)
-  - Encryption: Inherit (encrypted)
-  - Record Size: Inherit (129Kib)
-  - ACL Mode: Passthrough
-  ```
+    ```txt
+      k8s
+      ├── iscsi
+      │   ├── s
+      │   └── v
+      └── nfs
+          ├── s
+          └── v
+    ```
 
-  To create these manually from the TrueNAS CLI instead of the Admin Console:
+    * The datasets named `v` will hold the zvols created for persistent storage whereas datasets `s` will hold detached snapshots of the `v` dataset
 
-  ```shell
-  zfs create -o org.freenas:description="Persistent Storage for Kubernetes" main/k8s
-  zfs create -o org.freenas:description="Container to hold iSCSI zvols and snapshots" main/k8s/iscsi
-  zfs create -o org.freenas:description="Storage Container to hold zvols" main/k8s/iscsi/v
-  zfs create -o org.freenas:description="Storage Container to hold detached snapshots" main/k8s/iscsi/s
-  ```
+    The following commands can be used from TrueNAS Shell to create the iSCSI and NFS datasets:
 
-![TrueNAS Datasets Created](images/zfs_iscsi_datasets.png)
+    ```shell
+    zfs create -o org.freenas:description="Persistent Storage for Kubernetes" main/k8s
+    
+    zfs create -o org.freenas:description="Container to hold iSCSI zvols and snapshots" main/k8s/iscsi
+    zfs create -o org.freenas:description="Storage Container for iSCSI zvols" main/k8s/iscsi/v
+    zfs create -o org.freenas:description="Storage Container for iSCSI detached snapshots" main/k8s/iscsi/s
 
-* 5th - Delegate ZFS Permissions to non-root account "k8s" for dataset `main/k8s/iscsi`
+    zfs create -o org.freenas:description="Container to hold NFS zvols and snapshots" main/k8s/nfs
+    zfs create -o org.freenas:description="Storage Container for NFS zvols" main/k8s/nfs/v
+    zfs create -o org.freenas:description="Storage Container for NFS detached snapshots" main/k8s/nfs/s
+    ```
+
+    My datasets have these default:
+
+    ```text
+    - Sync: Inherit (standard)
+    - Compression: Inherit (lz4)
+    - Enable Atime: Inherit (off)
+    - Encryption: Inherit (encrypted)
+    - Record Size: Inherit (129Kib)
+    - ACL Mode: Passthrough
+    ```
+
+    Datasets as seen in TrueNAS Admin Web Console:
+    ![TrueNAS Datasets Created](images/zfs_iscsi_nfs_datasets.png)
+
+* 5th - Delegate ZFS Permissions to non-root account `k8s`.
   * NOTE: The delegations below may still be excessive for what is required.
   * See [ZFS allow](https://openzfs.github.io/openzfs-docs/man/8/zfs-allow.8.html) for more details.
 
-  ```shell
-  zfs allow -u k8s aclmode,canmount,checksum,clone,create,destroy,devices,exec,groupquota,groupused,mount,mountpoint,nbmand,normalization,promote,quota,readonly,recordsize,refquota,refreservation,receive,rename,reservation,rollback,send,setuid,share,snapdir,snapshot,userprop,userquota,userused,utf8only,version,volblocksize,volsize,vscan,xattr main/k8s/iscsi
-  ```
+    For dataset `main/k8s/iscsi`:
+
+      ```shell
+      zfs allow -u k8s aclmode,canmount,checksum,clone,create,destroy,devices,exec,groupquota,groupused,mount,mountpoint,nbmand,normalization,promote,quota,readonly,recordsize,refquota,refreservation,receive,rename,reservation,rollback,send,setuid,share,snapdir,snapshot,userprop,userquota,userused,utf8only,version,volblocksize,volsize,vscan,xattr main/k8s/iscsi
+      ```
+
+    For dataset `main/k8s/nfs`:
+
+      ```shell
+      zfs allow -u k8s aclmode,canmount,checksum,clone,create,destroy,devices,exec,groupquota,groupused,mount,mountpoint,nbmand,normalization,promote,quota,readonly,recordsize,refquota,refreservation,receive,rename,reservation,rollback,send,setuid,share,snapdir,snapshot,userprop,userquota,userused,utf8only,version,volblocksize,volsize,vscan,xattr main/k8s/nfs
+      ```
 
 * 6th - Define Ansible Secrets within `vars/secrets/truenas_api_secrets.yml`:
   * Set the TrueNAS HTTP hostname (just hostname NOT URL)
@@ -381,6 +415,13 @@ NOTE: That TrueNAS core requires the use of both API key and SSH access.  TrueNA
   TN_ISCSI_HOST: "{{TN_HTTP_HOST}}"
   ```
 
+  * Set the TrueNAS NFS hostname, below assumes it is the same as HTTP hostname:
+
+  ```yml
+  # Set the value of the NFS TrueNAS hostname to connect to:
+  TN_NFS_HOST: "{{TN_HTTP_HOST}}"
+  ```
+
   * Don't forget to encrypt the secret file once everything is populated:
 
   ```shell
@@ -412,6 +453,23 @@ NOTE: That TrueNAS core requires the use of both API key and SSH access.  TrueNA
   ```yml
      iscsi_connection:
         port: 3260
+  ```
+
+* 8th - update iSCSI values in `defaults/main.yml`:
+
+  * Enable or disable installation of iSCSI provisioner:
+
+  ```yml
+   iscsi:
+    install_this: true            # Install the iSCSI provisioner
+  ```
+
+  * Settings for the storage class:
+
+  ```yml
+        default_class: false
+        reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
+        volume_expansion: true
   ```
 
   * Confirm the dataset and detached snapshot dataset names match what you created above:
@@ -470,6 +528,97 @@ NOTE: That TrueNAS core requires the use of both API key and SSH access.  TrueNA
         size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
         remove: true                # true = remove claim when test is completed (false leaves it alone)
   ```
+
+* 9th - update NFS values in `defaults/main.yml`:
+
+  * Enable or disable installation of NFS provisioner:
+
+  ```yml
+   nfs:
+    install_this: true            # Install the NFS provisioner
+  ```
+
+  * Settings for the storage class:
+
+  ```yml
+        default_class: false
+        reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
+        volume_expansion: true
+  ```
+
+  * Has sudo access been enabled for the SSH account? This is required for TrueNAS Core 12
+
+  ```yml
+      zfs:
+        sudo_enabled: true          # TrueNAS Core 12 requires non-root account have sudo access
+  ```
+
+  * To enable sudo access for the SSH account, use the TrueNAS "cli" command from TrueNAS shell in the Admin Web Console or via a root access SSH account.
+
+    ```yml
+    # at the command prompt
+    root@truenas[~]# cli
+
+    ************************************************************
+    Software in ALPHA state, highly experimental.
+    No bugs/features being accepted at the moment.
+    ************************************************************
+
+    # This will list all accounts, find the account you created for SSH access.
+    # In my example the account is named "k8s" and was assigned id "41":
+
+    truenas[]> account user query select=id,username,uid,sudo_nopasswd     
+
+    ...
+    {'id': 41, 'sudo_nopasswd': False, 'uid': 1004, 'username': 'k8s'}]
+
+    # This enables sudo without passwords for the account, adjust "41" as needed:
+    truenas[]> account user update id=41 sudo=true                                                                                                                                     
+    truenas[]> account user update id=41 sudo_nopasswd=true                                                                                                                            
+    truenas[]>
+
+    # Exit cli by hitting [CTRL]+[D]
+
+    # Confirm account is listed in sudoers file, adjust account name as needed:
+    cat /usr/local/etc/sudoers | grep k8s
+    
+      k8s ALL=(ALL) NOPASSWD: ALL
+    ```
+
+  * Confirm the dataset and detached snapshot dataset names match what you created above:
+
+  ```yml
+        zfs:
+        # Assumes pool named "main", dataset named "k8s", child dataset "nfs"
+        # Any additional provisioners such as iSCSI would be at the same level as "nfs" (sibling of it)
+        datasets:
+          parent_name: "main/k8s/nfs/v"
+          snapshot_ds_name: "main/k8s/nfs/s"     
+  ```
+
+  * Additional ZFS settings for NFS:
+
+  ```yml
+
+          enable_quotas: true
+          enable_reservation: false
+
+          permissions:
+            mode: '"0777"'
+            user_id_num: 0          # 0 = root, needs User UID not a name (API needs a number)
+            group_id_num: 0         # 0 = wheel, needs Group GUID not a name (API needs a number)
+  ```
+
+  * Adjust if you want an NFS storage test claim performed once all validations have completed:
+
+  ```yml
+      test_claim:
+        enabled: true               # true = attempt iscsi storage claim
+        mode: "ReadWriteOnce"       # storage claim access mode
+        size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
+        remove: true                # true = remove claim when test is completed (false leaves it alone)
+  ```
+
 ---
 
 ## How do I Run it

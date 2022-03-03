@@ -1,10 +1,10 @@
 ---
 #
-# Validate the democratic-csi installation is running as expected.
+# Validate the democratic-csi iSCSI installation is running as expected.
 #
 
-###[ Validate democratic-csi Kubernetes Installation ]#############################################
-- name: Validate democratic-csi Kubernetes Installation Block
+###[ Validate democratic-csi iSCSI Kubernetes Installation ]#######################################
+- name: Validate democratic-csi iSCSI Kubernetes Installation Block
   block:
   - name: Check Pods are Running (multiple types are expected)
     k8s_info:
@@ -72,6 +72,10 @@
         wait: yes
         wait_timeout: 120
 
+    - name: Pause for 5 seconds for iSCSI claim provision to process
+      wait_for:
+        timeout: 5
+
     - name: "Check if iSCSI test claim is created"
       k8s_info:
         kind: PersistentVolumeClaim
@@ -107,4 +111,5 @@
   tags:
     - validate_csi_iscsi
   when:
-    -  install.democratic_csi.iscsi.provisioner is defined
+    - install.democratic_csi.iscsi.provisioner is defined
+    - install.democratic_csi.iscsi.install_this|default(false)|bool == true

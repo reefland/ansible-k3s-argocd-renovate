@@ -1,0 +1,115 @@
+---
+#
+# Validate the democratic-csi NFS installation is running as expected.
+#
+
+###[ Validate democratic-csi NFS Kubernetes Installation ]#########################################
+- name: Validate democratic-csi NFS Kubernetes Installation Block
+  block:
+  - name: Check Pods are Running (multiple types are expected)
+    k8s_info:
+      kind: Pod
+      namespace: "{{install.democratic_csi.nfs.namespace}}"
+      field_selectors:
+        - "status.phase=Running"
+    register: csi_pods_details
+
+  # Set Fact if we can detect the controller pod running
+  - set_fact:
+      csi_controller_running: true
+    loop: "{{csi_pods_details.resources}}"
+    when: item.metadata.labels['app.kubernetes.io/csi-role'] == "controller"
+
+  # Set Fact if we can detect the node pod running
+  - set_fact:
+      csi_node_running: true
+    loop: "{{csi_pods_details.resources}}"
+    when: item.metadata.labels['app.kubernetes.io/csi-role'] == "node"
+
+  - name: Fail if democratic-csi controller pod not running
+    fail:
+      msg: |
+        Unable to detect democratic-csi controller pod is running, try:
+        
+        kubectl get pods -n {{install.democratic_csi.nfs.namespace}} -o wide
+    when: csi_controller_running is not defined
+
+  - name: Fail if democratic-csi node pod not running
+    fail:
+      msg: "Unable to detect democratic-csi node pod is running"
+    when: csi_node_running is not defined
+
+  - name: "Check if NFS Storageclass is created"
+    k8s_info:
+      kind: StorageClass
+      namespace: "{{install.democratic_csi.nfs.namespace}}"
+      field_selectors:
+        - "metadata.name={{install.democratic_csi.nfs.provisioner}}-csi"
+    register: csi_storageclass_details
+
+  # Set Fact if we can detect the storage class
+  - set_fact:
+      csi_storage_class: true
+    loop: "{{csi_storageclass_details.resources}}"
+    when: item.provisioner == "org.democratic-csi.nfs"
+
+  - name: Fail if democratic-csi NFS storage class not detected
+    fail:
+      msg: |
+        Unable to detect democratic-csi NFS storage class, try:
+        
+        kubectl get sc -n {{install.democratic_csi.nfs.namespace}}
+    when: csi_storage_class is not defined
+
+  ###[ Perform NFS Test Claim and Validate Block ]#################################################
+  - name: Perform NFS Test Claim and Validate Block
+    block:
+    - name: Perform NFS test claim
+      kubernetes.core.k8s:
+        src: "/home/{{install.os.non_root_user.name}}/democratic-csi/test-claim-nfs.yaml"
+        state: present
+        namespace: "{{install.democratic_csi.nfs.namespace}}"
+        wait: yes
+        wait_timeout: 120
+
+    - name: Pause for 5 seconds for NFS claim provision to process
+      wait_for:
+        timeout: 5
+
+    - name: "Check if NFS test claim is created"
+      k8s_info:
+        kind: PersistentVolumeClaim
+        namespace: "{{install.democratic_csi.nfs.namespace}}"
+        field_selectors:
+          - "metadata.name=test-claim-nfs"
+      register: csi_nfs_storage_claim_details
+
+    # Set Fact if we can detect storage claim phase "Bound"
+    - set_fact:
+        csi_nfs_storage_claim: true
+      loop: "{{csi_nfs_storage_claim_details.resources}}"
+      when: item.status.phase == "Bound"
+
+    - name: Fail if democratic-csi NFS storage claim not detected
+      fail:
+        msg: |
+          Unable to detect democratic-csi NFS storage claim, try:
+          
+          kubectl get pvc -n {{install.democratic_csi.nfs.namespace}}
+      when: csi_nfs_storage_claim is not defined
+
+    - name: Remove NFS test claim - validations passed
+      kubernetes.core.k8s:
+        src: "/home/{{install.os.non_root_user.name}}/democratic-csi/test-claim-nfs.yaml"
+        state: absent
+        namespace: "{{install.democratic_csi.nfs.namespace}}"
+        wait: yes
+        wait_timeout: 120
+
+    when: install.democratic_csi.nfs.test_claim.enabled|default(false)|bool == true
+
+  tags:
+    - validate_csi_nfs
+  when:
+    - install.democratic_csi.nfs.provisioner is defined
+    - install.democratic_csi.nfs.install_this|default(false)|bool == true

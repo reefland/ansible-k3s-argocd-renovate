@@ -1,0 +1,65 @@
+---
+#
+# Add iSCSI persistent storage with TrueNas integration via democratic-csi packages.
+#
+# based on: https://jonathangazeley.com/2021/01/05/using-truenas-to-provide-persistent-storage-for-kubernetes/
+
+###[ Install democratic-csi packages ]############################################################
+- name: Install democratic-csi Repository via Helm Block
+  block:
+  - name: Install NFS Support packages
+    apt:
+      name: "{{install.democratic_csi.nfs.packages}}"
+      state: present
+
+  - name: Add democratic-csi Repository to Helm
+    kubernetes.core.helm_repository:
+      name: democratic-csi
+      repo_url: "{{democratic_csi.repo_url}}"
+
+  - name: Create directory for democratic-csi yaml files for non-root user
+    file:
+      path: "/home/{{install.os.non_root_user.name}}/democratic-csi"
+      state: directory
+      mode: 0700
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+
+  - name: Copy democratic-csi Template Files
+    template:
+      src: "templates/democratic_csi/{{item}}.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/democratic-csi/{{item}}"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0660'
+    loop:
+      - "test-claim-nfs.yaml"
+
+  - name: "Copy and Validate NFS Provisioner - {{install.democratic_csi.nfs.provisioner}}.yaml"
+    template:
+      src: "templates/democratic_csi/{{install.democratic_csi.nfs.provisioner}}.yaml.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/democratic-csi/{{install.democratic_csi.nfs.provisioner}}.yaml"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0660'
+      validate: "helm upgrade --dry-run --install --create-namespace --values %s --namespace {{install.democratic_csi.nfs.namespace}} {{install.democratic_csi.nfs.release}} {{democratic_csi.repo_chart_ref}}"
+      backup: yes
+
+  - name: Install democratic-csi NFS Provisioner via Helm
+    kubernetes.core.helm:
+      update_repo_cache: yes
+      atomic: yes
+      create_namespace: yes
+      chart_ref: "{{democratic_csi.repo_chart_ref}}"
+      release_name: "{{install.democratic_csi.nfs.release}}"
+      release_namespace: "{{install.democratic_csi.nfs.namespace}}"
+      release_state: present
+      values_files: "/home/{{install.os.non_root_user.name}}/democratic-csi/{{install.democratic_csi.nfs.provisioner}}.yaml"
+      wait: yes
+      wait_timeout: 5m
+
+  tags:
+    - install_democratic_csi_nfs
+  when:
+    - install.democratic_csi.nfs.provisioner is defined
+    - install.democratic_csi.nfs.install_this|default(false)|bool == true
