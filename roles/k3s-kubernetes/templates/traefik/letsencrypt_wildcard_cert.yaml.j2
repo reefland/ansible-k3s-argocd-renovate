@@ -1,3 +1,4 @@
+---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -7,7 +8,7 @@ spec:
   # Secret names are always required.
   secretName: wildcard-secret
   # At least one of a DNS Name, URI, or IP address is required.
-  dnsNames: {{install.domains}}
+  dnsNames: {{install.traefik.domains}}
   issuerRef:
     kind: ClusterIssuer
-    name: {% if k3s.traefik.staging|default(true)|bool == true %}letsencrypt-staging{% else %}letsencrypt-prod{% endif %}
+    name: {% if k3s.traefik.staging|default(true)|bool == true %}letsencrypt-staging{% else %}letsencrypt-prod{% endif %}{{''}}

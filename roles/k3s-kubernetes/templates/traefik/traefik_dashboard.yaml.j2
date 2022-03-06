@@ -1,0 +1,17 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: dashboard-ingressroute
+  namespace: kube-system
+spec:
+  entryPoints:
+    - {% if install.traefik.dashboard.use_https|default(false)|bool == false %}web{% else %}websecure{% endif %}{{''}}
+  routes:
+    - match: Host(`{{ansible_fqdn|lower}}`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
+      kind: Rule
+      services:
+        - name: api@internal
+          kind: TraefikService
+  tls:
+    certResolver: {% if k3s.traefik.staging|default(true)|bool == true %}letsencrypt-staging{% else %}letsencrypt-prod{% endif %}{{''}}

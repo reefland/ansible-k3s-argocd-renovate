@@ -69,7 +69,7 @@
     - 03_validate_k3s.yml
     - 04_install_helm_client.yml
     - 05_install_cert_manager.yml
-    - 06_config_traefik_dns_certs.yml
+    - 06_config_traefik.yml
     - 07_install_democratic_csi_iscsi.yml
     - 08_validate_csi_iscsi.yml
     - 09_install_democratic_csi_nfs.yml

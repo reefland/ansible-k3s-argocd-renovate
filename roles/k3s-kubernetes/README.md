@@ -16,7 +16,8 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * To get around this ZFS issue, this will also install `containerd` and `container network plugins` packages and configure them to support ZFS. The k3s configuration is then updated to use containerd.
   * Based on: [https://blog.nobugware.com/post/2019/k3s-containterd-zfs/](https://blog.nobugware.com/post/2019/k3s-containterd-zfs/)
 * `Cert-manager` is installed since Traefik's Let's Encrypt support retrieves certificates and stores them in files. Cert-manager retrieves certificates and stores them in Kubernetes secrets.
-* Traefik's Letsencrypt is configured for staging certificates, but you can default it to prod or use provided CLI parameter below to switch from staging to prod.
+* Traefik's Letsencrypt is configured for **Staging** certificates, but you can default it to **Prod** or use provided CLI parameter to force **Prod** certificates only when needed `--extra-vars '{le_staging:false}'`
+* Traefik's Dashboard is exposed by IngressRoute to URI `/dashboard/`, this can be disabled if needed.
 * `democratic-csi` - CSI or **C**ontainer **S**torage **I**nterface defines a standard interface for container orchestration systems (like Kubernetes) to expose arbitrary storage systems to their container workloads.
   * Uses a combination of the TrueNAS API over SSL/TLS and SSH to dynamically allocate persistent storage zvols on TrueNAS upon request when storage claims are made.
   * The TrueNAS API key is **admin access** equivalent.  This needs to be protected (save in ansible vault, restrict access to the `yaml` file generated.)  
@@ -46,6 +47,9 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * helm, apt-transport-https (required for helm client install)
 * open-iscsi, lsscsi, sg3-utils, multipath-tools, scsitools (required when iSCSI support is enabled)
 * libnfs-utils (required for NFS support is enabled)
+
+---
+I provide a lot of documentation notes below for my own use.  If you find it overwhelming, keep in mind most of it you do not need to change.  Also note that towards the bottom is a section which shows how to use Ansible to run this in stages to built it up in layers using `tags`.
 
 ---
 
@@ -143,6 +147,7 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
     * `CF_DNS_API_TOKEN` - CloudFlare API token value
     * `CF_AUTH_EMAIL` - CloudFlare Email address associated with the API token
     * `LE_AUTH_EMAIL` - Letsencrypt Email Address for expiration Notifications
+    * `LE_DOMAINS` - List of domain names for Wildcard Certificates
 
     ```yml
     # Cloudflare API token used by Traefik
@@ -155,11 +160,16 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 
     # Email address associated to Let's Encrypt
     LE_AUTH_EMAIL: you@domain.com
+    
+    # List of Domains to Create Certificates
+    LE_DOMAINS:
+      - "example.com"
+      - "*.example.com"
     ```
 
     Be sure to encrypt this secret when completed `ansible-vault encrypt k3s_traefik_api_secrets.yml`
 
-    By default staging certificates are generated and controlled by:
+    By default staging certificates are generated and controlled by (`vars/k3s.yml`):
 
     ```yaml
     k3s:
@@ -249,14 +259,27 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
     ingressroute.traefik.containo.us "ingressroutetls" deleted
     ```
 
-7. Define the version of Cert Manager to be installed. Available version number can be found [here](https://artifacthub.io/packages/helm/cert-manager/cert-manager).
+7. Configure Traefik Dashboard.  By default a Ingress Route will be created to allow the Dashboard to be accessible on URI `/dashboard/` (the trailing slash is REQUIRED).  Set `create_route` to `false` to prevent the route from being created.  If need to apply a change do the dashboard then run the playbook with tag `--tags="config_traefik_dashboard"` to apply changes.
+
+    ```yml
+      ###[ Traefik Installation Settings ]#############################################################
+      traefik:
+        ...
+
+        # Traefik Dashboard
+        dashboard:
+          create_route: true
+          use_https: true
+    ```
+
+8. Define the version of Cert Manager to be installed. Available version number can be found [here](https://artifacthub.io/packages/helm/cert-manager/cert-manager).
 
     ```yml
     cert_manager:
       install_version: "v1.7.1"
     ```
 
-8. Configure TrueNAS for democratic-csi Configuration.
+9. Configure TrueNAS for democratic-csi Configuration.
 
 NOTE: That TrueNAS core requires the use of both API key and SSH access.  (TrueNAS Scale only requires API access)
 
@@ -714,7 +737,7 @@ The following tags are supported and should be used in this order:
 
 ---
 
-## Troubleshooting
+## Troubleshooting CSI
 
 ### Shows pods deployed the the `democratic-csi` namespace
 

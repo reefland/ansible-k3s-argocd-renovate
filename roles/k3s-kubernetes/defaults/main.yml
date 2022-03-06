@@ -9,10 +9,15 @@ install:
 
     allow_passwordless_sudo: true
 
-  ###[ Domain Names for LetsEncrypt Certificates ]#################################################
-  domains:
-    - "rich-durso.us"
-    - "*.rich-durso.us"
+  ###[ Traefik Installation Settings ]#############################################################
+  traefik:
+    # List of Domain Names for LetsEncrypt Certificates
+    domains: "{{k3s.traefik.le_domains}}"
+      
+    # Traefik Dashboard
+    dashboard:
+      create_route: true
+      use_https: true
 
   k3s:
     # Packages required for Ansible to issue Kubernetes and commands

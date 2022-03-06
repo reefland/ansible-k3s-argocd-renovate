@@ -25,3 +25,6 @@ k3s:
 
     le_staging_server: "https://acme-staging-v02.api.letsencrypt.org/directory"
     le_production_server: "https://acme-v02.api.letsencrypt.org/directory"
+
+    # Define the name of the Let's Encrypt Domain List Key stored in k3s_traefik_api_secrets.yml
+    le_domains: "{{LE_DOMAINS}}"
