@@ -778,6 +778,8 @@ freenas-iscsi-csi      org.democratic-csi.iscsi   Delete          Immediate     
 freenas-nfs-csi        org.democratic-csi.nfs     Delete          Immediate              true                   20h
 ```
 
+---
+
 ### Experiment with Test Claims
 
 Test claims for NFS and iSCSI are provided.  They can be used as-is or modified:
@@ -860,4 +862,92 @@ If the storage claim is being used by a pod, then within seconds the storage cla
 ```shell
 $ kubectl -n democratic-csi delete -f test-claim-iscsi.yaml
 persistentvolumeclaim "test-claim-iscsi" deleted
+```
+
+---
+
+## Full Test Deployment
+
+A full test deployment script will be placed in the non-root `kube` home directory `~/democratic-csi/test-app-nfs-claim.yaml` which do the followng:
+
+* Create 2 containers backed by CSI Persistent NFS storage claims of 2MB
+* A sample `index.html` with "Hello Green World" and "Hello Blue World" will be created in the respective storage claims
+* A service will be created for each container
+* An ingress route will be created with middleware to clean up the URI
+* Requests to the `/nginx/` URI will be round-robin between the two containers
+
+```shell
+cd /home/kube/democratic-csi
+
+$ kubectl create namespace nfs-test-app
+namespace/nfs-test-app created
+
+$ kubectl apply -f test-app-nfs-claim.yaml -n nfs-test-app
+
+deployment.apps/nginx-pv-green created
+deployment.apps/nginx-pv-blue created
+persistentvolumeclaim/test-claim-nfs-green created
+persistentvolumeclaim/test-claim-nfs-blue created
+service/nginx-pv-green created
+service/nginx-pv-blue created
+middleware.traefik.containo.us/nginx-strip-path-prefix created
+ingressroute.traefik.containo.us/test-claim-ingressroute created
+```
+
+```shell
+$ kubectl get all -n nfs-test-app
+NAME                                 READY   STATUS    RESTARTS   AGE
+
+pod/nginx-pv-green-9c9f6d448-nw6bh   1/1     Running   0          106s
+pod/nginx-pv-blue-c7d6d44bf-gvbxv    1/1     Running   0          106s
+
+NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/nginx-pv-green   ClusterIP   10.43.132.60    <none>        80/TCP    2m9s
+service/nginx-pv-blue    ClusterIP   10.43.240.245   <none>        80/TCP    2m9s
+
+NAME                             READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/nginx-pv-green   1/1     1            1           106s
+deployment.apps/nginx-pv-blue    1/1     1            1           106s
+
+NAME                                       DESIRED   CURRENT   READY   AGE
+replicaset.apps/nginx-pv-green-9c9f6d448   1         1         1       106s
+replicaset.apps/nginx-pv-blue-c7d6d44bf    1         1         1       106s
+```
+
+Testing the deployment using the Lynx Text Browser:
+
+```shell
+$ lynx -dump http://testlinux.example.com/nginx/
+                                Hello Green World
+
+$ lynx -dump http://testlinux.example.com/nginx/
+                                Hello Blue World
+
+$ lynx -dump http://testlinux.example.com/nginx/
+                                Hello Blue World
+
+$ lynx -dump http://testlinux.example.com/nginx/
+                                Hello Green World
+
+$ lynx -dump http://testlinux.example.com/nginx/
+                                Hello Blue World
+```
+
+Delete the deployment:
+
+```shell
+$ kubectl delete -f test-app-nfs-claim.yaml -n nfs-test-app
+
+deployment.apps "nginx-pv-green" deleted
+deployment.apps "nginx-pv-blue" deleted
+persistentvolumeclaim "test-claim-nfs-green" deleted
+persistentvolumeclaim "test-claim-nfs-blue" deleted
+service "nginx-pv-green" deleted
+service "nginx-pv-blue" deleted
+middleware.traefik.containo.us "nginx-strip-path-prefix" deleted
+ingressroute.traefik.containo.us "test-claim-ingressroute" deleted
+
+# Page no longer exists:
+$ lynx -dump http://testlinux.example.com/nginx/
+404 page not found
 ```

@@ -34,6 +34,7 @@
       mode: '0660'
     loop:
       - "test-claim-nfs.yaml"
+      - "test-app-nfs-claim.yaml"
 
   - name: "Copy and Validate NFS Provisioner - {{install.democratic_csi.nfs.provisioner}}.yaml"
     template:
