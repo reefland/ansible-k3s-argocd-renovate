@@ -2,12 +2,12 @@
 
 Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enhancements:
 
-* non-root user account for Kubernetes, passwordless access to `kubectl` by default.
-* condainerd to provide zfs snapshotter support
+* **non-root** user account for Kubernetes, passwordless access to `kubectl` by default.
+* **condainerd** to provide ZFS snapshotter support
 * Helm Client
 * Cert-manager
-* Traefik ingress Letsencrypt wildcard certificates for domains to staging or prod (Cloudflare DNS validator)
-* [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide Persistent Volume Claim storage via iSCSI and NFS to TrueNAS
+* **Traefik** ingress with **Letsencrypt wildcard certificates** for domains against LE staging or prod (Cloudflare DNS validator)
+* [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide **Persistent Volume Claim** storage via **iSCSI** and **NFS** from TrueNAS
 
 ## Notes
 
@@ -15,24 +15,25 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
   * See: [https://github.com/k3s-io/k3s/discussions/3980](https://github.com/k3s-io/k3s/discussions/3980)
 * To get around this ZFS issue, this will also install `containerd` and `container network plugins` packages and configure them to support ZFS. The k3s configuration is then updated to use containerd.
   * Based on: [https://blog.nobugware.com/post/2019/k3s-containterd-zfs/](https://blog.nobugware.com/post/2019/k3s-containterd-zfs/)
-* Cert-manager is installed since Traefik's Let's Encrypt support retrieves certificates and stores them in files. Cert-manager retrieves certificates and stores them in Kubernetes secrets.
+* `Cert-manager` is installed since Traefik's Let's Encrypt support retrieves certificates and stores them in files. Cert-manager retrieves certificates and stores them in Kubernetes secrets.
 * Traefik's Letsencrypt is configured for staging certificates, but you can default it to prod or use provided CLI parameter below to switch from staging to prod.
-* democratic-csi (CSI -- Container Storage Interface defines a standard interface for container orchestration systems (like Kubernetes) to expose arbitrary storage systems to their container workloads.)  
+* `democratic-csi` - CSI or **C**ontainer **S**torage **I**nterface defines a standard interface for container orchestration systems (like Kubernetes) to expose arbitrary storage systems to their container workloads.
   * Uses a combination of the TrueNAS API over SSL/TLS and SSH to dynamically allocate persistent storage zvols on TrueNAS upon request when storage claims are made.
-  * The API key is admin access equivalent.  This needs to be protected (save in ansible vault, restrict access to the `yaml` file generated.)  
-  * TrueNAS Core
+  * The TrueNAS API key is **admin access** equivalent.  This needs to be protected (save in ansible vault, restrict access to the `yaml` file generated.)  
+  * TrueNAS Core specific notes:
     * iSCSI with SSH can use a non-privileged user
     * NFS with SSH will require user with password-less sudo (instructions below)
     * ZFS delegation is used to give ZFS abilities to the SSH user. These abilities (permissions) are scoped to the specific dataset used for democratic-csi.  
-    * The SSH user account is used for ZFS operations not available within the TrueNAS API.
+    * The SSH user account is required for ZFS operations not available within the TrueNAS API.
   * Be aware that:
     * iSCSI only allows a single claim to have write access at a time.  Multiple claims can have read-only access
-    * NFS can have multiple writers.
+    * NFS can have multiple claims with write access
 
 ## Environments Tested
 
 * Ubuntu 20.04.4 based [ZFS on Root](https://gitea.rich-durso.us/reefland/ansible/src/branch/master/roles/zfs_on_root) installation.
 * TrueNAS Core 12-U8
+* K3s v1.23.3
 
 ---
 
@@ -471,6 +472,15 @@ NOTE: That TrueNAS core requires the use of both API key and SSH access.  (TrueN
         reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
         volume_expansion: true
   ```
+  
+  * The `reclaim_policy` values are:
+
+    * `Retain` - Manual reclamation. When the PersistentVolumeClaim is deleted, the PersistentVolume still exists within TrueNAS and the volume is considered "released". But it is not yet available for another claim because the previous claimant's data remains on the volume. This type can be reused.  If you care about the data within the volume, you probably want this.
+    * `Recycle` - Warning: The Recycle reclaim policy is deprecated.
+    * `Delete` - The deletion removes both the PersistentVolume object from Kubernetes, as well as the associated storage asset within TrueNAS
+  * The `volume_expansion` when set to `true`:
+    * Allows a request for a larger volume for a PVC. This triggers expansion of the volume that backs the underlying PersistentVolume. A new PersistentVolume is never created to satisfy the claim. Instead, an existing volume is resized.
+    * Only volumes containing a file system of XFS, Ext3, or Ext4 can be resized.
 
   * Confirm the dataset and detached snapshot dataset names match what you created above:
 
@@ -545,6 +555,15 @@ NOTE: That TrueNAS core requires the use of both API key and SSH access.  (TrueN
         reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
         volume_expansion: true
   ```
+
+  * The `reclaim_policy` values are:
+
+    * `Retain` - Manual reclamation. When the PersistentVolumeClaim is deleted, the PersistentVolume still exists within TrueNAS and the volume is considered "released". But it is not yet available for another claim because the previous claimant's data remains on the volume. This type can be reused.  If you care about the data within the volume, you probably want this.
+    * `Recycle` - Warning: The Recycle reclaim policy is deprecated.
+    * `Delete` - The deletion removes both the PersistentVolume object from Kubernetes, as well as the associated storage asset within TrueNAS
+  * The `volume_expansion` when set to `true`:
+    * Allows a request for a larger volume for a PVC. This triggers expansion of the volume that backs the underlying PersistentVolume. A new PersistentVolume is never created to satisfy the claim. Instead, an existing volume is resized.
+    * Only volumes containing a file system of XFS, Ext3, or Ext4 can be resized.
 
   * Has sudo access been enabled for the SSH account? This is required for TrueNAS Core 12
 
@@ -621,6 +640,26 @@ NOTE: That TrueNAS core requires the use of both API key and SSH access.  (TrueN
 
 ---
 
+## Access Modes
+
+The `mode` specified in the storage claim described that specific PV's capabilities:
+
+* `ReadWriteOnce` - the volume can be mounted as read-write by a single node. ReadWriteOnce access mode still can allow multiple pods to access the volume when the pods are running on the same node.
+* `ReadOnlyMany` - the volume can be mounted as read-only by many nodes.
+* `ReadWriteMany` - the volume can be mounted as read-write by many nodes.
+
+In the CLI, the access modes are abbreviated to:
+
+* `RWO` - ReadWriteOnce
+* `ROX` - ReadOnlyMany
+* `RWX` - ReadWriteMany
+
+**Important!** A volume can only be mounted using one access mode at a time, even if it supports many. For example, iSCSI can be mounted as ReadWriteOnce by a single node or ReadOnlyMany by many nodes, but not at the same time.
+
+PersistentVolumes binds are exclusive, and since PersistentVolumeClaims are namespaced objects, mounting claims with "Many" modes (ROX, RWX) is only possible within one namespace.
+
+---
+
 ## How do I Run it
 
 ### Edit your inventory document
@@ -651,4 +690,151 @@ To limit execution to a single machine:
 ansible-playbook -i inventory kubernetes.yml -l testlinux.example.com
 ```
 
+## Build in Stages
+
+Instead of running the entire playbook, you can run smaller logical steps using tags. Or use a tag to re-run a specific step you are troubleshooting.
+
+```bash
+ansible-playbook -i inventory kubernetes.yml -l testlinux.example.com --tags="<tag_goes_here>"
+```
+
+The following tags are supported and should be used in this order:
+
+* `install_k3s`
+* `install_containerd`
+* `validate_k3s`
+* `install_helm_client`
+* `install_cert_manager`
+* `config_traefik_dns_certs`
+* `config_traefik_dashboard`
+* `install_democratic_csi_iscsi`
+* `validate_csi_iscsi`
+* `install_democratic_csi_nfs`
+* `validate_csi_nfs`
+
 ---
+
+## Troubleshooting
+
+### Shows pods deployed the the `democratic-csi` namespace
+
+```shell
+$ kubectl get pods -n democratic-csi -o wide
+
+NAME                                                       READY   STATUS    RESTARTS   AGE   IP               NODE        NOMINATED NODE   READINESS GATES
+truenas-iscsi-democratic-csi-controller-5fb94d4488-gglqt   4/4     Running   0          26h   10.42.0.99       testlinux   <none>           <none>
+truenas-iscsi-democratic-csi-node-shwlb                    3/3     Running   0          26h   192.168.10.110   testlinux   <none>           <none>
+truenas-nfs-democratic-csi-controller-5d8dc94bc-55wvs      4/4     Running   0          19h   10.42.0.112      testlinux   <none>           <none>
+truenas-nfs-democratic-csi-node-794vb                      3/3     Running   0          19h   192.168.10.110   testlinux   <none>           <none>
+```
+
+### Show logs from the `csi-driver` container
+
+Can be used to get detailed information during troubleshooting.  Adjust the pod for either the `nfs` or `iscsi` controller and adjust the random digits in the pod name to match your installation.
+
+```shell
+$ kubectl logs pod/truenas-nfs-democratic-csi-controller-5d8dc94bc-55wvs  csi-driver -n democratic-csi
+
+
+{"level":"info","message":"new request - driver: FreeNASApiDriver method: CreateVolume call: {\"_events\":{},\"_eventsCount\":1,\"call\":{},\"cancelled\":false,\"metadata\":{\"_internal_repr\":{\"user-agent\":[\"grpc-go/1.40.0\"]},\"flags\":0},\"request\":{\"volume_capabilities\":[{\"access_mode\":{\"mode\":\"SINGLE_NODE_MULTI_WRITER\"},\"mount\":{\"mount_flags\":[\"noatime\",\"nfsvers=4\"],\"fs_type\":\"nfs\",\"volume_mount_group\":\"\"},\"access_type\":\"mount\"}],\"parameters\":{\"csi.storage.k8s.io/pv/name\":\"pvc-42688a22-3a62-4494-8488-ad6eeaeb4bc0\",\"fsType\":\"nfs\",\"csi.storage.k8s.io/pvc/name\":\"test-claim-nfs\",\"csi.storage.k8s.io/pvc/namespace\":\"democratic-csi\"},\"secrets\":\"redacted\",\"name\":\"pvc-42688a22-3a62-4494-8488-ad6eeaeb4bc0\",\"capacity_range\":{\"required_bytes\":\"1073741824\",\"limit_bytes\":\"0\"},\"volume_content_source\":null,\"accessibility_requirements\":null}}","service":"democratic-csi"}
+{"level":"error","message":"handler error - driver: FreeNASApiDriver method: CreateVolume error: Error: {\"create_ancestors\":[{\"message\":\"Field was not expected\",\"errno\":22}]}","service":"democratic-csi"}
+{
+  code: 13,
+  message: 'Error: {"create_ancestors":[{"message":"Field was not expected","errno":22}]}'
+}
+```
+
+### Show Storage Claim Provisioners and Claim Policy
+
+```shell
+$ kubectl get sc
+
+NAME                   PROVISIONER                RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path (default)   rancher.io/local-path      Delete          WaitForFirstConsumer   false                  7d11h
+freenas-iscsi-csi      org.democratic-csi.iscsi   Delete          Immediate              true                   40h
+freenas-nfs-csi        org.democratic-csi.nfs     Delete          Immediate              true                   20h
+```
+
+### Experiment with Test Claims
+
+Test claims for NFS and iSCSI are provided.  They can be used as-is or modified:
+
+```shell
+kube@testlinux:~/democratic-csi$ ls -l test*
+-rw-rw---- 1 kube kube 287 Mar  1 16:50 test-claim-iscsi.yaml
+-rw-rw---- 1 kube kube 280 Mar  2 10:52 test-claim-nfs.yaml
+
+$ kubectl -n democratic-csi create -f test-claim-iscsi.yaml
+persistentvolumeclaim/test-claim-iscsi created
+
+```
+
+Show claims:
+
+```shell
+$ kubectl -n democratic-csi get pvc
+
+NAME               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS        AGE
+test-claim-iscsi   Bound    pvc-a20ebfac-2bd7-4e56-a0bc-c093ecadb117   1Gi        RWO            freenas-iscsi-csi   23s
+```
+
+Show detailed information of provisioning process:
+
+```shell
+$ kubectl describe pvc/test-claim-iscsi -n democratic-csi
+Name:          test-claim-iscsi
+Namespace:     democratic-csi
+StorageClass:  freenas-iscsi-csi
+Status:        Bound
+Volume:        pvc-a20ebfac-2bd7-4e56-a0bc-c093ecadb117
+Labels:        <none>
+Annotations:   pv.kubernetes.io/bind-completed: yes
+               pv.kubernetes.io/bound-by-controller: yes
+               volume.beta.kubernetes.io/storage-class: freenas-iscsi-csi
+               volume.beta.kubernetes.io/storage-provisioner: org.democratic-csi.iscsi
+               volume.kubernetes.io/storage-provisioner: org.democratic-csi.iscsi
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      1Gi
+Access Modes:  RWO
+VolumeMode:    Filesystem
+Used By:       <none>
+Events:
+  Type    Reason                 Age                From                                                                                                                    Message
+  ----    ------                 ----               ----                                                                                                                    -------
+  Normal  Provisioning           82s                org.democratic-csi.iscsi_truenas-iscsi-democratic-csi-controller-5fb94d4488-gglqt_282e5888-4faa-4b41-a386-3e90d6db2f51  External provisioner is provisioning volume for claim "democratic-csi/test-claim-iscsi"
+  Normal  ExternalProvisioning   78s (x3 over 82s)  persistentvolume-controller                                                                                             waiting for a volume to be created, either by external provisioner "org.democratic-csi.iscsi" or manually created by system administrator
+  Normal  ProvisioningSucceeded  78s                org.democratic-csi.iscsi_truenas-iscsi-democratic-csi-controller-5fb94d4488-gglqt_282e5888-4faa-4b41-a386-3e90d6db2f51  Successfully provisioned volume pvc-a20ebfac-2bd7-4e56-a0bc-c093ecadb117
+```
+
+Edit the Storage Claim to increase size.  Can apply a new claim file or it can be edited directly as shown below (loads in `vi`).
+
+```yaml
+$ kubectl edit pvc/test-claim-iscsi -n democratic-csi
+
+...
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: freenas-iscsi-csi
+...
+
+```
+
+Upon changing the `1Gi` to `2Gi` and saving the file:
+
+```shell
+$ kubectl edit pvc/test-claim-iscsi -n democratic-csi
+persistentvolumeclaim/test-claim-iscsi edited
+```
+
+If the storage claim is being used by a pod, then within seconds the storage claim with be adjusted as defined, expanded in this case.  If claim is not being used yet, then the expansion will be differed until it is.
+
+### Delete Test Claim
+
+```shell
+$ kubectl -n democratic-csi delete -f test-claim-iscsi.yaml
+persistentvolumeclaim "test-claim-iscsi" deleted
+```

@@ -1,0 +1,96 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  namespace: default
+  name: nginx-pv-deployment
+  labels:
+    app: nginx-pv
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-pv
+  template:
+    metadata:
+      labels:
+        app: nginx-pv
+    spec:
+      volumes:
+      - name: nginx-pv-storage
+        persistentVolumeClaim:
+          claimName: test-claim-nfs
+      initContainers:
+      - name: web-content
+        image: busybox
+        volumeMounts:
+        - mountPath: "/webdata"
+          name: nginx-pv-storage
+        command: ["/bin/sh", "-c", 'echo "<h1> Hello <font color=green>World</font></h1>" > /webdata/index.html']
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+          - containerPort: 80
+        volumeMounts:
+          - mountPath: "/usr/share/nginx/html"
+            name: nginx-pv-storage
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-claim-nfs
+  namespace: default
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "freenas-nfs-csi"
+spec:
+  storageClassName: freenas-nfs-csi
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-pv
+
+spec:
+  ports:
+    - protocol: TCP
+      name: web
+      port: 80
+  selector:
+    app: nginx-pv
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: nginx-strip-path-prefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /nginx
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: test-claim-ingressroute
+  namespace: default
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: Host(`{{ansible_fqdn|lower}}`) && PathPrefix(`/nginx`)
+    kind: Rule
+    middlewares:
+    - name: nginx-strip-path-prefix
+    services:
+    - name: nginx-pv
+      port: 80
