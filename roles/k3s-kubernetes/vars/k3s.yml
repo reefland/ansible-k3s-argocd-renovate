@@ -28,3 +28,5 @@ k3s:
 
     # Define the name of the Let's Encrypt Domain List Key stored in k3s_traefik_api_secrets.yml
     le_domains: "{{LE_DOMAINS}}"
+
+    dashboard_users: "{{TRAEFIK_DASHBOARD_USERS}}"
