@@ -16,8 +16,9 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * To get around this ZFS issue, this will also install `containerd` and `container network plugins` packages and configure them to support ZFS. The k3s configuration is then updated to use containerd.
   * Based on: [https://blog.nobugware.com/post/2019/k3s-containterd-zfs/](https://blog.nobugware.com/post/2019/k3s-containterd-zfs/)
 * `Cert-manager` is installed since Traefik's Let's Encrypt support retrieves certificates and stores them in files. Cert-manager retrieves certificates and stores them in Kubernetes secrets.
-* Traefik's Letsencrypt is configured for **Staging** certificates, but you can default it to **Prod** or use provided CLI parameter to force **Prod** certificates only when needed `--extra-vars '{le_staging:false}'`
-* Traefik's Dashboard is exposed by IngressRoute to URI `/dashboard/`, this can be disabled if needed.
+* **Traefik's Letsencrypt** is configured for **Staging** certificates, but you can default it to **Prod** or use provided CLI parameter to force **Prod** certificates only when needed `--extra-vars '{le_staging:false}'`
+* **Traefik's Dashboard** is exposed by IngressRoute to URI `/dashboard/`, this can be disabled if needed.
+  * Access to the dashboard can be restricted to defined users via basic authentication.
 * `democratic-csi` - CSI or **C**ontainer **S**torage **I**nterface defines a standard interface for container orchestration systems (like Kubernetes) to expose arbitrary storage systems to their container workloads.
   * Uses a combination of the TrueNAS API over SSL/TLS and SSH to dynamically allocate persistent storage zvols on TrueNAS upon request when storage claims are made.
   * The TrueNAS API key is **admin access** equivalent.  This needs to be protected (save in ansible vault, restrict access to the `yaml` file generated.)  
@@ -167,7 +168,18 @@ I provide a lot of documentation notes below for my own use.  If you find it ove
       - "*.example.com"
     ```
 
-    Be sure to encrypt this secret when completed `ansible-vault encrypt k3s_traefik_api_secrets.yml`
+    If you plan on using the Traefik dashboard and wish to define the users who can access, you can define them now:
+
+    ```yaml
+    # Define encoded Traefik users allowed to use the Traefik Dashboard (if enabled)
+    # Multiple users can be listed below, one per line (indented by 2 spaces)
+    # Created with "htpasswd" utility and then base64 encode that output such as:
+    # $ htpasswd -nb [user] [password] | base64
+    TRAEFIK_DASHBOARD_USERS: |
+      dHJhZWZpa2FkbTokMnkkMTAkbHl3NWdYcXpvbFJCOUY4M0RHa2dMZW52YWJTcmpxUk9XbXNGUmZKa2ZQSlhBbzNDSmJHY08K
+    ```
+
+    **Be sure to encrypt all the secrets above when completed** `ansible-vault encrypt k3s_traefik_api_secrets.yml`
 
     By default staging certificates are generated and controlled by (`vars/k3s.yml`):
 
@@ -259,7 +271,11 @@ I provide a lot of documentation notes below for my own use.  If you find it ove
     ingressroute.traefik.containo.us "ingressroutetls" deleted
     ```
 
-7. Configure Traefik Dashboard.  By default a Ingress Route will be created to allow the Dashboard to be accessible on URI `/dashboard/` (the trailing slash is REQUIRED).  Set `create_route` to `false` to prevent the route from being created.  If need to apply a change do the dashboard then run the playbook with tag `--tags="config_traefik_dashboard"` to apply changes.
+7. Configure Traefik Dashboard.  By default a Ingress Route will be created to allow the Dashboard to be accessible on URI `/dashboard/` (the trailing slash is REQUIRED).  
+
+    ![Traefik Dark Mode Dashboard](images/traefik_dark_dashboard.png)
+
+    Set `create_route` to `false` to prevent the route from being created.  If you need to apply a change do the dashboard then run the playbook with tag `--tags="config_traefik_dashboard"` to apply changes.
 
     ```yml
       ###[ Traefik Installation Settings ]#############################################################
@@ -268,9 +284,12 @@ I provide a lot of documentation notes below for my own use.  If you find it ove
 
         # Traefik Dashboard
         dashboard:
-          create_route: true
-          use_https: true
+        create_route: true                      # Create Ingress Router to make accessible 
+        enable_https: true                      # Require HTTPS to access dashboard
+        enable_basic_auth: true                 # Require Authentication to access dashboard
     ```
+
+   The ID & Password's which are allowed access to the dashboard are defined in the file `vars/k3s_traefik_api_secrets.yml` as discussed above.
 
 8. Define the version of Cert Manager to be installed. Available version number can be found [here](https://artifacthub.io/packages/helm/cert-manager/cert-manager).
 
