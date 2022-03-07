@@ -62,5 +62,13 @@
       cmd: "{{ install.k3s.cli_options|join(' ') }} /home/{{install.os.non_root_user.name}}/k3s_install.sh > /home/{{install.os.non_root_user.name}}/k3s_install.log"
       chdir: "/home/{{install.os.non_root_user.name}}"
 
+  - name: Add alias of "k" for "kubectl"
+    ansible.builtin.lineinfile:
+      path: "/home/{{install.os.non_root_user.name}}/.bash_aliases"
+      line: "alias {{install.k3s.alias.value}}='{{install.k3s.alias.command}}'"
+      create: yes
+      state: present
+    when: install.k3s.alias.enabled|default(false)|bool == true
+
   tags:
     - install_k3s

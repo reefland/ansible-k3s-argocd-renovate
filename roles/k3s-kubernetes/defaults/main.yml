@@ -48,6 +48,12 @@ install:
     # If enabled, will fail ansible deployment when "kubectl get node" returns "No resources found"
     confirm_running: true
   
+    # Create a handy alias for kubectl  ($k get all -A)
+    alias:
+      enabled: true
+      value: "k"
+      command: "kubectl"
+
   ###[ Containerd Installation Settings ]##########################################################
   containerd:
     packages:
