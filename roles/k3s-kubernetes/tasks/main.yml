@@ -27,6 +27,8 @@
       - helm.yml
       - cert_manager.yml
       - democratic-csi.yml
+      - prometheus-op.yml
+      - grafana.yml
 
 ###[ Detect ZFS UUID from ZFS on Root installations ]##############################################
 - name: Detect ZFS Dataset UUID
@@ -74,6 +76,8 @@
     - 08_validate_csi_iscsi.yml
     - 09_install_democratic_csi_nfs.yml
     - 10_validate_csi_nfs.yml
+    - 11_install_prometheus_op.yml
+    - 12_install_grafana.yml
 
   loop_control:
     loop_var: task_names

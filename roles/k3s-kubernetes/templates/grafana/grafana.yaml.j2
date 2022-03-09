@@ -1,0 +1,144 @@
+---
+# grafana-pvc
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-persistant-storage
+  namespace: {{grafana.namespace}}
+spec:
+  accessModes:
+    - {{install.grafana.storage_claim.access_mode}}
+  storageClassName: {{install.grafana.storage_claim.class_name}}
+  resources:
+    requests:
+      storage: {{install.grafana.storage_claim.claim_size}}
+
+---
+# grafana-configmap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-ini-config
+  namespace: {{grafana.namespace}}
+data:
+  grafana.ini: |-
+    [server]
+    domain = {{ansible_fqdn|lower}}
+    root_url = %(protocol)s://%(domain)s:%(http_port)s/grafana/
+    serve_from_sub_path = true
+
+---
+# grafana-deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: grafana
+  name: grafana
+  namespace: {{grafana.namespace}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - env: []
+        image: {{install.grafana.image_name}}:{{install.grafana.install_version}}
+        name: grafana
+        ports:
+        - containerPort: 3000
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: http
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        volumeMounts:
+        - mountPath: /var/lib/grafana
+          name: grafana-storage
+          readOnly: false
+        - name: grafana-config-volume
+          mountPath: /etc/grafana/
+      nodeSelector:
+        {{install.grafana.node_selector}}
+      securityContext:
+        fsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534
+      serviceAccountName: grafana
+      volumes:
+        - name: grafana-storage
+          persistentVolumeClaim:
+            claimName: grafana-persistant-storage
+        - name: grafana-config-volume
+          configMap:
+            name: grafana-ini-config
+            items:
+            - key: grafana.ini
+              path: grafana.ini
+
+---
+# grafana-serviceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: grafana
+  namespace: {{grafana.namespace}}
+
+---
+# grafana-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-service
+  namespace: {{grafana.namespace}}
+spec:
+  selector:
+    app: grafana
+  ports:
+  - name: http
+    port: 3000
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  namespace: {{grafana.namespace}}
+  name: grafana-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /grafana
+    forceSlash: true
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: {{grafana.namespace}}
+  name: grafana-ingress-route
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ansible_fqdn|lower}}`) && (PathPrefix(`/grafana`))
+      kind: Rule
+      services:
+      - kind: Service
+        name: grafana-service
+        port: 3000
+      middlewares:
+      - name: grafana-stripprefix
+
+

@@ -1,0 +1,150 @@
+---
+# Based on: https://rpi4cluster.com/monitoring/k3s-svcmonitors/
+
+### [ Install Prometheus Operator Block ]##########################################################
+- name: Install Prometheus Operator Block
+  block:
+
+  - name: Create directory for Prometheus Operator files for non-root user
+    file:
+      path: "/home/{{install.os.non_root_user.name}}/prometheus"
+      state: directory
+      mode: '0700'
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+
+  - name: Download Prometheus Operator bundle.yaml file
+    get_url:
+      url: "{{prometheus.bundle_url}}"
+      dest: "/home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml"
+      mode: '0660'
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+
+  - name: Replace default namespace with defined namespace
+    replace: 
+      path: "/home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml"
+      regexp: "(?m)namespace: default"
+      replace: "namespace: {{prometheus.namespace}}"
+      backup: yes
+
+  # The kubernetes.core.k8s task to process the file would fail unless the equal signs were wrapped with single quotes.
+  - name: Replace "- =" with "- '='" to prevent failure
+    replace: 
+      path: "/home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml"
+      regexp: "(?m)- =$"
+      replace: "- '='"
+
+  - name: Create Prometheus Operator Namespace
+    kubernetes.core.k8s:
+      state: present
+      name: "{{prometheus.namespace}}"
+      kind: Namespace
+
+#  Issues with the bundle file prevent it from being processed directly by ansible kubernetes.core.k8s such as:
+#  "message": "pods \"prometheus-operator-cdcc7b85c-\" is forbidden: error looking up service account monitoring/prometheus-operator: serviceaccount \"prometheus-operator\" not found",
+#             "reason": "FailedCreate",
+
+#  Attempting "kubectl appl -f" results in issue: https://github.com/prometheus-community/helm-charts/issues/1500
+#  This was observed as well... "The CustomResourceDefinition "prometheuses.monitoring.coreos.com" is invalid: metadata.annotations: Too long: must have at most 262144 bytes"
+
+#  - name: Install Prometheus Operator Namespace via static Manifest
+#    kubernetes.core.k8s:
+#      state: present
+#      src: "/home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml"
+#      namespace: "{{prometheus.namespace}}"
+#      wait: yes
+#      wait_timeout: 300
+
+#  Workaround, manually process the bundle.yaml file in 2 steps - CRD with issue, then rest of it.
+
+  - name: Download Prometheus Operator CRD file
+    get_url:
+      url: "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/{{install.prometheus.install_version}}/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml"
+      dest: "/home/{{install.os.non_root_user.name}}/prometheus/monitoring.coreos.com_prometheuses.yaml"
+      mode: '0660'
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+
+  - name: Install Prometheus Operator CRD
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/prometheus/monitoring.coreos.com_prometheuses.yaml"
+      namespace: "{{prometheus.namespace}}"
+      wait: yes
+      wait_timeout: 300
+
+  # This will have an error from above "The CustomResourceDefinition "prometheuses.monitoring.coreos.com" is invalid: metadata.annotations: Too long: must have at most 262144 bytes"
+  # so errors are ignored
+  - name: Process Prometheus Operator bundle.yaml file
+    command: "kubectl apply -n {{prometheus.namespace}} -f /home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml"
+    ignore_errors: yes 
+
+  ### End of Workaround ###
+
+  tags:
+    - never
+    - install_prometheus_op
+
+###[ Install Prometheus Service Monitors Block ]###################################################
+- name: Install Prometheus Service Monitors Block
+  block:
+  - name: Copy Prometheus Service Monitor Template Files
+    template:
+      src: "templates/prometheus-op/{{item}}.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/prometheus/{{item}}"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0660'
+    loop:
+      - node-exporter.yaml
+      - kube-state-metrics.yaml
+      - kubelet-servicemonitor.yaml
+      - traefik-servicemonitor.yaml
+      - prometheus.yaml
+      - prometheus-node-port.yaml
+  
+  # This will collect metrics from individual cluster nodes, underlying HW, etc...
+  - name: Install Node Exporter Service Monitor
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/prometheus/node-exporter.yaml"
+      namespace: "{{prometheus.namespace}}"
+      wait: yes
+      wait_timeout: 300
+
+  - name: Install Kube State Metrics Service Monitor
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/prometheus/kube-state-metrics.yaml"
+      namespace: "{{prometheus.namespace}}"
+      wait: yes
+      wait_timeout: 300
+
+  - name: Install Kubelet Service Monitor
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/prometheus/kubelet-servicemonitor.yaml"
+      namespace: "{{prometheus.namespace}}"
+      wait: yes
+      wait_timeout: 300
+
+  - name: Install Traefik Service Monitor
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/prometheus/traefik-servicemonitor.yaml"
+      namespace: "{{prometheus.namespace}}"
+      wait: yes
+      wait_timeout: 300
+
+  - name: Install Prometheus
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/prometheus/prometheus.yaml"
+      namespace: "{{prometheus.namespace}}"
+      wait: yes
+      wait_timeout: 300
+
+  tags:
+    - never
+    - install_prometheus_op

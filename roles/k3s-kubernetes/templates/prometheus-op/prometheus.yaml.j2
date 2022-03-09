@@ -1,0 +1,100 @@
+---
+# prometheus
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus-persistant
+  namespace: {{prometheus.namespace}}
+spec:
+  replicas: 1
+  retention: {{install.prometheus.retention}}
+  resources:
+    requests:
+      memory: 400Mi
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccountName: prometheus
+  serviceMonitorSelector:
+    matchExpressions:
+    - key: name
+      operator: In
+      values:
+       {{install.prometheus.monitor_services}}
+  storage:
+    volumeClaimTemplate:
+      metadata:
+        name: prometheus-persistant-storage
+      spec:
+        accessModes:
+          - {{install.prometheus.storage_claim.access_mode}}
+        storageClassName: {{install.prometheus.storage_claim.class_name}}
+        resources:
+          requests:
+            storage: {{install.prometheus.storage_claim.claim_size}}
+
+---
+# prometeus-serviceacount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: {{prometheus.namespace}}
+
+---
+# prometeus-rbac-role-binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+- kind: ServiceAccount
+  name: prometheus
+  namespace: {{prometheus.namespace}}
+
+---
+# prometeus-rbac-clusterrole
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+  namespace: {{prometheus.namespace}}
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - services
+  - endpoints
+  - pods
+  - nodes/metrics
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources:
+  - configmaps
+  verbs: ["get"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+
+---
+
+# traefik-ingress-route
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: prometheus-ingressroute
+  namespace: {{prometheus.namespace}}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - match: Host(`{{ansible_fqdn|lower}}`)
+    kind: Rule
+    services:
+    - name: prometheus-operated
+      port: 9090
+

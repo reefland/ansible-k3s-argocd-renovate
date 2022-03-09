@@ -216,3 +216,51 @@ install:
         mode: "ReadWriteOnce"       # storage claim access mode
         size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
         remove: true                # true = remove claim when test is completed (false leaves it alone)
+
+  ###[ Prometheus Operator Installation Settings ]#################################################
+  prometheus:
+    # Select release to use:  https://github.com/prometheus-operator/prometheus-operator/releases
+    install_version: "v0.54.1"
+
+    retention: "7d"                 # How long to retain data
+    monitor_services:               # Services to monitor
+      - kube-state-metrics
+      - node-exporter
+      - kubelet
+      - traefik
+
+    storage_claim:                  # Define where and how data is stored
+      access_mode: "ReadWriteOnce"
+      class_name: "freenas-iscsi-csi"
+      claim_size: 20Gi
+   
+
+    node_exporter:
+      # https://quay.io/repository/prometheus/node-exporter?tab=tags&tag=latest
+      install_version: "1.3.1"
+      image_name: "quay.io/prometheus/node-exporter"
+
+    kube_state_metrics:
+      # https://github.com/kubernetes/kube-state-metrics/releases
+      install_version: "2.3.0"  #2.4.1
+      image_name: "k8s.gcr.io/kube-state-metrics/kube-state-metrics"
+      node_selector: "kubernetes.io/os: linux"    # Any linux node
+      # node_selector: "node-type: worker"        # custom label example
+
+    kube_rbac_proxy:
+      # https://quay.io/repository/brancz/kube-rbac-proxy?tab=tags&tag=latest
+      install_version: "0.8.0"
+      image_name: "quay.io/brancz/kube-rbac-proxy"
+
+  ###[ Grafana Installation Settings ]#############################################################
+  grafana:
+    image_name: "grafana/grafana"
+    install_version: "latest"
+
+    storage_claim:                  # Define where and how data is stored
+      access_mode: "ReadWriteOnce"
+      class_name: "freenas-iscsi-csi"
+      claim_size: 10Gi
+
+    node_selector: "kubernetes.io/os: linux"    # Any linux node
+    # node_selector: "node-type: worker"        # custom label example

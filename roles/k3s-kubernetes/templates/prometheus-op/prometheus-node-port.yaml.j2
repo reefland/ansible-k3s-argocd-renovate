@@ -1,0 +1,21 @@
+---
+# This is not deployed automatically. This will create a node port allowing you to reach
+# Prometheus directly on "nodePort" (30000) from a web browser pointing the the IP or domain name
+# where this is deployed.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: {{prometheus.namespace}}
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '9090'
+spec:
+  selector:
+    prometheus: prometheus-persistant
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 9090
+      nodePort: 30000

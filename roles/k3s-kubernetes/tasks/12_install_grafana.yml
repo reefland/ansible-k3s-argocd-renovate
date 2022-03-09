@@ -1,0 +1,36 @@
+---
+# Based on: https://rpi4cluster.com/monitoring/k3s-svcmonitors/
+
+### [ Install Grafana Operator Block ]#############################################################
+- name: Install Grafana Operator Block
+  block:
+
+  - name: Create directory for Grafana files for non-root user
+    file:
+      path: "/home/{{install.os.non_root_user.name}}/grafana"
+      state: directory
+      mode: '0700'
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+
+  - name: Copy Grafana Template Files
+    template:
+      src: "templates/grafana/{{item}}.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/grafana/{{item}}"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0660'
+    loop:
+      - grafana.yaml
+
+  - name: Install Grafana
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/grafana/grafana.yaml"
+      namespace: "{{prometheus.namespace}}"
+      wait: yes
+      wait_timeout: 300
+
+  tags:
+    - never
+    - install_grafana

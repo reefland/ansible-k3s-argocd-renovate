@@ -42,5 +42,3 @@ spec:
       services:
         - name: api@internal
           kind: TraefikService
-  tls:
-    certResolver: {% if k3s.traefik.staging|default(true)|bool == true %}letsencrypt-staging{% else %}letsencrypt-prod{% endif %}{{''}}
