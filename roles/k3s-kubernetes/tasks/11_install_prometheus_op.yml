@@ -28,26 +28,25 @@
       replace: "namespace: {{prometheus.namespace}}"
       backup: yes
 
-  # The kubernetes.core.k8s task to process the file would fail unless the equal signs were wrapped with single quotes.
-  - name: Replace "- =" with "- '='" to prevent failure
-    replace: 
-      path: "/home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml"
-      regexp: "(?m)- =$"
-      replace: "- '='"
-
   - name: Create Prometheus Operator Namespace
     kubernetes.core.k8s:
       state: present
       name: "{{prometheus.namespace}}"
       kind: Namespace
 
-#  Issues with the bundle file prevent it from being processed directly by ansible kubernetes.core.k8s such as:
+# [Issue 1] items within the bundle file prevent it from being processed directly by ansible kubernetes.core.k8s such as:
 #  "message": "pods \"prometheus-operator-cdcc7b85c-\" is forbidden: error looking up service account monitoring/prometheus-operator: serviceaccount \"prometheus-operator\" not found",
 #             "reason": "FailedCreate",
 
-#  Attempting "kubectl appl -f" results in issue: https://github.com/prometheus-community/helm-charts/issues/1500
-#  This was observed as well... "The CustomResourceDefinition "prometheuses.monitoring.coreos.com" is invalid: metadata.annotations: Too long: must have at most 262144 bytes"
+# This did fix that message:
+# The kubernetes.core.k8s task to process the file would fail unless the equal signs were wrapped with single quotes.
+#  - name: Replace "- =" with "- '='" to prevent failure
+#    replace: 
+#      path: "/home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml"
+#      regexp: "(?m)- =$"
+#      replace: "- '='"
 
+# This would still fail due to size of CRD being to long.
 #  - name: Install Prometheus Operator Namespace via static Manifest
 #    kubernetes.core.k8s:
 #      state: present
@@ -56,31 +55,12 @@
 #      wait: yes
 #      wait_timeout: 300
 
-#  Workaround, manually process the bundle.yaml file in 2 steps - CRD with issue, then rest of it.
+# [Issue 2] Attempting "kubectl appl -f" results in issue: https://github.com/prometheus-community/helm-charts/issues/1500
+#  This was observed as well... "The CustomResourceDefinition "prometheuses.monitoring.coreos.com" is invalid: metadata.annotations: Too long: must have at most 262144 bytes"
 
-  - name: Download Prometheus Operator CRD file
-    get_url:
-      url: "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/{{install.prometheus.install_version}}/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml"
-      dest: "/home/{{install.os.non_root_user.name}}/prometheus/monitoring.coreos.com_prometheuses.yaml"
-      mode: '0660'
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-
-  - name: Install Prometheus Operator CRD
-    kubernetes.core.k8s:
-      state: present
-      src: "/home/{{install.os.non_root_user.name}}/prometheus/monitoring.coreos.com_prometheuses.yaml"
-      namespace: "{{prometheus.namespace}}"
-      wait: yes
-      wait_timeout: 300
-
-  # This will have an error from above "The CustomResourceDefinition "prometheuses.monitoring.coreos.com" is invalid: metadata.annotations: Too long: must have at most 262144 bytes"
-  # so errors are ignored
+  # added "--server-sde" gets around the CDR message.
   - name: Process Prometheus Operator bundle.yaml file
-    command: "kubectl apply -n {{prometheus.namespace}} -f /home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml"
-    ignore_errors: yes 
-
-  ### End of Workaround ###
+    command: "kubectl apply -n {{prometheus.namespace}} -f /home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml --server-side"
 
   tags:
     - never
