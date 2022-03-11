@@ -234,15 +234,19 @@ install:
     packages:
       - open-iscsi
 
-    namespace: "longhorn-system"
-    release: "longhorn"
+    namespace: "longhorn-system"   # Add resources to this namespace
+    release: "longhorn"            # Release value passed to Helm
 
     # Longhorn Dashboard
     dashboard:
       create_route: true           # Create Ingress Route to make accessible 
       enable_basic_auth: true      # Require Authentication to access dashboard
       path: "/longhorn"            # URI Path for Ingress Route
-    
+
+      # Encoded users and passwords for basic authentication
+      allowed_users: "{{longhorn.dashboard_users}}"    
+
+    # Define where ZFS Zvol should be created for Longhorn storage
     zfs:                           # Combined "rpool/longhorn"
       pool: "rpool"
       volume_name: "longhorn"              

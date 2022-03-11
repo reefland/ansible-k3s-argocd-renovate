@@ -40,11 +40,21 @@
     loop:
       - "longhorn_traefik_ingress_route.yaml"
 
-  - name: Create ZFS Zvol for Longhorn
+  # Expected to return no output if not found
+  - name: Check if Longhorn Volume is already exists
+    shell:
+      cmd: "findmnt -t {{longhorn.zfs.zvol.format|string}} --target {{install.longhorn.zfs.zvol.mountpoint}}"
+    register: longhorn_zvol
+  
+  # This would error with volblocksize as read-only property if volume already existed.
+  # When clause added to get around this.
+  - name: Create ZFS Zvol for Longhorn (if does not exist)
     community.general.zfs:
       name: "{{install.longhorn.zfs.pool}}/{{install.longhorn.zfs.volume_name}}"
       extra_zfs_properties: "{{install.longhorn.zfs.zvol.options}}"
       state: present
+    when:
+      - longhorn_zvol.stdout.find("TARGET") == -1
 
   - name: Create Filesystem for Longhorn ZVOL
     community.general.filesystem:
@@ -69,7 +79,7 @@
     fail:
       msg: "Longhorn volume not mounted as expected."
     when:
-      - longhorn_zvol.stdout.find("TARGET")  == -1
+      - longhorn_zvol.stdout.find("TARGET") == -1
 
   - name: Install Longhorn via Helm
     kubernetes.core.helm:

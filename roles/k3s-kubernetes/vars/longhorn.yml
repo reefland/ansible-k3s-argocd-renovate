@@ -8,3 +8,5 @@ longhorn:
     # Format of the filesystem used for Longhorn storage
     zvol:
       format: "xfs"
+
+  dashboard_users: "{{LONGHORN_DASHBOARD_USERS}}"

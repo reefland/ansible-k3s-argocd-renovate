@@ -15,6 +15,7 @@
   loop:
     - secrets/k3s_traefik_api_secrets.yml
     - secrets/truenas_api_secrets.yml
+    - secrets/longhorn_dashboard_secrets.yml
   no_log: "{{no_log_secrets|default(true)}}"
 
 ###[ Load up the variable files ]##################################################################
