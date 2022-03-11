@@ -30,7 +30,7 @@
       namespace: "{{prometheus.namespace}}"
       wait: yes
       wait_timeout: 300
-
+  when:
+    - install.grafana.install_this|default(false)|bool == true
   tags:
-    - never
     - install_grafana

@@ -1,0 +1,84 @@
+---
+#
+# Add Longhorn distributed kubernetes storage
+# https://longhorn.io/docs/1.2.3/deploy/install/install-with-helm/
+
+###[ Install Longhorn packages ]###################################################################
+- name: Install Longhorn Repository via Helm Block
+  block:
+  - name: Install Longhorn Support packages
+    apt:
+      name: "{{install.longhorn.packages}}"
+      state: present
+
+  - name: Add Longhorn Repository to Helm
+    kubernetes.core.helm_repository:
+      name: longhorn
+      repo_url: "{{longhorn.repo_url}}"
+
+  - name: Enable and Start open-iscsi Service
+    ansible.builtin.systemd:
+      enabled: yes
+      state: started
+      name: open-iscsi
+
+  - name: Install Longhorn via Helm
+    kubernetes.core.helm:
+      update_repo_cache: yes
+      atomic: yes
+      create_namespace: yes
+      chart_ref: "{{longhorn.repo_chart_ref}}"
+      release_name: "{{install.longhorn.release}}"
+      release_namespace: "{{install.longhorn.namespace}}"
+      release_state: present
+      wait: yes
+      wait_timeout: 5m
+      values:
+        defaultSettings:
+          defaultDataPath: "{{install.longhorn.storage_dataset}}"
+
+  - name: Create directory for Longhorn yaml files for non-root user
+    file:
+      path: "/home/{{install.os.non_root_user.name}}/longhorn"
+      state: directory
+      mode: 0700
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+
+  - name: Copy Longhorn Template Files
+    template:
+      src: "templates/longhorn/{{item}}.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/longhorn/{{item}}"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0660'
+    loop:
+      - "longhorn_traefik_ingress_route.yaml"
+
+  - name: Add Longhorn Ingress Route for Traefik 
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/longhorn/longhorn_traefik_ingress_route.yaml"
+      namespace: "{{install.longhorn.namespace}}"
+      wait: yes
+      wait_timeout: 300
+    when:
+      - install.longhorn.dashboard.create_route|default(true)|bool == true
+
+  - name: StorageClass Patch to Disable "local-path" as default class
+    kubernetes.core.k8s:
+      state: patched
+      kind: StorageClass
+      name: "local-path"
+      definition:
+        metadata:
+          annotations:
+            storageclass.kubernetes.io/is-default-class: "false"
+    when:
+      - install.longhorn.disable_local_path_as_default_storage_class|default(false)|bool == true
+
+
+  tags:
+    - install_longhorn
+  when:
+    - install.longhorn.install_this|default(false)|bool == true

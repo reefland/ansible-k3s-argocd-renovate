@@ -80,21 +80,5 @@ rules:
 - nonResourceURLs: ["/metrics"]
   verbs: ["get"]
 
----
 
-# traefik-ingress-route
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: prometheus-ingressroute
-  namespace: {{prometheus.namespace}}
-spec:
-  entryPoints:
-    - websecure
-  routes:
-  - match: Host(`{{ansible_fqdn|lower}}`)
-    kind: Rule
-    services:
-    - name: prometheus-operated
-      port: 9090
 

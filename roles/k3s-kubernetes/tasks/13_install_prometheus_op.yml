@@ -109,13 +109,13 @@
       wait: yes
       wait_timeout: 300
 
-  - name: Install Traefik Service Monitor
-    kubernetes.core.k8s:
-      state: present
-      src: "/home/{{install.os.non_root_user.name}}/prometheus/traefik-servicemonitor.yaml"
-      namespace: "{{prometheus.namespace}}"
-      wait: yes
-      wait_timeout: 300
+#  - name: Install Traefik Service Monitor
+#    kubernetes.core.k8s:
+#      state: present
+#      src: "/home/{{install.os.non_root_user.name}}/prometheus/traefik-servicemonitor.yaml"
+#      namespace: "{{prometheus.namespace}}"
+#      wait: yes
+#      wait_timeout: 300
 
   - name: Install Prometheus
     kubernetes.core.k8s:
@@ -124,7 +124,8 @@
       namespace: "{{prometheus.namespace}}"
       wait: yes
       wait_timeout: 300
-
+  when:
+    - install.prometheus.install_this|default(false)|bool == true
   tags:
-    - never
     - install_prometheus_op
+  
