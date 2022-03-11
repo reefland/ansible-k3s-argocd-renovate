@@ -102,7 +102,7 @@ The intent of longhorn is to be used instead of "local-path" storage class. Once
 
 ### Longhorn Dashboard
 
-* Settings for the Longhorn Web Dashboard:
+* Settings for the Longhorn Web Dashboard. The `create_route` will create a Traefik Ingress route to expose the dashboard on the URI defined in `path`.
 
 ```yml
     # Longhorn Dashboard
@@ -114,12 +114,27 @@ The intent of longhorn is to be used instead of "local-path" storage class. Once
 
 ![Longhorn Storage Dashboard](../images/longhorn-dashboard.png)
 
-* Disable "local-path" as the default storage class once Longhorn is installed:
+* By default basic authentication for the dashboard is enabled.  Individual users allowed to access the dashboard are defined in `var/secrets/longhorn_dashboard_secrets.yml` as follows:
 
-```yml
-    # The intent of longhorn is to be used instead of "local-path" storage class
-    # once Longhorn is installed "local-path" will be disabled as the default storage class
-    disable_local_path_as_default_storage_class: true
+```yaml
+# Define encoded Longhorn users allowed to use the Longhorn Dashboard (if enabled)
+# Multiple users can be listed below, one per line (indented by 2 spaces)
+# Created with "htpasswd" utility and then base64 encode that output such as:
+# $ htpasswd -nb [user] [password] | base64
+
+# Example of unique users from other dashboards:
+#LONGHORN_DASHBOARD_USERS: |
+#  dHJhZWZpa2FkbTokMnkkMTAkbHl3NWdYcXpvbFJCOUY4M0RHa2dMZW52YWJTcmpxUk9XbXNGUmZKa2ZQSlhBbzNDSmJHY08K
+
+# Use same users currently defined by Traefik dashboard:
+# NOTE: They do not share a common K8s secret. This will place the same information in two different
+#       secrets.
+LONGHORN_DASHBOARD_USERS: "{{TRAEFIK_DASHBOARD_USERS}}"
 ```
+
+NOTE: by default, any users defined in the Traefik Dashboard allowed user list is allowed to log into the Longhorn dashboard.
+
+* If you need to restrict access to the dashboard to different set of users or require different passwords, then update the file as needed.
+* As stated in the commons this is not a shared Kubernetes secrets with Traefik. Once deployed a change in one will not be reflected in the other.  This is just to make initial setup easier.
 
 [Back to README.md](../README.md)
