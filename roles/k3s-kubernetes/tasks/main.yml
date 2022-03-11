@@ -36,7 +36,9 @@
   shell:
     cmd: "{{containerd.zfs.zfs_uuid_detect_cmd}}"
   register: UUID
-
+  tags: ["always"]
+  when:
+    - install.containerd.zfs.detect_uuid|default(false)|bool == true
 ###################################################################################################
 
 ###[ Detect & Capture Node Token when available ]##################################################

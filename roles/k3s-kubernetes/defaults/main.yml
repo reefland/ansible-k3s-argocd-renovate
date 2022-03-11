@@ -237,16 +237,24 @@ install:
     namespace: "longhorn-system"
     release: "longhorn"
 
-    # Default location to store distributed cluster storage
-    # You should make this a ZFS dataset mount location to use a dedicated dataset
-    storage_dataset: "/var/lib/longhorn"
-
     # Longhorn Dashboard
     dashboard:
       create_route: true           # Create Ingress Route to make accessible 
       enable_basic_auth: true      # Require Authentication to access dashboard
       path: "/longhorn"            # URI Path for Ingress Route
+    
+    zfs:                           # Combined "rpool/longhorn"
+      pool: "rpool"
+      volume_name: "longhorn"              
 
+      zvol:
+        options:
+          volsize: "10G"
+          compression: "lz4"       # "" (inherit), lz4, gzip-9, etc
+          volblocksize: "16k"
+
+        mountpoint: "/var/lib/longhorn"
+        
     # The intent of longhorn is to be used instead of "local-path" storage class
     # once Longhorn is installed "local-path" will be disabled as the default storage class
     disable_local_path_as_default_storage_class: true
@@ -269,7 +277,6 @@ install:
       access_mode: "ReadWriteOnce"
       class_name: "freenas-iscsi-csi"
       claim_size: 20Gi
-   
 
     node_exporter:
       # https://quay.io/repository/prometheus/node-exporter?tab=tags&tag=latest
