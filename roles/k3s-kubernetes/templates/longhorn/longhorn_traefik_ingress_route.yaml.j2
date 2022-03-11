@@ -1,0 +1,46 @@
+---
+# Traefik 2.x ingress controller does not set the WebSocket headers
+# https://longhorn.io/kb/troubleshooting-traefik-2.x-as-ingress-controller/
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: svc-longhorn-headers
+  namespace: {{install.longhorn.namespace}}
+spec:
+  headers:
+    customRequestHeaders:
+      X-Forwarded-Proto: "https"
+
+---
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  namespace: {{install.longhorn.namespace}}
+  name: longhorn-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - {{install.longhorn.dashboard.path|default("/longhorn")}}
+    forceSlash: true
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: {{install.longhorn.namespace}}
+  name: longhorn-ingress-route
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ansible_fqdn|lower}}`) && (PathPrefix(`{{install.longhorn.dashboard.path|default("/longhorn")}}`))
+      kind: Rule
+      services:
+      - kind: Service
+        name: longhorn-frontend
+        port: 80
+      middlewares:
+      - name: longhorn-stripprefix
+      - name: svc-longhorn-headers

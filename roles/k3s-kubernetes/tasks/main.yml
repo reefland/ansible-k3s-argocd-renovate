@@ -27,6 +27,7 @@
       - helm.yml
       - cert_manager.yml
       - democratic-csi.yml
+      - longhorn.yml
       - prometheus-op.yml
       - grafana.yml
 
@@ -76,8 +77,9 @@
     - 08_validate_csi_iscsi.yml
     - 09_install_democratic_csi_nfs.yml
     - 10_validate_csi_nfs.yml
-    - 11_install_prometheus_op.yml
-    - 12_install_grafana.yml
+    - 11_install_longhorn.yml
+    - 12_install_prometheus_op.yml
+    - 13_install_grafana.yml
 
   loop_control:
     loop_var: task_names
