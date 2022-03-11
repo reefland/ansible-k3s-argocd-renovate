@@ -4,6 +4,14 @@
 - name: Install k3s Kubernetes Distribution Block
   block:
 
+  - name: Uninstall Snapd Demon
+    apt:
+      name: "{{install.os.remove_snapd.packages}}"
+      state: absent
+      autoremove: yes
+    when:
+      - install.os.remove_snapd.remove_it|default(false)|bool == true 
+
   - name: Install Kubernetes packages for Ansible
     apt:
       name: "{{install.k3s.packages}}"
@@ -28,7 +36,7 @@
       line: "{{install.os.non_root_user.name}} ALL=(ALL) NOPASSWD: /usr/local/bin/kubectl"
       validate: "visudo -cf %s"
     when:
-      - install.os.allow_passwordless_sudo|default(false) == true
+      - install.os.allow_passwordless_sudo|default(false)|bool == true
 
   - name: Download k3s install script
     get_url:
@@ -56,6 +64,12 @@
     ansible.builtin.lineinfile:
       dest: "/home/{{install.os.non_root_user.name}}/.profile"
       line: "export KUBECONFIG=~/.kube/config"
+
+  # Allow Helm to know where config file is
+  - name: Add KUBECONFIG to /etc/environment
+    ansible.builtin.lineinfile:
+      dest: "/etc/environment"
+      line: "KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
 
   - name: Execute k3s_install.sh and create k3s_install.log
     ansible.builtin.shell:
