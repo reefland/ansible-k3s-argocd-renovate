@@ -112,6 +112,8 @@ The intent of longhorn is to be used instead of "local-path" storage class. Once
       path: "/longhorn"            # URI Path for Ingress Route
 ```
 
+The Dashboard URL path will resemble: `https://testlinux.example.com/longhorn/#/dashboard`
+
 ![Longhorn Storage Dashboard](../images/longhorn-dashboard.png)
 
 * By default basic authentication for the dashboard is enabled.  Individual users allowed to access the dashboard are defined in `var/secrets/longhorn_dashboard_secrets.yml` as follows:

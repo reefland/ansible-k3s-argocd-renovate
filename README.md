@@ -95,6 +95,20 @@ ansible_python_interpreter=/usr/bin/python3
 testlinux.example.com
 ```
 
+### Create a Playbook
+
+Simple playbook I'm using for testing:
+
+```yml
+- name: k3s Kubernetes Installation & Configuration
+  hosts: k8s_all
+  become: true
+  gather_facts: true
+
+  roles:
+    - role: k3s-kubernetes
+```
+
 ### Fire-up the Ansible Playbook
 
 The most basic way to deploy K3s Kubernetes with ContainerD:
