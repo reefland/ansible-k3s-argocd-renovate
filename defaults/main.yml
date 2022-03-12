@@ -53,6 +53,10 @@ install:
       # Send Flags to K3s Service
       - INSTALL_K3S_EXEC="--container-runtime-endpoint unix:///run/containerd/containerd.sock"
 
+    # Add this CLI option if disable_local_path_as_default_storage_class = true
+    cli_disable_options:
+      - "--disable local-storage"
+
     url: "https://get.k3s.io"
 
     # If enabled, will fail ansible deployment when "kubectl get node" returns "No resources found"
