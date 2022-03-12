@@ -71,6 +71,12 @@
       dest: "/etc/environment"
       line: "KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
 
+  - name: Merge in disable options to cli options if local storage disabled
+    set_fact:
+      install.k3s.cli_options: "{{install.k3s.cli_options + cli_disable_options}}"
+    when:
+      - disable_local_path_as_default_storage_class|default(false)|bool == true
+
   - name: Execute k3s_install.sh and create k3s_install.log
     ansible.builtin.shell:
       cmd: "{{ install.k3s.cli_options|join(' ') }} /home/{{install.os.non_root_user.name}}/k3s_install.sh > /home/{{install.os.non_root_user.name}}/k3s_install.log"
