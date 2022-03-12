@@ -45,6 +45,7 @@
     shell:
       cmd: "findmnt -t {{longhorn.zfs.zvol.format|string}} --target {{install.longhorn.zfs.zvol.mountpoint}}"
     register: longhorn_zvol
+    ignore_errors: yes
   
   # This would error with volblocksize as read-only property if volume already existed.
   # When clause added to get around this.
