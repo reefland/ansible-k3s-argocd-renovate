@@ -97,7 +97,7 @@ testlinux.example.com
 
 ### Create a Playbook
 
-Simple playbook I'm using for testing:
+Simple playbook I'm using for testing, named `kubernetes.yml`:
 
 ```yml
 - name: k3s Kubernetes Installation & Configuration
