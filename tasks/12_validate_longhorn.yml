@@ -1,0 +1,99 @@
+---
+#
+# Validate the longhorn installation is running as expected.
+#
+
+###[ Validate Longhorn Kubernetes Installation ]#########################################
+- name: Validate Longhorn Kubernetes Installation Block
+  block:
+  - name: Check if Longhorn Manager Pod
+    k8s_info:
+      kind: Pod
+      namespace: "{{install.longhorn.namespace}}"
+      field_selectors:
+        - "status.phase=Running"
+      label_selectors:
+        - "app=longhorn-manager"
+    register: longhorn_pods_details
+
+ # There are many longhorn pod types, this only checked a single one.
+ # Set Fact if we can detect the manager pod is running
+  - set_fact:
+      longhorn_manager_running: true
+    when: longhorn_pods_details|count|int > 0
+
+  - name: Fail if Longhorn Manager Pod not running
+    fail:
+      msg: |
+        Unable to detect Longhorn Manager pod is running, try:
+
+        kubectl get pods -n {{install.longhorn.namespace}} -o wide
+    when: longhorn_manager_running|bool == false
+
+  - name: "Check if Longhorn storage class is created"
+    k8s_info:
+      kind: StorageClass
+      namespace: "{{install.longhorn.namespace}}"
+      field_selectors:
+        - "metadata.name=driver.longhorn.io"
+    register: longhorn_storageclass_details
+
+  - name: Fail if Longhorn storage class not detected
+    fail:
+      msg: |
+        Unable to detect Longhorn storage class, try:
+        
+        kubectl get sc -n {{install.longhorn.namespace}}
+    when: longhorn_storageclass_details is not defined
+
+  ###[ Perform Longhorn Claim and Validate Block ]#################################################
+  - name: Perform Longhorn Test Claim and Validate Block
+    block:
+    - name: Perform Longhorn test claim
+      kubernetes.core.k8s:
+        src: "/home/{{install.os.non_root_user.name}}/longhorn/longhorn-test-claim.yaml"
+        state: present
+        namespace: "{{install.longhorn.namespace}}"
+        wait: yes
+        wait_timeout: 120
+
+    - name: Pause for 5 seconds for Longhorn claim provision to process
+      wait_for:
+        timeout: 5
+
+    - name: "Check if NFS test claim is created"
+      k8s_info:
+        kind: PersistentVolumeClaim
+        namespace: "{{install.longhorn.namespace}}"
+        field_selectors:
+          - "metadata.name=longhorn-volv-pvc"
+      register: longhorn_storage_claim_details
+
+   # Set Fact if we can detect storage claim phase "Bound"
+    - set_fact:
+        longhorn_storage_claim: true
+      loop: "{{longhorn_storage_claim_details.resources}}"
+      when: item.status.phase == "Bound"
+
+    - name: Fail if Longhorn storage claim not detected
+      fail:
+        msg: |
+          Unable to detect Longhorn storage claim, try:
+          
+          kubectl get pvc -n {{install.longhorn.namespace}}
+      when: longhorn_storage_claim is not defined
+
+    - name: Remove Longhorn claim - validations passed
+      kubernetes.core.k8s:
+        src: "/home/{{install.os.non_root_user.name}}/longhorn/longhorn-test-claim.yaml"
+        state: absent
+        namespace: "{{install.longhorn.namespace}}"
+        wait: yes
+        wait_timeout: 120
+
+    when: install.longhorn.test_claim.enabled|default(false)|bool == true
+    
+  tags:
+    - validate_longhorn
+  when:
+    - install.longhorn.install_this|default(false)|bool == true

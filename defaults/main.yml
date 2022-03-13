@@ -267,6 +267,13 @@ install:
     # once Longhorn is installed "local-path" will be disabled as the default storage class
     disable_local_path_as_default_storage_class: true
 
+    # Once installed and validated, a test claim can be processed.
+    test_claim:
+      enabled: true               # true = attempt longhorn storage claim
+      mode: "ReadWriteOnce"       # storage claim access mode
+      size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
+      remove: true                # true = remove claim when test is completed (false leaves it alone)
+
   ###[ Prometheus Operator Installation Settings ]#################################################
   prometheus:
     install_this: true              # Install Prometheus Operator

@@ -39,6 +39,7 @@
       mode: '0660'
     loop:
       - "longhorn_traefik_ingress_route.yaml"
+      - "longhorn-test-claim.yaml"
 
   # Expected to return no output if not found
   - name: Check if Longhorn Volume is already exists

@@ -81,8 +81,9 @@
     - 09_install_democratic_csi_nfs.yml
     - 10_validate_csi_nfs.yml
     - 11_install_longhorn.yml
-    - 12_install_prometheus_op.yml
-    - 13_install_grafana.yml
+    - 12_validate_longhorn.yml
+    - 13_install_prometheus_op.yml
+    - 14_install_grafana.yml
 
   loop_control:
     loop_var: task_names

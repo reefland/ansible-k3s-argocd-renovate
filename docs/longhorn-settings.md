@@ -139,4 +139,16 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
 * If you need to restrict access to the dashboard to different set of users or require different passwords, then update the file as needed.
 * As stated in the commons this is not a shared Kubernetes secrets with Traefik. Once deployed a change in one will not be reflected in the other.  This is just to make initial setup easier.
 
+### Test Claim
+
+* Adjust if you want a Longhorn storage test claim performed once all validations have completed:
+
+```yml
+  test_claim:
+    enabled: true               # true = attempt longhorn storage claim
+    mode: "ReadWriteOnce"       # storage claim access mode
+    size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
+    remove: true                # true = remove claim when test is completed (false leaves it alone)
+```
+
 [Back to README.md](../README.md)

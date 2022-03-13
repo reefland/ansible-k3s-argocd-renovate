@@ -4,10 +4,11 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 
 * **non-root** user account for Kubernetes, passwordless access to `kubectl` by default.
 * **condainerd** to provide ZFS snapshotter support
-* Helm Client
-* Cert-manager
+* [Helm Client](https://helm.sh/docs/intro/using_helm/)
+* [Cert-manager](https://cert-manager.io/)
 * **Traefik** ingress with **Letsencrypt wildcard certificates** for domains against LE staging or prod (Cloudflare DNS validator)
 * [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide **Persistent Volume Claim** storage via **iSCSI** and **NFS** from TrueNAS
+* [Longhorn](https://longhorn.io/) distributed Persistent Volume Claims as default storage class
 * Optionally **Prometheus Operator** and **Grafana** can be deployed with customized storage claims
 
 ---
@@ -18,6 +19,7 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * The **democratic-csi** section will require steps completed on your TrueNAS installation in addition to settings values in Ansible.
 * Traefik configuration for Lets Encrypt will require you to define your challenge credentials.
 * Longhorn Distributed storage is intended to be the default storage class, once installed the "local-path" StorageClass "default" flag will be removed.
+
 ---
 
 ## Environments Tested
@@ -35,7 +37,7 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * k3s (Runs official script [https://get.k3s.io](https://get.k3s.io))
 * containerd, containernetworking-plugins, iptables
 * helm, apt-transport-https (required for helm client install)
-* open-iscsi, lsscsi, sg3-utils, multipath-tools, scsitools (required when iSCSI support is enabled)
+* open-iscsi, lsscsi, sg3-utils, multipath-tools, scsitools (required by democratic-csi when iSCSI support is enabled and by Longhorn)
 * libnfs-utils (required for NFS support is enabled)
 
 ## Packages Uninstalled
