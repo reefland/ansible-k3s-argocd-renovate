@@ -16,15 +16,15 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 ## TL;DR
 
 * You should read it. :)
-* The **democratic-csi** section will require steps completed on your TrueNAS installation in addition to settings values in Ansible.
+* The **democratic-csi** section will require steps completed on your TrueNAS installation in addition to setting values in Ansible.
 * Traefik configuration for Lets Encrypt will require you to define your challenge credentials.
-* Longhorn Distributed storage is intended to be the default storage class, once installed the "local-path" StorageClass "default" flag will be removed.
+* Longhorn Distributed storage is intended to be the default storage class, once installed the `local-path` StorageClass `default` flag will be removed.
 
 ---
 
 ## Environments Tested
 
-* Ubuntu 20.04.4 based [ZFS on Root](https://gitea.rich-durso.us/reefland/ansible/src/branch/master/roles/zfs_on_root) installation.
+* Ubuntu 20.04.4 based [ZFS on Root](https://gitea.rich-durso.us/reefland/ansible-zfs_on_root) installation
 * TrueNAS Core 12-U8
 * K3s v1.23.3
 
