@@ -103,6 +103,9 @@ install:
 
   ###[ Democratic CSI Installation Settings ]######################################################
   democratic_csi:
+    # Select release to use: https://github.com/democratic-csi/charts/releases
+    install_version: "v0.11.0"    # installs democratic_csi v1.5.4
+
     truenas:
       # See file "truenas_api_secrets.yml" to set secrets (and be sure to use ansible vault to encrypt!)
       http_connection:

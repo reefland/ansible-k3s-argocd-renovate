@@ -250,12 +250,29 @@ ansible-vault encrypt roles/k3s-kubernetes/vars/secrets/truenas_api_secrets.yml
 
 The democratic-csi Settings are in variable namespace `install.democratic_csi`.
 
+### Select Chart Version to Install
+
+It is recommended to pin specific version known to work and test newer version when you can by updating this value.
+
+```yml
+ democratic_csi:
+    # Select release to use: https://github.com/democratic-csi/charts/releases
+    install_version: "v0.11.0"    # installs democratic_csi v1.5.4
+```
+
+When a newer chart (or previous) version is selected, you can push out changes using tags:
+
+```shell
+ansible-playbook -i inventory kubernetes.yml -l testlinux.example.com --tags="install_democratic_csi_iscsi, install_democratic_csi_nfs"
+```
+
 ### TrueNAS Connectivity Settings
 
 * Set http protocol settings to connect to TrueNAS (http or https), port number (80, 443), and if insecure connections are allowed:
 
 ```yml
 democratic_csi:
+
   truenas:
     http_connection:
       protocol: "https"

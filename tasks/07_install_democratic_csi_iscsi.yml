@@ -68,6 +68,7 @@
       atomic: yes
       create_namespace: yes
       chart_ref: "{{democratic_csi.repo_chart_ref}}"
+      chart_version: "{{install.democratic_csi.install_version}}"
       release_name: "{{install.democratic_csi.iscsi.release}}"
       release_namespace: "{{install.democratic_csi.iscsi.namespace}}"
       release_state: present
