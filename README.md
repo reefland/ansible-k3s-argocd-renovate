@@ -32,13 +32,15 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 
 ## Packages Installed
 
-* python3-pip (required for Ansible managed nodes)
-* pip packages - openshift, pyyaml, kubernetes (required for Ansible to execute K8s module)
+* [python3-pip](https://pypi.org/project/pip/) (required for Ansible managed nodes)
+* pip packages - [OpenShift](https://pypi.org/project/openshift/), [pyyaml](https://pypi.org/project/PyYAML/), [kubernetes](https://pypi.org/project/kubernetes/) (required for Ansible to execute K8s module)
 * k3s (Runs official script [https://get.k3s.io](https://get.k3s.io))
-* containerd, containernetworking-plugins, iptables
-* helm, apt-transport-https (required for helm client install)
-* open-iscsi, lsscsi, sg3-utils, multipath-tools, scsitools (required by democratic-csi when iSCSI support is enabled and by Longhorn)
-* libnfs-utils (required for NFS support is enabled)
+* [containerd](https://containerd.io/), container networking-plugins, iptables
+* [helm](https://helm.sh/), [apt-transport-https](http://manpages.ubuntu.com/manpages/focal/man1/apt-transport-https.1.html) (required for helm client install)
+* [open-iscsi](https://github.com/open-iscsi/open-iscsi), [lsscsi](http://sg.danny.cz/scsi/lsscsi.html), [sg3-utils](https://sg.danny.cz/sg/sg3_utils.html), [multipath-tools](https://github.com/opensvc/multipath-tools), [scsitools](https://packages.ubuntu.com/focal/scsitools-gui) (required by democratic-csi [when iSCSI support is enabled] and by Longhorn)
+* [libnfs-utils](https://packages.ubuntu.com/focal/libnfs-utils) (required by democratic-csi when NFS support is enabled)
+* [democratic-csi](https://github.com/democratic-csi/democratic-csi) implements the csi (container storage interface) spec providing storage from TrueNAS
+* [Longhorn](https://longhorn.io/) provides native distributed block storage for Kubernetes cluster
 
 ## Packages Uninstalled
 
