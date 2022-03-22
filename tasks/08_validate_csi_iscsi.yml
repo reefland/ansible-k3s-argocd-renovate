@@ -29,7 +29,7 @@
   - name: Fail if democratic-csi controller pod not running
     fail:
       msg: |
-        Unable to detect democratic-csi controller pod is running, try:
+        Unable to detect democratic-csi controller pod is running. Check this...
         
         kubectl get pods -n {{install.democratic_csi.iscsi.namespace}} -o wide
     when: csi_controller_running is not defined
