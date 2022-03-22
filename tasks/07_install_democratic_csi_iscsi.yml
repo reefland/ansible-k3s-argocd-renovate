@@ -75,6 +75,10 @@
       wait: yes
       wait_timeout: 5m
 
+  - name: Pause for 60 seconds for deployment to spin up all pods. 
+    wait_for:
+      timeout: 60
+
   tags:
     - install_democratic_csi_iscsi
   when:
