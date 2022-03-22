@@ -41,15 +41,14 @@
       - "longhorn_traefik_ingress_route.yaml"
       - "longhorn-test-claim.yaml"
 
-  # Expected to return no output if not found
+  # Expected to return no output if not found, this is needed to prevent error below.
   - name: Check if Longhorn Volume is already exists
     shell:
-      cmd: "findmnt -t {{longhorn.zfs.zvol.format|string}} --target {{install.longhorn.zfs.zvol.mountpoint}}"
+      cmd: "echo $(findmnt -t {{longhorn.zfs.zvol.format|string}} --target {{install.longhorn.zfs.zvol.mountpoint}})"
     register: longhorn_zvol
-    ignore_errors: yes
-  
+    
   # This would error with volblocksize as read-only property if volume already existed.
-  # When clause added to get around this.
+  # When clause added to get around this error condition
   - name: Create ZFS Zvol for Longhorn (if does not exist)
     community.general.zfs:
       name: "{{install.longhorn.zfs.pool}}/{{install.longhorn.zfs.volume_name}}"
