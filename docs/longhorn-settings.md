@@ -151,4 +151,20 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
     remove: true                # true = remove claim when test is completed (false leaves it alone)
 ```
 
+---
+
+## Uninstall Longhorn
+
+Should you need to remove longhorn:
+
+```shell
+$ helm uninstall longhorn -n longhorn-system
+release "longhorn" uninstalled
+
+$ kubectl delete namespace longhorn-system 
+namespace "longhorn-system" deleted
+```
+
+You can also remove the ZFS dataset you specified and remove that from `/etc/fstab`.
+
 [Back to README.md](../README.md)
