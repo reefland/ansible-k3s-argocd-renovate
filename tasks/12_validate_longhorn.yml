@@ -35,16 +35,11 @@
       kind: StorageClass
       namespace: "{{install.longhorn.namespace}}"
       field_selectors:
-        - "metadata.name=driver.longhorn.io"
+        - "metadata.name=longhorn"
     register: longhorn_storageclass_details
-
-  - name: Fail if Longhorn storage class not detected
-    fail:
-      msg: |
-        Unable to detect Longhorn storage class, try:
-        
-        kubectl get sc -n {{install.longhorn.namespace}}
-    when: longhorn_storageclass_details is not defined
+    until: longhorn_storageclass_details.resources[0].provisioner == "driver.longhorn.io"
+    retries: 4
+    delay: 5
 
   ###[ Perform Longhorn Claim and Validate Block ]#################################################
   - name: Perform Longhorn Test Claim and Validate Block
@@ -65,8 +60,8 @@
           - "metadata.name=longhorn-volv-pvc"
       register: longhorn_storage_claim_details
       until: longhorn_storage_claim_details.resources[0].status.phase == "Bound"
-      retries: 4
-      delay: 5
+      retries: 5
+      delay: 10
 
     - name: Remove Longhorn claim - validations passed
       kubernetes.core.k8s:
