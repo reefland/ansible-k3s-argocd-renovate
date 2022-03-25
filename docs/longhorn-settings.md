@@ -33,9 +33,11 @@ The Longhorn Settings are in variable namespace `install.longhorn`.
 
 * Define the ZFS pool name to use and volume name to create.
 
+  * The `pool` can be defined per host or host group using variable `longhorn_zfs_pool` if this is not defined, it will default to `rpool` as shown below.
+
 ```yml
     zfs:                           # Combined "rpool/longhorn"
-      pool: "rpool"
+      pool: "{{longhorn_zfs_pool|default('rpool')}}"
       volume_name: "longhorn"              
 ```
 
@@ -165,6 +167,20 @@ $ kubectl delete namespace longhorn-system
 namespace "longhorn-system" deleted
 ```
 
-You can also remove the ZFS dataset you specified and remove that from `/etc/fstab`.
+### Remove Longhorn Dataset
+
+You can also remove the ZFS dataset you specified, default was:
+
+```shell
+sudo umount /var/lib/longhorn
+
+sudo zfs destroy rpool/longhorn
+```
+
+Then remove this line from `/etc/fstab`.
+
+```text
+/dev/zvol/rpool/longhorn /var/lib/longhorn xfs noatime,discard 0 0
+```
 
 [Back to README.md](../README.md)
