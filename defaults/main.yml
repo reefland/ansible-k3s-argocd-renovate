@@ -19,6 +19,16 @@ install:
       packages:
         - snapd
 
+    # Send all logs to a centralized logging server.  The central logging service will be set
+    # when varibale `rsyslog_server` is equal to `ansible_fqdn`.
+    # This will put all logs from k3s hosts under /var/log/central/<hostname>.log
+    central_logging:                          # Centralize all logs to one node using Rsyslog 
+      enabled: "{% if rsyslog_server is defined %}true{% else %}false{% endif %}"   # only enabled if central defined
+      log_path: "/var/log/central"            # Directory on central server to hold logs
+
+      packages:
+        - lnav                                # Handy program to watch logs in real-time
+
   ###[ Traefik Installation Settings ]#############################################################
   traefik:
     # List of Domain Names for LetsEncrypt Certificates

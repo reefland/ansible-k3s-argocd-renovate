@@ -1,0 +1,82 @@
+---
+# Configure Centralized logging 
+
+# Determine if Central Logging Server
+- set_fact:
+    config_central_server: true
+  when: rsyslog_server|lower == ansible_fqdn|lower
+  tags:
+    - config_rsyslog
+
+###[ Configure Central Logging Server ]########################################
+- name: Configure Central Logging Server Block
+  block:
+  
+  - name: Install Packages to Support Central Logging
+    apt:
+      name: "{{install.os.central_logging.packages}}"
+      state: present
+
+  - name: Create folder for central logging
+    ansible.builtin.file:
+      path: "{{install.os.central_logging.log_path}}"
+      owner: "{{rsyslog.logging_path.owner}}"
+      group: "{{rsyslog.logging_path.group}}"
+      mode: "{{rsyslog.logging_path.mode}}"
+      state: directory
+
+  - name: Enable UDP/TCP syslog reception
+    replace:
+      path: "{{rsyslog.config_file}}"
+      regexp: '^#{{item.find}}'
+      replace: '{{item.replace}}'
+      backup: yes
+    loop:
+      - { find: 'module\(load="imudp"',  replace: 'module(load="imudp"' }
+      - { find: 'input\(type="imudp"',   replace: 'input(type="imudp"' }
+      - { find: 'module\(load="imtcp"',  replace: 'module(load="imtcp"' }
+      - { find: 'input\(type="imtcp"',   replace: 'input(type="imtcp"' }
+
+  - name: Copy Central Logging Config File
+    copy:
+      src: "files/rsyslog/{{item.src}}"
+      dest: "{{item.dest}}"
+    loop:
+      - { src: "central.conf", dest: "{{rsyslog.central_config}}" }
+      - { src: "central",      dest: "{{rsyslog.logrotate_config}}" }
+
+  - name: Restart rsyslog service
+    ansible.builtin.systemd:
+      daemon_reload: yes
+      state: restarted
+      name: rsyslog
+
+  when: 
+    - config_central_server|default(false)|bool == true
+    - install.os.central_logging.enabled|default(false)|bool == true
+  tags:
+    - config_rsyslog
+
+###[ Configure Logging Clients ]########################################
+
+# This is never run on the central logging server, only other nodes
+- name: Configure Logging Clients Block
+  block:
+
+  - name: Enable logging clients to send to remote server
+    lineinfile:
+      path: "{{rsyslog.config_file}}"
+      insertafter: "# Default logging rules"
+      line: "*.* @@{{rsyslog_server}}:514"
+
+  - name: Restart rsyslog service
+    ansible.builtin.systemd:
+      daemon_reload: yes
+      state: restarted
+      name: rsyslog
+
+  when: 
+    - config_central_server|default(false)|bool == false
+    - install.os.central_logging.enabled|default(false)|bool == true
+  tags:
+    - config_rsyslog

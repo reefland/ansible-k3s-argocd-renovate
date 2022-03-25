@@ -23,6 +23,7 @@
   include_vars: "{{ item }}"
   tags: ["always"]
   loop:
+      - rsyslog.yml
       - k3s.yml
       - containerd.yml
       - helm.yml
@@ -70,6 +71,7 @@
   include_tasks: "{{task_names}}"
   tags: ["always"]
   loop:
+    - 00_config_rsyslog.yml
     - 01_install_k3s.yml
     - 02_install_containerd.yml
     - 03_validate_k3s.yml

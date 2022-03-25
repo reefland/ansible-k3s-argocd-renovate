@@ -1,0 +1,10 @@
+---
+rsyslog:
+  config_file: "/etc/rsyslog.conf"                # path to rsyslog conf file
+  central_config: "/etc/rsyslog.d/central.conf"   # path to central logging config
+  logrotate_config: "/etc/logrotate.d/central"    # path to logrotate config file
+
+  logging_path:
+    owner: "syslog"
+    group: "syslog"
+    mode: "0750"
