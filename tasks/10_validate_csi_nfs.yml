@@ -39,27 +39,17 @@
       msg: "Unable to detect democratic-csi node pod is running"
     when: csi_node_running is not defined
 
-  - name: "Check if NFS Storageclass is created"
+  # if this failed check "kubectl get sc -A"
+  - name: "Check if NFS Storage class is created"
     k8s_info:
       kind: StorageClass
       namespace: "{{install.democratic_csi.nfs.namespace}}"
       field_selectors:
         - "metadata.name={{install.democratic_csi.nfs.provisioner}}-csi"
     register: csi_storageclass_details
-
-  # Set Fact if we can detect the storage class
-  - set_fact:
-      csi_storage_class: true
-    loop: "{{csi_storageclass_details.resources}}"
-    when: item.provisioner == "org.democratic-csi.nfs"
-
-  - name: Fail if democratic-csi NFS storage class not detected
-    fail:
-      msg: |
-        Unable to detect democratic-csi NFS storage class, try:
-        
-        kubectl get sc -n {{install.democratic_csi.nfs.namespace}}
-    when: csi_storage_class is not defined
+    until: csi_storageclass_details.resources[0].provisioner == "org.democratic-csi.nfs"
+    retries: 4
+    delay: 5
 
   ###[ Perform NFS Test Claim and Validate Block ]#################################################
   - name: Perform NFS Test Claim and Validate Block
@@ -72,10 +62,6 @@
         wait: yes
         wait_timeout: 120
 
-    - name: Pause for 5 seconds for NFS claim provision to process
-      wait_for:
-        timeout: 5
-
     - name: "Check if NFS test claim is created"
       k8s_info:
         kind: PersistentVolumeClaim
@@ -83,20 +69,9 @@
         field_selectors:
           - "metadata.name=test-claim-nfs"
       register: csi_nfs_storage_claim_details
-
-    # Set Fact if we can detect storage claim phase "Bound"
-    - set_fact:
-        csi_nfs_storage_claim: true
-      loop: "{{csi_nfs_storage_claim_details.resources}}"
-      when: item.status.phase == "Bound"
-
-    - name: Fail if democratic-csi NFS storage claim not detected
-      fail:
-        msg: |
-          Unable to detect democratic-csi NFS storage claim, try:
-          
-          kubectl get pvc -n {{install.democratic_csi.nfs.namespace}}
-      when: csi_nfs_storage_claim is not defined
+      until: csi_nfs_storage_claim_details.resources[0].status.phase == "Bound"
+      retries: 5
+      delay: 10
 
     - name: Remove NFS test claim - validations passed
       kubernetes.core.k8s:

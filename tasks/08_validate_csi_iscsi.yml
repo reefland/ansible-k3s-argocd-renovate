@@ -39,29 +39,19 @@
       msg: "Unable to detect democratic-csi node pod is running"
     when: csi_node_running is not defined
 
-  - name: "Check if iSCSI Storageclass is created"
+  # if this failed check "kubectl get sc -A"
+  - name: "Check if iSCSI Storage class is created"
     k8s_info:
       kind: StorageClass
       namespace: "{{install.democratic_csi.iscsi.namespace}}"
       field_selectors:
         - "metadata.name={{install.democratic_csi.iscsi.provisioner}}-csi"
     register: csi_storageclass_details
+    until: csi_storageclass_details.resources[0].provisioner == "org.democratic-csi.iscsi"
+    retries: 4
+    delay: 5
 
-  # Set Fact if we can detect the storage class
-  - set_fact:
-      csi_storage_class: true
-    loop: "{{csi_storageclass_details.resources}}"
-    when: item.provisioner == "org.democratic-csi.iscsi"
-
-  - name: Fail if democratic-csi iSCSI storage class not detected
-    fail:
-      msg: |
-        Unable to detect democratic-csi iSCSI storage class, try:
-        
-        kubectl get sc -n {{install.democratic_csi.iscsi.namespace}}
-    when: csi_storage_class is not defined
-
-  ###[ Perform iSCSI Test Claim and Validate Block ]###############################################
+    ###[ Perform iSCSI Test Claim and Validate Block ]###############################################
   - name: Perform iSCSI Test Claim and Validate Block
     block:
     - name: Perform iSCSI test claim
@@ -72,10 +62,6 @@
         wait: yes
         wait_timeout: 120
 
-    - name: Pause for 5 seconds for iSCSI claim provision to process
-      wait_for:
-        timeout: 5
-
     - name: "Check if iSCSI test claim is created"
       k8s_info:
         kind: PersistentVolumeClaim
@@ -83,20 +69,9 @@
         field_selectors:
           - "metadata.name=test-claim-iscsi"
       register: csi_iscsi_storage_claim_details
-
-    # Set Fact if we can detect storage claim phase "Bound"
-    - set_fact:
-        csi_iscsi_storage_claim: true
-      loop: "{{csi_iscsi_storage_claim_details.resources}}"
-      when: item.status.phase == "Bound"
-
-    - name: Fail if democratic-csi iSCSI storage claim not detected
-      fail:
-        msg: |
-          Unable to detect democratic-csi iSCSI storage claim, try:
-          
-          kubectl get pvc -n {{install.democratic_csi.iscsi.namespace}}
-      when: csi_iscsi_storage_claim is not defined
+      until: csi_iscsi_storage_claim_details.resources[0].status.phase == "Bound"
+      retries: 5
+      delay: 10
 
     - name: Remove iSCSI test claim - validations passed
       kubernetes.core.k8s:
