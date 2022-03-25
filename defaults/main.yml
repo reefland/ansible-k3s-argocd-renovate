@@ -253,7 +253,7 @@ install:
 
     # Define where ZFS Zvol should be created for Longhorn storage
     zfs:                           # Combined "rpool/longhorn"
-      pool: "rpool"
+      pool: "{{longhorn_zfs_pool|default('rpool')}}"
       volume_name: "longhorn"              
 
       zvol:
