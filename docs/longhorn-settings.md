@@ -1,5 +1,7 @@
 # Longhorn Distributed Storage Settings & Important Notes
 
+[Back to README.md](../README.md)
+
 ## Important Notes
 
 * Longhorn Distributed storage is intended to be the default storage class, once installed the "local-path" StorageClass "default" flag will be removed.

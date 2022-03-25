@@ -1,5 +1,7 @@
 # K3S Settings & Important Notes
 
+[Back to README.md](../README.md)
+
 ## Important Notes
 
 * `k3s` does not have native support for ZFS file system, it will produce `overlayfs` error message.

@@ -1,5 +1,7 @@
 # Traefik Settings & Important Notes
 
+[Back to README.md](../README.md)
+
 ## Important Notes
 
 * **Traefik's Letsencrypt** is configured for **Staging** certificates, but you can default it to **Prod** or use provided CLI parameter to force **Prod** certificates only when needed `--extra-vars '{le_staging:false}'`
@@ -7,7 +9,6 @@
 * Access to the dashboard can be restricted to defined users via basic authentication.
 
 ## Review `vars/secrets/k3s_traefik_api_secrets.yml` for Traefik Let's Encrypt Settings
-
 
 ### Let's Encrypt Configuration
 
@@ -58,7 +59,6 @@ ansible-playbook -i inventory kubernetes.yml --tags="config_traefik_dns_certs" -
 * _See below for using a test deployment with certificates._
 
 ## Review ``vars/secrets/k3s_traefik_api_secrets.yml`` for Traefik Authenticated Users
-
 
 ### Dashboard Authentication
 
