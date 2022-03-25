@@ -57,31 +57,16 @@
         wait: yes
         wait_timeout: 120
 
-    - name: Pause for 5 seconds for Longhorn claim provision to process
-      wait_for:
-        timeout: 5
-
-    - name: "Check if NFS test claim is created"
+    - name: "Check if Longhorn test claim is created"
       k8s_info:
         kind: PersistentVolumeClaim
         namespace: "{{install.longhorn.namespace}}"
         field_selectors:
           - "metadata.name=longhorn-volv-pvc"
       register: longhorn_storage_claim_details
-
-   # Set Fact if we can detect storage claim phase "Bound"
-    - set_fact:
-        longhorn_storage_claim: true
-      loop: "{{longhorn_storage_claim_details.resources}}"
-      when: item.status.phase == "Bound"
-
-    - name: Fail if Longhorn storage claim not detected
-      fail:
-        msg: |
-          Unable to detect Longhorn storage claim, try:
-          
-          kubectl get pvc -n {{install.longhorn.namespace}}
-      when: longhorn_storage_claim is not defined
+      until: longhorn_storage_claim_details.resources[0].status.phase == "Bound"
+      retries: 4
+      delay: 5
 
     - name: Remove Longhorn claim - validations passed
       kubernetes.core.k8s:
