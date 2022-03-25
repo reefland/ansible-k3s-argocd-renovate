@@ -10,6 +10,7 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide **Persistent Volume Claim** storage via **iSCSI** and **NFS** from TrueNAS
 * [Longhorn](https://longhorn.io/) distributed Persistent Volume Claims as default storage class
 * Optionally **Prometheus Operator** and **Grafana** can be deployed with customized storage claims
+* Centralized cluster system logging via `rsyslog` with real-time viewing with [lnav](https://lnav.org/) utility.
 
 ---
 
@@ -41,6 +42,7 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * [libnfs-utils](https://packages.ubuntu.com/focal/libnfs-utils) (required by democratic-csi when NFS support is enabled)
 * [democratic-csi](https://github.com/democratic-csi/democratic-csi) implements the csi (container storage interface) spec providing storage from TrueNAS
 * [Longhorn](https://longhorn.io/) provides native distributed block storage for Kubernetes cluster
+* [lnav](https://lnav.org/) for view centralized cluster system logging
 
 ## Packages Uninstalled
 
@@ -80,6 +82,7 @@ Review the non-root user account that will be created for Kubernetes with option
 * Review [CertManager Configuration Settings](docs/cert-manager.md)
 * Review [democratic-csi for TrueNAS Settings](docs/democratic-csi-settings.md)
 * Review [Longhorn Distributed Storage Settings](docs/longhorn-settings.md)
+* Review [Centralized Cluster System Logs Settings](docs/rsyslog-settings.md)
 
 ---
 
@@ -87,17 +90,30 @@ Review the non-root user account that will be created for Kubernetes with option
 
 ### Edit your inventory document
 
-K3s Kubernetes with ContainerD playbook uses the following group:
+Define a group for this playbook to use in your inventory, I like to use YAML format:
 
-```ini
-[k8s_group:vars]
-ansible_user=ansible
-ansible_ssh_private_key_file=/home/rich/.ssh/ansible
-ansible_python_interpreter=/usr/bin/python3
+```yaml
+  k3s_control:
+    hosts:
+      testlinux01.example.com:
+        longhorn_zfs_pool: "tank"
+      testlinux02.example.com:
+        longhorn_zfs_pool: "tank"
 
-[k8s_group]
-testlinux.example.com
+  k3s_workers:
+    hosts:
+
+  k3s:
+    children:
+      k3s_control:
+      k3s_workers:
+
+    vars:
+      rsyslog_server: "testlinux01.example.com"
 ```
+
+* NOTE: The playbook does not yet isolate or process tasks differently for Kubernetes control plane nodes and worker nodes.  This will be added in the future.
+* The `rsyslog_server` variable defines the [centralized cluster system logging](docs/rsyslog-settings.md) host.
 
 ### Create a Playbook
 
@@ -105,7 +121,7 @@ Simple playbook I'm using for testing, named `kubernetes.yml`:
 
 ```yml
 - name: k3s Kubernetes Installation & Configuration
-  hosts: k8s_all
+  hosts: k3s
   become: true
   gather_facts: true
 
