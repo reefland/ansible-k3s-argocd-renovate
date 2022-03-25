@@ -97,6 +97,18 @@
         defaultSettings:
           defaultDataPath: "{{install.longhorn.zfs.zvol.mountpoint}}"
 
+  - name: Check Longhorn Pods are Running
+    k8s_info:
+      kind: Pod
+      namespace: "{{install.longhorn.namespace}}"
+      label_selectors:
+        - "app=longhorn-csi-plugin"
+      wait: yes
+      wait_condition:
+        type: Ready
+      wait_sleep: 5
+      wait_timeout: 120
+
   - name: Add Longhorn Ingress Route for Traefik 
     kubernetes.core.k8s:
       state: present

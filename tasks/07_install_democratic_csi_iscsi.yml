@@ -75,9 +75,38 @@
       wait: yes
       wait_timeout: 5m
 
-  - name: Pause for 60 seconds for deployment to spin up all pods. 
-    wait_for:
-      timeout: 60
+  - name: Check Controller Pod is Running
+    k8s_info:
+      kind: Pod
+      namespace: "{{install.democratic_csi.iscsi.namespace}}"
+      label_selectors:
+        - "app.kubernetes.io/csi-role=controller"
+        - "app.kubernetes.io/instance=truenas-iscsi"
+        - "app.kubernetes.io/name=democratic-csi"
+      wait: yes
+      wait_condition:
+        type: Ready
+      wait_sleep: 5
+      wait_timeout: 120
+
+  - name: Check Node Pod id Running
+    k8s_info:
+      kind: Pod
+      namespace: "{{install.democratic_csi.nfs.namespace}}"
+      label_selectors:
+        - "app.kubernetes.io/csi-role=node"
+        - "app.kubernetes.io/instance=truenas-iscsi"
+        - "app.kubernetes.io/name=democratic-csi"
+      wait: yes
+      wait_condition:
+        type: Ready
+      wait_sleep: 5
+      wait_timeout: 120
+
+
+#  - name: Pause for 60 seconds for deployment to spin up all pods. 
+#    wait_for:
+#      timeout: 60
 
   tags:
     - install_democratic_csi_iscsi
