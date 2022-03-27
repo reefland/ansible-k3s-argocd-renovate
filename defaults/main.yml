@@ -43,6 +43,19 @@ install:
       # Encoded users and passwords for basic authentication
       allowed_users: "{{k3s.traefik.dashboard_users}}"    
 
+  ###[ MetalLB Installation Settings ]#############################################################
+  # When enabled this will disable k3s built-in Klipper Load Balancer and enable MetalLB instead.
+  metallb:
+    enabled: true
+
+    # Select release to use:  https://github.com/metallb/metallb/releases
+    # Alternate: https://metallb.universe.tf/installation/
+    install_version: "v0.12.1"
+
+    # Ranges of IP Addresses MetalLB can handout for LoadBalancer Services
+    ip_ranges: 
+      - "192.168.10.240-192.168.10.253"
+
   k3s:
     # Packages required for Ansible to issue Kubernetes and commands
     packages:
@@ -61,18 +74,24 @@ install:
       # Select installation channel to use (stable, latest, testing)
       - INSTALL_K3S_CHANNEL="latest"
       # Send Flags to K3s Service
-      - INSTALL_K3S_EXEC="--container-runtime-endpoint unix:///run/containerd/containerd.sock"
+  
+    # Becomes the "INSTALL_K3S_EXEC=" parameter
+    k3s_exec_options:  
+      - "{{k3s_cli_var|default('')}}"         # Options set in inventory or hosts vars
+      - "--container-runtime-endpoint unix:///run/containerd/containerd.sock"
 
-    # Add this CLI option if disable_local_path_as_default_storage_class = true
-    cli_disable_options:
-      - "--disable local-storage"
+    cli_disable_storage_options:              # If disable_local_path_as_default_storage_class = true
+      - "--disable local-storage"   
+
+    cli_disable_loadbalancer_options:         # If metallb.enabled = true
+      - "--disable servicelb"
 
     url: "https://get.k3s.io"
 
     # If enabled, will fail ansible deployment when "kubectl get node" returns "No resources found"
     confirm_running: true
   
-    # Create a handy alias for kubectl  ($k get all -A)
+    # Create a handy alias for kubectl  ($ k get all -A)
     alias:
       enabled: true
       value: "k"

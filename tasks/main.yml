@@ -26,6 +26,7 @@
       - rsyslog.yml
       - k3s.yml
       - containerd.yml
+      - metallb.yml
       - helm.yml
       - cert_manager.yml
       - democratic-csi.yml
@@ -75,6 +76,7 @@
     - 01_install_k3s.yml
     - 02_install_containerd.yml
     - 03_validate_k3s.yml
+    - 03-5_install_metallb.yml
     - 04_install_helm_client.yml
     - 05_install_cert_manager.yml
     - 06_config_traefik.yml

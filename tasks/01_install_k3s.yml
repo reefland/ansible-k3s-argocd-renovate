@@ -71,15 +71,21 @@
       dest: "/etc/environment"
       line: "KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
 
-  - name: Merge in disable options to cli options if local storage disabled
+  - name: Merge in disable options to exec options list if local storage disabled
     set_fact:
-      install.k3s.cli_options: "{{install.k3s.cli_options + cli_disable_options}}"
+      install_k3s_exec_options: "{{install.k3s.k3s_exec_options + install.k3s.cli_disable_storage_options}}"
     when:
-      - disable_local_path_as_default_storage_class|default(false)|bool == true
+      - install.longhorn.disable_local_path_as_default_storage_class|default(false)|bool == true
+
+  - name: Merge in disable options to exec options list if MetalLB is enabled
+    set_fact:
+      install_k3s_exec_options: "{{install_k3s_exec_options + install.k3s.cli_disable_loadbalancer_options}}"
+    when:
+      - install.metallb.enabled|default(false)|bool == true
 
   - name: Execute k3s_install.sh and create k3s_install.log
     ansible.builtin.shell:
-      cmd: "{{ install.k3s.cli_options|join(' ') }} /home/{{install.os.non_root_user.name}}/k3s_install.sh > /home/{{install.os.non_root_user.name}}/k3s_install.log"
+      cmd: "{{ install.k3s.cli_options|join(' ')}} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options|join(' ')}}\" /home/{{install.os.non_root_user.name}}/k3s_install.sh > /home/{{install.os.non_root_user.name}}/k3s_install.log"
       chdir: "/home/{{install.os.non_root_user.name}}"
 
   - name: Add alias of "k" for "kubectl"
