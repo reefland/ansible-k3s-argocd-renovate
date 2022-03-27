@@ -75,4 +75,49 @@ How to specify the host interface for an address pool?
 
 * [MetalLB FAQs](https://metallb.universe.tf/faq/)
 
+---
+
+## Removing MetalLB Installation
+
+1. Uninstall Manifest File
+
+    ```shell
+    cd /home/kube/metal_lb
+    kubectl delete -f metallb.yaml-v0.12.1-manifest.yaml 
+    ```
+
+2. Uninstall ConfigMap
+
+    ```shell
+    kubectl delete -f configmap.yaml
+    ```
+
+3. Uninstall Namespace
+
+    ```shell
+    kubectl delete -f namespace.yaml-v0.12.1-manifest.yaml
+    ```
+
+4. Disable MetalLB in `defaults/main.yml`
+
+    ```yml
+    metallb:
+      enabled: false
+    ```
+
+5. Run K3s installation to enable default LoadBalancer
+
+  ```shell
+  ansible-playbook -i inventory.yml kubernetes.yml --tags="install_k3s"
+  ```
+
+Once K3s installation scripts completes, the LoadBalancer address of Traefik will return to just being the Node IP address within a few seconds.
+
+```text
+$ kubectl get services traefik -n kube-system
+
+NAME      TYPE           CLUSTER-IP     EXTERNAL-IP      PORT(S)                      AGE
+traefik   LoadBalancer   10.43.227.65   192.168.10.110   80:30070/TCP,443:31909/TCP   2d1h
+```
+
 [Back to README.md](../README.md)
