@@ -6,6 +6,7 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * **condainerd** to provide ZFS snapshotter support
 * [Helm Client](https://helm.sh/docs/intro/using_helm/)
 * [Cert-manager](https://cert-manager.io/)
+* [MetalLB](https://metallb.universe.tf/) Load Balancer to replace K3s Klipper Load Balancer
 * **Traefik** ingress with **Letsencrypt wildcard certificates** for domains against LE staging or prod (Cloudflare DNS validator)
 * [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide **Persistent Volume Claim** storage via **iSCSI** and **NFS** from TrueNAS
 * [Longhorn](https://longhorn.io/) distributed Persistent Volume Claims as default storage class
@@ -18,6 +19,7 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 
 * You should read it. :)
 * The **democratic-csi** section will require steps completed on your TrueNAS installation in addition to setting values in Ansible.
+* MetalLB Load Balancer section will require you to specify a range of IP addresses available for use
 * Traefik configuration for Lets Encrypt will require you to define your challenge credentials.
 * Longhorn Distributed storage is intended to be the default storage class, once installed the `local-path` StorageClass `default` flag will be removed.
 
@@ -78,6 +80,7 @@ Review the non-root user account that will be created for Kubernetes with option
 
 * Review [K3S Configuration Settings](docs/k3s-settings.md)
 * Review [Containerd Configuration Settings](docs/containerd-settings.md)
+* Review [MetalLB Load Balancer Settings](docs/metallb-settings.md)
 * Review [Traefik LetsEncrypt and Dashboard Settings](docs/traefik-settings.md)
 * Review [CertManager Configuration Settings](docs/cert-manager.md)
 * Review [democratic-csi for TrueNAS Settings](docs/democratic-csi-settings.md)
