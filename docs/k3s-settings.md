@@ -27,8 +27,24 @@ k3s:
     # - INSTALL_K3S_VERSION=
     # Select installation channel to use (stable, latest, testing)
     - INSTALL_K3S_CHANNEL="latest"
-    # Send Flags to K3s Service
-    - INSTALL_K3S_EXEC="--container-runtime-endpoint unix:///run/containerd/containerd.sock"
+
+```
+
+### K3s Exec Options
+
+These are CLI parameters which will be merged together to become the `INSTALL_K3S_EXEC=` installation parameter.  Depending on which products are enabled items will be added or removed from the final list.  The possible options are listed below with a comment on when it is included.
+
+```yml
+    # Becomes the "INSTALL_K3S_EXEC=" parameter
+    k3s_exec_options:  
+      - "{{k3s_cli_var|default('')}}"         # Options set in inventory or hosts vars
+      - "--container-runtime-endpoint unix:///run/containerd/containerd.sock"
+
+    cli_disable_storage_options:              # If disable_local_path_as_default_storage_class = true
+      - "--disable local-storage"   
+
+    cli_disable_loadbalancer_options:         # If metallb.enabled = true
+      - "--disable servicelb"
 ```
 
 ### K3S Validation Step
