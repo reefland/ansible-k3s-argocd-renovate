@@ -5,9 +5,6 @@ kubeconfig_path: "/home/{{install.os.non_root_user.name}}/.kube/config"
 le_staging: true
 
 k3s:
-  # Location to set for modified k3s systemd service 
-  service_override_path: "/etc/systemd/system/k3s.service.d"
-
   node_token_path: "/var/lib/rancher/k3s/server/node-token"
 
   traefik:

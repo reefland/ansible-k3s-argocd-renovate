@@ -86,16 +86,6 @@
       src: "files/10-flannel.conflist"
       dest: "{{install.containerd.flannel_conflist_path}}"
 
-  - name: Create directory for ks3.service configuration overrides
-    file:
-      path: "{{k3s.service_override_path}}"
-      state: directory
-
-  - name: Copy k3s.service override file to systemd path
-    copy:
-      src: "files/k3s-override.conf"
-      dest: "{{k3s.service_override_path}}/override.conf"
-
   - name: Restart Containerd Service
     ansible.builtin.systemd:
       daemon_reload: yes
