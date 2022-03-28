@@ -4,7 +4,7 @@
   block:
   - name: Get kubectl node status
     command:
-      cmd: "kubectl get node"
+      cmd: "kubectl get node {{ansible_hostname}}"
     register: kubestl_status
   
   - name: Fail if status is "No resources found"
