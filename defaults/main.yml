@@ -67,12 +67,24 @@ install:
 
     # CLI options passed directly to install script "as-is":
     cli_options:
+      # When a K3S_TOKEN is defined at cluster creation, this will enable the Embedded etcd
+      # multi-master HA mode (which requires an odd number of control nodes 3 or 5).
+
+      # For a SINGLE NODE install where you don't plan to add more nodes, then SQLlite can be
+      # would be used instead of "embedded etcd".  To use HA in the future, you will want the
+      # Embedded etcd multi-master HA mode enabled now.
+      
+      # Define it below or in the inventory file or group vars file.
+      - "K3S_TOKEN={{K3S_TOKEN}}"
+
       # Do not start service after installation as it will have issues with ZFS
-      - INSTALL_K3S_SKIP_START=true
+      - "INSTALL_K3S_SKIP_START=true"
+      
       # This is to pin a specific version of k3s for initial installation
       # - INSTALL_K3S_VERSION=
+      
       # Select installation channel to use (stable, latest, testing)
-      - INSTALL_K3S_CHANNEL="latest"
+      - "INSTALL_K3S_CHANNEL=latest"
       # Send Flags to K3s Service
   
     # Becomes the "INSTALL_K3S_EXEC=" parameter
@@ -80,12 +92,15 @@ install:
       - "{{k3s_cli_var|default('')}}"         # Options set in inventory or hosts vars
       - "--container-runtime-endpoint unix:///run/containerd/containerd.sock"
 
-    cli_disable_storage_options:              # If disable_local_path_as_default_storage_class = true
+    # When "disable_local_path_as_default_storage_class = true" this will be added to k3s_exec_options
+    cli_disable_storage_options:              
       - "--disable local-storage"   
 
-    cli_disable_loadbalancer_options:         # If metallb.enabled = true
+    # When "metallb.enabled = true" this will be added to k3s_exec_options
+    cli_disable_loadbalancer_options:        
       - "--disable servicelb"
 
+    # Location for K3s installation script
     url: "https://get.k3s.io"
 
     # If enabled, will fail ansible deployment when "kubectl get node" returns "No resources found"
