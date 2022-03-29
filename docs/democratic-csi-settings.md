@@ -450,4 +450,223 @@ In the CLI, the access modes are abbreviated to:
 
 PersistentVolumes binds are exclusive, and since PersistentVolumeClaims are namespaced objects, mounting claims with "Many" modes (ROX, RWX) is only possible within one namespace.
 
+---
+
+## Troubleshooting CSI
+
+### Shows pods deployed the the `democratic-csi` namespace
+
+```shell
+$ kubectl get pods -n democratic-csi -o wide
+
+NAME                                                       READY   STATUS    RESTARTS   AGE   IP               NODE        NOMINATED NODE   READINESS GATES
+truenas-iscsi-democratic-csi-controller-5fb94d4488-gglqt   4/4     Running   0          26h   10.42.0.99       testlinux   <none>           <none>
+truenas-iscsi-democratic-csi-node-shwlb                    3/3     Running   0          26h   192.168.10.110   testlinux   <none>           <none>
+truenas-nfs-democratic-csi-controller-5d8dc94bc-55wvs      4/4     Running   0          19h   10.42.0.112      testlinux   <none>           <none>
+truenas-nfs-democratic-csi-node-794vb                      3/3     Running   0          19h   192.168.10.110   testlinux   <none>           <none>
+```
+
+### Show logs from the `csi-driver` container
+
+Can be used to get detailed information during troubleshooting.  Adjust the pod for either the `nfs` or `iscsi` controller and adjust the random digits in the pod name to match your installation.
+
+```shell
+$ kubectl logs pod/truenas-nfs-democratic-csi-controller-5d8dc94bc-55wvs  csi-driver -n democratic-csi
+
+
+{"level":"info","message":"new request - driver: FreeNASApiDriver method: CreateVolume call: {\"_events\":{},\"_eventsCount\":1,\"call\":{},\"cancelled\":false,\"metadata\":{\"_internal_repr\":{\"user-agent\":[\"grpc-go/1.40.0\"]},\"flags\":0},\"request\":{\"volume_capabilities\":[{\"access_mode\":{\"mode\":\"SINGLE_NODE_MULTI_WRITER\"},\"mount\":{\"mount_flags\":[\"noatime\",\"nfsvers=4\"],\"fs_type\":\"nfs\",\"volume_mount_group\":\"\"},\"access_type\":\"mount\"}],\"parameters\":{\"csi.storage.k8s.io/pv/name\":\"pvc-42688a22-3a62-4494-8488-ad6eeaeb4bc0\",\"fsType\":\"nfs\",\"csi.storage.k8s.io/pvc/name\":\"test-claim-nfs\",\"csi.storage.k8s.io/pvc/namespace\":\"democratic-csi\"},\"secrets\":\"redacted\",\"name\":\"pvc-42688a22-3a62-4494-8488-ad6eeaeb4bc0\",\"capacity_range\":{\"required_bytes\":\"1073741824\",\"limit_bytes\":\"0\"},\"volume_content_source\":null,\"accessibility_requirements\":null}}","service":"democratic-csi"}
+{"level":"error","message":"handler error - driver: FreeNASApiDriver method: CreateVolume error: Error: {\"create_ancestors\":[{\"message\":\"Field was not expected\",\"errno\":22}]}","service":"democratic-csi"}
+{
+  code: 13,
+  message: 'Error: {"create_ancestors":[{"message":"Field was not expected","errno":22}]}'
+}
+```
+
+### Show Storage Claim Provisioners and Claim Policy
+
+```shell
+$ kubectl get sc
+
+NAME                   PROVISIONER                RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path (default)   rancher.io/local-path      Delete          WaitForFirstConsumer   false                  7d11h
+freenas-iscsi-csi      org.democratic-csi.iscsi   Delete          Immediate              true                   40h
+freenas-nfs-csi        org.democratic-csi.nfs     Delete          Immediate              true                   20h
+```
+
+---
+
+### Experiment with Test Claims
+
+Test claims for NFS and iSCSI are provided.  They can be used as-is or modified:
+
+```shell
+kube@testlinux:~/democratic-csi$ ls -l test*
+-rw-rw---- 1 kube kube 287 Mar  1 16:50 test-claim-iscsi.yaml
+-rw-rw---- 1 kube kube 280 Mar  2 10:52 test-claim-nfs.yaml
+
+$ kubectl -n democratic-csi create -f test-claim-iscsi.yaml
+persistentvolumeclaim/test-claim-iscsi created
+
+```
+
+Show claims:
+
+```shell
+$ kubectl -n democratic-csi get pvc
+
+NAME               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS        AGE
+test-claim-iscsi   Bound    pvc-a20ebfac-2bd7-4e56-a0bc-c093ecadb117   1Gi        RWO            freenas-iscsi-csi   23s
+```
+
+Show detailed information of provisioning process:
+
+```shell
+$ kubectl describe pvc/test-claim-iscsi -n democratic-csi
+Name:          test-claim-iscsi
+Namespace:     democratic-csi
+StorageClass:  freenas-iscsi-csi
+Status:        Bound
+Volume:        pvc-a20ebfac-2bd7-4e56-a0bc-c093ecadb117
+Labels:        <none>
+Annotations:   pv.kubernetes.io/bind-completed: yes
+               pv.kubernetes.io/bound-by-controller: yes
+               volume.beta.kubernetes.io/storage-class: freenas-iscsi-csi
+               volume.beta.kubernetes.io/storage-provisioner: org.democratic-csi.iscsi
+               volume.kubernetes.io/storage-provisioner: org.democratic-csi.iscsi
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      1Gi
+Access Modes:  RWO
+VolumeMode:    Filesystem
+Used By:       <none>
+Events:
+  Type    Reason                 Age                From                                                                                                                    Message
+  ----    ------                 ----               ----                                                                                                                    -------
+  Normal  Provisioning           82s                org.democratic-csi.iscsi_truenas-iscsi-democratic-csi-controller-5fb94d4488-gglqt_282e5888-4faa-4b41-a386-3e90d6db2f51  External provisioner is provisioning volume for claim "democratic-csi/test-claim-iscsi"
+  Normal  ExternalProvisioning   78s (x3 over 82s)  persistentvolume-controller                                                                                             waiting for a volume to be created, either by external provisioner "org.democratic-csi.iscsi" or manually created by system administrator
+  Normal  ProvisioningSucceeded  78s                org.democratic-csi.iscsi_truenas-iscsi-democratic-csi-controller-5fb94d4488-gglqt_282e5888-4faa-4b41-a386-3e90d6db2f51  Successfully provisioned volume pvc-a20ebfac-2bd7-4e56-a0bc-c093ecadb117
+```
+
+Edit the Storage Claim to increase size.  Can apply a new claim file or it can be edited directly as shown below (loads in `vi`).
+
+```yaml
+$ kubectl edit pvc/test-claim-iscsi -n democratic-csi
+
+...
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: freenas-iscsi-csi
+...
+
+```
+
+Upon changing the `1Gi` to `2Gi` and saving the file:
+
+```shell
+$ kubectl edit pvc/test-claim-iscsi -n democratic-csi
+persistentvolumeclaim/test-claim-iscsi edited
+```
+
+If the storage claim is being used by a pod, then within seconds the storage claim with be adjusted as defined, expanded in this case.  If claim is not being used yet, then the expansion will be differed until it is.
+
+### Delete Test Claim
+
+```shell
+$ kubectl -n democratic-csi delete -f test-claim-iscsi.yaml
+persistentvolumeclaim "test-claim-iscsi" deleted
+```
+
+---
+
+## Full Democratic CSI Test Deployment
+
+A full test deployment script will be placed in the non-root `kube` home directory `~/democratic-csi/test-app-nfs-claim.yaml` which do the followng:
+
+* Create 2 containers backed by CSI Persistent NFS storage claims of 2MB
+* A sample `index.html` with "Hello Green World" and "Hello Blue World" will be created in the respective storage claims
+* A service will be created for each container
+* An ingress route will be created with middleware to clean up the URI
+* Requests to the `/nginx/` URI will be round-robin between the two containers
+
+```shell
+cd /home/kube/democratic-csi
+
+$ kubectl create namespace nfs-test-app
+namespace/nfs-test-app created
+
+$ kubectl apply -f test-app-nfs-claim.yaml -n nfs-test-app
+
+deployment.apps/nginx-pv-green created
+deployment.apps/nginx-pv-blue created
+persistentvolumeclaim/test-claim-nfs-green created
+persistentvolumeclaim/test-claim-nfs-blue created
+service/nginx-pv-green created
+service/nginx-pv-blue created
+middleware.traefik.containo.us/nginx-strip-path-prefix created
+ingressroute.traefik.containo.us/test-claim-ingressroute created
+```
+
+```shell
+$ kubectl get all -n nfs-test-app
+NAME                                 READY   STATUS    RESTARTS   AGE
+
+pod/nginx-pv-green-9c9f6d448-nw6bh   1/1     Running   0          106s
+pod/nginx-pv-blue-c7d6d44bf-gvbxv    1/1     Running   0          106s
+
+NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/nginx-pv-green   ClusterIP   10.43.132.60    <none>        80/TCP    2m9s
+service/nginx-pv-blue    ClusterIP   10.43.240.245   <none>        80/TCP    2m9s
+
+NAME                             READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/nginx-pv-green   1/1     1            1           106s
+deployment.apps/nginx-pv-blue    1/1     1            1           106s
+
+NAME                                       DESIRED   CURRENT   READY   AGE
+replicaset.apps/nginx-pv-green-9c9f6d448   1         1         1       106s
+replicaset.apps/nginx-pv-blue-c7d6d44bf    1         1         1       106s
+```
+
+Testing the deployment using the Lynx Text Browser:
+
+```shell
+$ lynx -dump http://testlinux.example.com/nginx/
+                                Hello Green World
+
+$ lynx -dump http://testlinux.example.com/nginx/
+                                Hello Blue World
+
+$ lynx -dump http://testlinux.example.com/nginx/
+                                Hello Blue World
+
+$ lynx -dump http://testlinux.example.com/nginx/
+                                Hello Green World
+
+$ lynx -dump http://testlinux.example.com/nginx/
+                                Hello Blue World
+```
+
+Delete the deployment:
+
+```shell
+$ kubectl delete -f test-app-nfs-claim.yaml -n nfs-test-app
+
+deployment.apps "nginx-pv-green" deleted
+deployment.apps "nginx-pv-blue" deleted
+persistentvolumeclaim "test-claim-nfs-green" deleted
+persistentvolumeclaim "test-claim-nfs-blue" deleted
+service "nginx-pv-green" deleted
+service "nginx-pv-blue" deleted
+middleware.traefik.containo.us "nginx-strip-path-prefix" deleted
+ingressroute.traefik.containo.us "test-claim-ingressroute" deleted
+
+# Page no longer exists:
+$ lynx -dump http://testlinux.example.com/nginx/
+404 page not found
+```
+
+---
+
 [Back to README.md](../README.md)

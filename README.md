@@ -6,7 +6,7 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * **condainerd** to provide ZFS snapshotter support
 * [Helm Client](https://helm.sh/docs/intro/using_helm/)
 * [Cert-manager](https://cert-manager.io/)
-* [MetalLB](https://metallb.universe.tf/) Load Balancer to replace K3s Klipper Load Balancer
+* [MetalLB](https://metallb.universe.tf/) Load Balancer to replace K3s Klipper Load Balancer.
 * **Traefik** ingress with **Letsencrypt wildcard certificates** for domains against LE staging or prod (Cloudflare DNS validator)
 * [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide **Persistent Volume Claim** storage via **iSCSI** and **NFS** from TrueNAS
 * [Longhorn](https://longhorn.io/) distributed Persistent Volume Claims as default storage class
@@ -21,7 +21,7 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 * The **democratic-csi** section will require steps completed on your TrueNAS installation in addition to setting values in Ansible.
 * MetalLB Load Balancer section will require you to specify a range of IP addresses available for use
 * Traefik configuration for Lets Encrypt will require you to define your challenge credentials.
-* Longhorn Distributed storage is intended to be the default storage class, once installed the `local-path` StorageClass `default` flag will be removed.
+* Longhorn Distributed storage is intended to be the default storage class, the `local-path` StorageClass is not installed.
 
 ---
 
@@ -29,7 +29,7 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
 
 * Ubuntu 20.04.4 based [ZFS on Root](https://gitea.rich-durso.us/reefland/ansible-zfs_on_root) installation
 * TrueNAS Core 12-U8
-* K3s v1.23.3
+* K3s v1.23.3 / v1.23.4+k3s1
 
 ---
 
@@ -98,13 +98,20 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
 ```yaml
   k3s_control:
     hosts:
-      testlinux01.example.com:
+      k3s01.example.com:
         longhorn_zfs_pool: "tank"
-      testlinux02.example.com:
+        k3s_cli_var: "server --cluster-init"                            # Master 1
+      k3s02.example.com:
         longhorn_zfs_pool: "tank"
-
+        k3s_cli_var: "server --server https://{{primary_server}}:6443 " # Master 2
+      k3s03.example.com:
+        longhorn_zfs_pool: "tank"
+        k3s_cli_var: "server --server https://{{primary_server}}:6443 " # Master 3
   k3s_workers:
     hosts:
+      k3s-worker01.example.com:                                        # Worker #1
+        k3s_cli_var: "K3S_URL='https://{{primary_server}}:6443'"
+        k3s_labels: "{'kubernetes.io/role=worker', 'node-type=worker'}"
 
   k3s:
     children:
@@ -112,11 +119,39 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
       k3s_workers:
 
     vars:
-      rsyslog_server: "testlinux01.example.com"
+      rsyslog_server: "k3s01.example.com"       # Centralized Logging Host
+      primary_server: "k3s01.example.com"       # Name of cluster member to join against
+      K3S_TOKEN: 'secret_here'                  # Set to any value you like
 ```
 
-* NOTE: The playbook does not yet isolate or process tasks differently for Kubernetes control plane nodes and worker nodes.  This will be added in the future.
+* This inventory file divides hosts into Control nodes and Worker nodes:
+  * Easily defines High Availability (HA) distributed etcd configuration.
+  * The cluster will work fine with just a single node but for HA you should have 3 (or even 5) control nodes:
+
+    | master nodes | must maintain | can lose | comment |
+    |:------------:|:-------------:|:--------:|---------|
+    |       1      |      1        |    0     | Loss of 1 is headless cluster |
+    |       2      |      2        |    0     | Loss of 1 is headless cluster |
+    |       3      |      2        |    1     | Allows loss of 1 master only  |
+    |       4      |      3        |    1     | No advantage over using 3     |
+    |       5      |      3        |    2     | Allows loss of 2 masters      |
+    |       6      |      4        |    2     | No advantage over using 5     |
+    |       7      |      4        |    3     | Allows loss of 3 masters      |
+
+  * Kubernetes uses the [RAFT consensus algorithm](https://kubernetes.io/blog/2019/08/30/announcing-etcd-3-4/) for quorum for HA.
+  * More then 7 master nodes will result in a overhead for determining cluster membership and quorum, it is not recommended. Depending on your needs, you typically end up with 3 or 5 master nodes for HA.
+  
+#### Inventory Variables
+
+For simplicity I show the variables within the inventory file.  You can place these in respective group vars and host vars files.
+
+* The `longhorn_zfs_pool` lets you define the ZFS pool to create Longhorn cluster storage with. It will use the ZFS pool `rpool` if not defined. This can be host specific or group scoped.
+* The `k3s_cli_var` passes host specific variables to the K3s installation script. 
+* The `k3s_labels` can be used to set labels on the cluster members.  This can be host specific or group scoped.
 * The `rsyslog_server` variable defines the [centralized cluster system logging](docs/rsyslog-settings.md) host.
+  * If you already have a rsyslog server point it there.  Otherwise point this to the primary master node.
+* The `primary_server` specifies which node to contact during the process of adding a new cluster member.  This can be any of the existing master nodes.
+* The `K3S_TOKEN` is a secret value required for a node to be added to the cluster.  Better to define this in an Ansible secrets file or groups var file.
 
 ### Create a Playbook
 
@@ -143,7 +178,7 @@ ansible-playbook -i inventory kubernetes.yml
 To limit execution to a single machine:
 
 ```bash
-ansible-playbook -i inventory kubernetes.yml -l testlinux.example.com
+ansible-playbook -i inventory kubernetes.yml -l k3s01.example.com
 ```
 
 ## Build in Stages
@@ -151,14 +186,16 @@ ansible-playbook -i inventory kubernetes.yml -l testlinux.example.com
 Instead of running the entire playbook, you can run smaller logical steps using tags. Or use a tag to re-run a specific step you are troubleshooting.
 
 ```bash
-ansible-playbook -i inventory kubernetes.yml -l testlinux.example.com --tags="<tag_goes_here>"
+ansible-playbook -i inventory kubernetes.yml -l k3s01.example.com --tags="<tag_goes_here>"
 ```
 
 The following tags are supported and should be used in this order:
 
+* `config_rsyslog`
 * `install_k3s`
 * `install_containerd`
 * `validate_k3s`
+* `install_metallb`
 * `install_helm_client`
 * `install_cert_manager`
 * `config_traefik_dns_certs`
@@ -167,225 +204,11 @@ The following tags are supported and should be used in this order:
 * `validate_csi_iscsi`
 * `install_democratic_csi_nfs`
 * `validate_csi_nfs`
+* `install_longhorn`
+* `validate_longhorn`
 
 ---
 
-## Troubleshooting CSI
-
-### Shows pods deployed the the `democratic-csi` namespace
-
-```shell
-$ kubectl get pods -n democratic-csi -o wide
-
-NAME                                                       READY   STATUS    RESTARTS   AGE   IP               NODE        NOMINATED NODE   READINESS GATES
-truenas-iscsi-democratic-csi-controller-5fb94d4488-gglqt   4/4     Running   0          26h   10.42.0.99       testlinux   <none>           <none>
-truenas-iscsi-democratic-csi-node-shwlb                    3/3     Running   0          26h   192.168.10.110   testlinux   <none>           <none>
-truenas-nfs-democratic-csi-controller-5d8dc94bc-55wvs      4/4     Running   0          19h   10.42.0.112      testlinux   <none>           <none>
-truenas-nfs-democratic-csi-node-794vb                      3/3     Running   0          19h   192.168.10.110   testlinux   <none>           <none>
-```
-
-### Show logs from the `csi-driver` container
-
-Can be used to get detailed information during troubleshooting.  Adjust the pod for either the `nfs` or `iscsi` controller and adjust the random digits in the pod name to match your installation.
-
-```shell
-$ kubectl logs pod/truenas-nfs-democratic-csi-controller-5d8dc94bc-55wvs  csi-driver -n democratic-csi
-
-
-{"level":"info","message":"new request - driver: FreeNASApiDriver method: CreateVolume call: {\"_events\":{},\"_eventsCount\":1,\"call\":{},\"cancelled\":false,\"metadata\":{\"_internal_repr\":{\"user-agent\":[\"grpc-go/1.40.0\"]},\"flags\":0},\"request\":{\"volume_capabilities\":[{\"access_mode\":{\"mode\":\"SINGLE_NODE_MULTI_WRITER\"},\"mount\":{\"mount_flags\":[\"noatime\",\"nfsvers=4\"],\"fs_type\":\"nfs\",\"volume_mount_group\":\"\"},\"access_type\":\"mount\"}],\"parameters\":{\"csi.storage.k8s.io/pv/name\":\"pvc-42688a22-3a62-4494-8488-ad6eeaeb4bc0\",\"fsType\":\"nfs\",\"csi.storage.k8s.io/pvc/name\":\"test-claim-nfs\",\"csi.storage.k8s.io/pvc/namespace\":\"democratic-csi\"},\"secrets\":\"redacted\",\"name\":\"pvc-42688a22-3a62-4494-8488-ad6eeaeb4bc0\",\"capacity_range\":{\"required_bytes\":\"1073741824\",\"limit_bytes\":\"0\"},\"volume_content_source\":null,\"accessibility_requirements\":null}}","service":"democratic-csi"}
-{"level":"error","message":"handler error - driver: FreeNASApiDriver method: CreateVolume error: Error: {\"create_ancestors\":[{\"message\":\"Field was not expected\",\"errno\":22}]}","service":"democratic-csi"}
-{
-  code: 13,
-  message: 'Error: {"create_ancestors":[{"message":"Field was not expected","errno":22}]}'
-}
-```
-
-### Show Storage Claim Provisioners and Claim Policy
-
-```shell
-$ kubectl get sc
-
-NAME                   PROVISIONER                RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-local-path (default)   rancher.io/local-path      Delete          WaitForFirstConsumer   false                  7d11h
-freenas-iscsi-csi      org.democratic-csi.iscsi   Delete          Immediate              true                   40h
-freenas-nfs-csi        org.democratic-csi.nfs     Delete          Immediate              true                   20h
-```
-
----
-
-### Experiment with Test Claims
-
-Test claims for NFS and iSCSI are provided.  They can be used as-is or modified:
-
-```shell
-kube@testlinux:~/democratic-csi$ ls -l test*
--rw-rw---- 1 kube kube 287 Mar  1 16:50 test-claim-iscsi.yaml
--rw-rw---- 1 kube kube 280 Mar  2 10:52 test-claim-nfs.yaml
-
-$ kubectl -n democratic-csi create -f test-claim-iscsi.yaml
-persistentvolumeclaim/test-claim-iscsi created
-
-```
-
-Show claims:
-
-```shell
-$ kubectl -n democratic-csi get pvc
-
-NAME               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS        AGE
-test-claim-iscsi   Bound    pvc-a20ebfac-2bd7-4e56-a0bc-c093ecadb117   1Gi        RWO            freenas-iscsi-csi   23s
-```
-
-Show detailed information of provisioning process:
-
-```shell
-$ kubectl describe pvc/test-claim-iscsi -n democratic-csi
-Name:          test-claim-iscsi
-Namespace:     democratic-csi
-StorageClass:  freenas-iscsi-csi
-Status:        Bound
-Volume:        pvc-a20ebfac-2bd7-4e56-a0bc-c093ecadb117
-Labels:        <none>
-Annotations:   pv.kubernetes.io/bind-completed: yes
-               pv.kubernetes.io/bound-by-controller: yes
-               volume.beta.kubernetes.io/storage-class: freenas-iscsi-csi
-               volume.beta.kubernetes.io/storage-provisioner: org.democratic-csi.iscsi
-               volume.kubernetes.io/storage-provisioner: org.democratic-csi.iscsi
-Finalizers:    [kubernetes.io/pvc-protection]
-Capacity:      1Gi
-Access Modes:  RWO
-VolumeMode:    Filesystem
-Used By:       <none>
-Events:
-  Type    Reason                 Age                From                                                                                                                    Message
-  ----    ------                 ----               ----                                                                                                                    -------
-  Normal  Provisioning           82s                org.democratic-csi.iscsi_truenas-iscsi-democratic-csi-controller-5fb94d4488-gglqt_282e5888-4faa-4b41-a386-3e90d6db2f51  External provisioner is provisioning volume for claim "democratic-csi/test-claim-iscsi"
-  Normal  ExternalProvisioning   78s (x3 over 82s)  persistentvolume-controller                                                                                             waiting for a volume to be created, either by external provisioner "org.democratic-csi.iscsi" or manually created by system administrator
-  Normal  ProvisioningSucceeded  78s                org.democratic-csi.iscsi_truenas-iscsi-democratic-csi-controller-5fb94d4488-gglqt_282e5888-4faa-4b41-a386-3e90d6db2f51  Successfully provisioned volume pvc-a20ebfac-2bd7-4e56-a0bc-c093ecadb117
-```
-
-Edit the Storage Claim to increase size.  Can apply a new claim file or it can be edited directly as shown below (loads in `vi`).
-
-```yaml
-$ kubectl edit pvc/test-claim-iscsi -n democratic-csi
-
-...
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 2Gi
-  storageClassName: freenas-iscsi-csi
-...
-
-```
-
-Upon changing the `1Gi` to `2Gi` and saving the file:
-
-```shell
-$ kubectl edit pvc/test-claim-iscsi -n democratic-csi
-persistentvolumeclaim/test-claim-iscsi edited
-```
-
-If the storage claim is being used by a pod, then within seconds the storage claim with be adjusted as defined, expanded in this case.  If claim is not being used yet, then the expansion will be differed until it is.
-
-### Delete Test Claim
-
-```shell
-$ kubectl -n democratic-csi delete -f test-claim-iscsi.yaml
-persistentvolumeclaim "test-claim-iscsi" deleted
-```
-
----
-
-## Full Test Deployment
-
-A full test deployment script will be placed in the non-root `kube` home directory `~/democratic-csi/test-app-nfs-claim.yaml` which do the followng:
-
-* Create 2 containers backed by CSI Persistent NFS storage claims of 2MB
-* A sample `index.html` with "Hello Green World" and "Hello Blue World" will be created in the respective storage claims
-* A service will be created for each container
-* An ingress route will be created with middleware to clean up the URI
-* Requests to the `/nginx/` URI will be round-robin between the two containers
-
-```shell
-cd /home/kube/democratic-csi
-
-$ kubectl create namespace nfs-test-app
-namespace/nfs-test-app created
-
-$ kubectl apply -f test-app-nfs-claim.yaml -n nfs-test-app
-
-deployment.apps/nginx-pv-green created
-deployment.apps/nginx-pv-blue created
-persistentvolumeclaim/test-claim-nfs-green created
-persistentvolumeclaim/test-claim-nfs-blue created
-service/nginx-pv-green created
-service/nginx-pv-blue created
-middleware.traefik.containo.us/nginx-strip-path-prefix created
-ingressroute.traefik.containo.us/test-claim-ingressroute created
-```
-
-```shell
-$ kubectl get all -n nfs-test-app
-NAME                                 READY   STATUS    RESTARTS   AGE
-
-pod/nginx-pv-green-9c9f6d448-nw6bh   1/1     Running   0          106s
-pod/nginx-pv-blue-c7d6d44bf-gvbxv    1/1     Running   0          106s
-
-NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
-service/nginx-pv-green   ClusterIP   10.43.132.60    <none>        80/TCP    2m9s
-service/nginx-pv-blue    ClusterIP   10.43.240.245   <none>        80/TCP    2m9s
-
-NAME                             READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/nginx-pv-green   1/1     1            1           106s
-deployment.apps/nginx-pv-blue    1/1     1            1           106s
-
-NAME                                       DESIRED   CURRENT   READY   AGE
-replicaset.apps/nginx-pv-green-9c9f6d448   1         1         1       106s
-replicaset.apps/nginx-pv-blue-c7d6d44bf    1         1         1       106s
-```
-
-Testing the deployment using the Lynx Text Browser:
-
-```shell
-$ lynx -dump http://testlinux.example.com/nginx/
-                                Hello Green World
-
-$ lynx -dump http://testlinux.example.com/nginx/
-                                Hello Blue World
-
-$ lynx -dump http://testlinux.example.com/nginx/
-                                Hello Blue World
-
-$ lynx -dump http://testlinux.example.com/nginx/
-                                Hello Green World
-
-$ lynx -dump http://testlinux.example.com/nginx/
-                                Hello Blue World
-```
-
-Delete the deployment:
-
-```shell
-$ kubectl delete -f test-app-nfs-claim.yaml -n nfs-test-app
-
-deployment.apps "nginx-pv-green" deleted
-deployment.apps "nginx-pv-blue" deleted
-persistentvolumeclaim "test-claim-nfs-green" deleted
-persistentvolumeclaim "test-claim-nfs-blue" deleted
-service "nginx-pv-green" deleted
-service "nginx-pv-blue" deleted
-middleware.traefik.containo.us "nginx-strip-path-prefix" deleted
-ingressroute.traefik.containo.us "test-claim-ingressroute" deleted
-
-# Page no longer exists:
-$ lynx -dump http://testlinux.example.com/nginx/
-404 page not found
-```
-
----
 
 ## Prometheus Operator and Grafana
 
