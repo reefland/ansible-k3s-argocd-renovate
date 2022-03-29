@@ -5,9 +5,9 @@
 ## Important Notes
 
 * `rsyslog` will be configured so that all cluster members will send system logs to a centralized cluster member.
-* The central logging server is specified by variable `rsyslog_server: "testlinux01.example.com"` which has the Fully Qualified Domain Name (FQDN) of the central logging server.
-* When Ansible detects it is being run host matching the name in `rsyslog_server:` it will configure it to be the central logging host
-  * All other hosts will be configured as logging clients.
+* The central logging server will be the 1st server defined in the inventory group `k3s_control`.
+  * When Ansible detects it is being run on this host it will configure it to be the central logging host.
+* All other hosts will be configured as logging clients.
 
 NOTE: Don't change which member is the centralized logging server name once deployed.  It can create logging loops and other weird side effects.
 
@@ -15,8 +15,6 @@ NOTE: Don't change which member is the centralized logging server name once depl
 
 The Containerd Settings are in variable namespace `install.os.central_logging`.
 
-* If the variable `rsyslog_server` is defined then this centralized logging feature will be enabled automatically.
-  * This should be defined in the group vars for the inventory or `group_vars` variable file.
 
 ### Define Centralized Logging Directory
 

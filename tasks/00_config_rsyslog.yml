@@ -1,12 +1,5 @@
 ---
-# Configure Centralized logging 
-
-# Determine if Central Logging Server
-- set_fact:
-    config_central_server: true
-  when: rsyslog_server|lower == ansible_fqdn|lower
-  tags:
-    - config_rsyslog
+# Configure Centralized logging - !st server defined in master group is centralized server
 
 ###[ Configure Central Logging Server ]########################################
 - name: Configure Central Logging Server Block
@@ -52,8 +45,7 @@
       name: rsyslog
 
   when: 
-    - config_central_server|default(false)|bool == true
-    - install.os.central_logging.enabled|default(false)|bool == true
+     - ansible_host == hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0])
   tags:
     - config_rsyslog
 
@@ -67,7 +59,7 @@
     lineinfile:
       path: "{{rsyslog.config_file}}"
       insertafter: "# Default logging rules"
-      line: "*.* @@{{rsyslog_server}}:514"
+      line: "*.* @@{{ hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0]) }}:514"
 
   - name: Restart rsyslog service
     ansible.builtin.systemd:
@@ -76,7 +68,6 @@
       name: rsyslog
 
   when: 
-    - config_central_server|default(false)|bool == false
-    - install.os.central_logging.enabled|default(false)|bool == true
+     - ansible_host != hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0])
   tags:
     - config_rsyslog
