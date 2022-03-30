@@ -1,0 +1,12 @@
+---
+- name: Restart Containerd Service
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    state: started
+    name: containerd
+
+- name: Restart k3s Service
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    state: started
+    name: k3s

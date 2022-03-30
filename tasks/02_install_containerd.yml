@@ -61,6 +61,8 @@
     ansible.builtin.systemd:
       state: stopped
       name: containerd
+    notify:
+      - Restart Containerd Service
 
   - name: Update snapshotter to zfs
     replace: 
@@ -85,43 +87,13 @@
     copy:
       src: "files/10-flannel.conflist"
       dest: "{{install.containerd.flannel_conflist_path}}"
+    notify:
+      - Restart Containerd Service
+      - Restart k3s Service
 
-  - name: Restart Containerd Service
-    ansible.builtin.systemd:
-      daemon_reload: yes
-      state: started
-      name: containerd
+  - name: Flush Handlers
+    meta: flush_handlers
   when:
     - install.containerd.enabled|default(false)|bool == true
   tags:
     - install_containerd
-
-- name: Wrap up K3s Install Steps Block
-  block:
-
-  - name: Restart k3s Service
-    ansible.builtin.systemd:
-      daemon_reload: yes
-      state: started
-      name: k3s
-
-  - name: Copy config to non-root user config file
-    copy:
-      src: "/etc/rancher/k3s/k3s.yaml"
-      dest: "{{kubeconfig_path}}"
-      remote_src: yes
-      mode: 0600
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-
-  - name: Copy config to root user config file
-    copy:
-      src: "/etc/rancher/k3s/k3s.yaml"
-      dest: "/root/.kube/config"
-      remote_src: yes
-      mode: 0600
-      owner: "root"
-      group: "root"
-  tags:
-    - install_containerd
-    - install_k3s
