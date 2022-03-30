@@ -1,0 +1,5 @@
+---
+kube_vip:
+  rbac_manifest_url: "https://kube-vip.io/manifests/rbac.yaml"
+
+  cloud_provider_url: "https://raw.githubusercontent.com/kube-vip/kube-vip-cloud-provider/main/manifest/kube-vip-cloud-controller.yaml"

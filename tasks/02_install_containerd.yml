@@ -91,6 +91,13 @@
       daemon_reload: yes
       state: started
       name: containerd
+  when:
+    - install.containerd.enabled|default(false)|bool == true
+  tags:
+    - install_containerd
+
+- name: Wrap up K3s Install Steps Block
+  block:
 
   - name: Restart k3s Service
     ansible.builtin.systemd:
@@ -115,6 +122,6 @@
       mode: 0600
       owner: "root"
       group: "root"
-
   tags:
     - install_containerd
+    - install_k3s

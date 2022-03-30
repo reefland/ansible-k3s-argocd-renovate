@@ -6,6 +6,8 @@ containerd:
   # Directory of Container Network Plugins
   cni_dir_path: "/usr/lib/cni"
 
+  runtime_endpoint: "/run/containerd/containerd.sock"
+  
   zfs:
     # ZFS Mount point for Containerd
     zfs_mount_point: "/var/lib/containerd/io.containerd.snapshotter.v1.zfs"

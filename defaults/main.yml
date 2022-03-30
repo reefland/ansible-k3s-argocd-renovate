@@ -19,11 +19,11 @@ install:
       packages:
         - snapd
 
-    # Send all logs to a centralized logging server.  The central logging service will be set
-    # when varibale `rsyslog_server` is equal to `ansible_fqdn`.
-    # This will put all logs from k3s hosts under /var/log/central/<hostname>.log
-    central_logging:                          # Centralize all logs to one node using Rsyslog 
-      enabled: "{% if rsyslog_server is defined %}true{% else %}false{% endif %}"   # only enabled if central defined
+    # Send all logs to a centralized logging server. This will be the 1st server defined
+    # within the "k3s_control" group. All other cluster members will send logs to this system.
+    # All logs from k3s hosts will be stored under: /var/log/central/<hostname>.log
+    
+    central_logging:                          
       log_path: "/var/log/central"            # Directory on central server to hold logs
 
       packages:
@@ -43,10 +43,31 @@ install:
       # Encoded users and passwords for basic authentication
       allowed_users: "{{k3s.traefik.dashboard_users}}"    
 
+  ###[ Kube-VIP Installation Settings ]############################################################
+  # Kube-VIP provides HA Load Balancer for the API service and optionally LoadBalancer services
+  # It can optionally also provide Load Balancer services a pool of address to use instead of
+  # using MetalLB.  When enabled this will disable k3s built-in Klipper Load Balancer.
+  kube_vip:
+    enabled: true
+
+    # Select release to use: https://github.com/kube-vip/kube-vip/releases
+    install_version: "v0.4.2"
+
+    # Define address for HA VIP (Kubenetes API will use this), you can set kubectl config to point here
+    endpoint_address: "192.168.10.239"
+
+    # To use Kube-VIP Cloud Provider as LoadBalancer instead of MetalLB
+    lb:
+      enabled: true
+      # to use a range:  range-global: 92.168.1.220-192.168.1.230
+      # to use a CIDR:   cidr-global: 192.168.0.220/29
+      ip_range: "range-global: 192.168.10.240-192.168.10.253"
+
   ###[ MetalLB Installation Settings ]#############################################################
   # When enabled this will disable k3s built-in Klipper Load Balancer and enable MetalLB instead.
+  # This can provide Load Balancer services a pool of addresses to use
   metallb:
-    enabled: true
+    enabled: false
 
     # Select release to use:  https://github.com/metallb/metallb/releases
     # Alternate: https://metallb.universe.tf/installation/
@@ -67,9 +88,6 @@ install:
 
     # CLI options passed directly to install script "as-is":
     cli_options:
-      # Define it below or in the inventory file or group vars file.
-      - "K3S_TOKEN={{K3S_TOKEN}}|default('top_secret')"
-
       # Do not start service after installation as it will have issues with ZFS
       - "INSTALL_K3S_SKIP_START=true"
       
@@ -79,16 +97,30 @@ install:
       # Select installation channel to use (stable, latest, testing)
       # - "INSTALL_K3S_CHANNEL=latest"
 
+    k3s_init_options: >-
+      {% if groups['k3s_control'] | length > 1 -%}
+      {% if ansible_host == hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0]) -%}
+      --cluster-init
+      {%- else %}
+      --server https://{{ hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0]) }}:6443
+      {%- endif %}
+      --token {{ K3S_TOKEN|default('top_secret') }}
+      {%- endif %}
+
     # This becomes the "INSTALL_K3S_EXEC=" CLI parameter
-    k3s_exec_options:  
+    k3s_exec_options:
       - "{{k3s_cli_var|default('')}}"         # Options set in inventory or hosts vars
+
+    # When containerd for ZFS is enabled, this will be added to k3s_exec_options
+    k3s_containerd_options:
       - "--container-runtime-endpoint unix:///run/containerd/containerd.sock"
 
     # When "disable_local_path_as_default_storage_class = true" this will be added to k3s_exec_options
     cli_disable_storage_options:              
       - "--disable local-storage"   
 
-    # When "metallb.enabled = true" this will be added to k3s_exec_options
+    # When "install.metallb.enabled == true" or "install.kube_vip.lb.enabled == true"
+    # this will be added to k3s_exec_options
     cli_disable_loadbalancer_options:        
       - "--disable servicelb"
 
@@ -106,6 +138,8 @@ install:
 
   ###[ Containerd Installation Settings ]##########################################################
   containerd:
+    enabled: true
+
     packages:
       - containerd
       - containernetworking-plugins

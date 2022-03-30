@@ -7,6 +7,8 @@ le_staging: true
 k3s:
   node_token_path: "/var/lib/rancher/k3s/server/node-token"
 
+  manifests_path: "/var/lib/rancher/k3s/server/manifests/"
+
   traefik:
     # Generate Staging Certificates - the "le_staging" allows for CLI override.
     staging: "ternary(({{le_staging|default(true)}})|true,false)"

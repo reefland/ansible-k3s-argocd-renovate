@@ -1,5 +1,5 @@
 ---
-# Setup non-root user, download k3s installation script and run it
+# Prepare environment, download k3s installation script and run it
 
 - name: Install k3s Kubernetes Distribution Block
   block:
@@ -22,22 +22,6 @@
       name: "{{install.k3s.packages_pip}}"
       state: present
 
-  - name: Add non-root user that will be used with Kubernetes
-    ansible.builtin.user:
-      name: "{{install.os.non_root_user.name}}"
-      shell: "{{install.os.non_root_user.shell}}"
-      groups: "{{install.os.non_root_user.groups}}"
-      append: yes
-      createhome: yes
-
-  - name: Allow non-root user to have passwordless sudo convenience
-    ansible.builtin.lineinfile:
-      dest: /etc/sudoers
-      line: "{{install.os.non_root_user.name}} ALL=(ALL) NOPASSWD: /usr/local/bin/kubectl"
-      validate: "visudo -cf %s"
-    when:
-      - install.os.allow_passwordless_sudo|default(false)|bool == true
-
   - name: Download k3s install script
     get_url:
       url: "{{install.k3s.url}}"
@@ -56,7 +40,7 @@
     file:
       path: "/root/.kube"
       state: directory
-      mode: 0700
+      mode: "0700"
       owner: "root"
       group: "root"
 
@@ -71,21 +55,41 @@
       dest: "/etc/environment"
       line: "KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
 
+  - name: Merge k3s_init_options and k3s_exec_options
+    set_fact:
+      install_k3s_exec_options: "{{install.k3s.k3s_init_options + ' ' + install.k3s.k3s_exec_options|join(' ')}}"
+
   - name: Merge in disable options to exec options list if local storage disabled
     set_fact:
-      install_k3s_exec_options: "{{install.k3s.k3s_exec_options + install.k3s.cli_disable_storage_options}}"
+      install_k3s_exec_options: "{{install_k3s_exec_options + install.k3s.cli_disable_storage_options|join(' ')}}"
     when:
       - install.longhorn.disable_local_path_as_default_storage_class|default(false)|bool == true
 
-  - name: Merge in disable options to exec options list if MetalLB is enabled
+  - name: Merge in disable options to exec options list if MetalLB or Kube-VIP is enabled
     set_fact:
-      install_k3s_exec_options: "{{install_k3s_exec_options + install.k3s.cli_disable_loadbalancer_options}}"
+      install_k3s_exec_options: "{{install_k3s_exec_options + ' ' + install.k3s.cli_disable_loadbalancer_options|join(' ')}}"
     when:
-      - install.metallb.enabled|default(false)|bool == true
+      - install.metallb.enabled|default(false)|bool == true or 
+        install.kube_vip.lb.enabled|default(false)|bool == true
+
+  - name: Merge in containerd options to exec options if containerd is enabled
+    set_fact:
+      install_k3s_exec_options: "{{install_k3s_exec_options + ' ' + install.k3s.k3s_containerd_options|join(' ')}}"
+    when:
+      - install.containerd.enabled|default(false)|bool == true
+
+  - name: Add in TLS-SAN flag if Kube-VIP is enabled
+    set_fact:
+      install_k3s_exec_options: "{{install_k3s_exec_options}} --tls-san={{install.kube_vip.endpoint_address}}"
+    when:
+      - install.kube_vip.enabled|default(false)|bool == true
+
+#  - debug:
+#      msg: "{{ install.k3s.cli_options|join(' ')}} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options}}\" "
 
   - name: Execute k3s_install.sh and create k3s_install.log
     ansible.builtin.shell:
-      cmd: "{{ install.k3s.cli_options|join(' ')}} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options|join(' ')}}\" /home/{{install.os.non_root_user.name}}/k3s_install.sh > /home/{{install.os.non_root_user.name}}/k3s_install.log"
+      cmd: "{{ install.k3s.cli_options|join(' ')}} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options}}\" /home/{{install.os.non_root_user.name}}/k3s_install.sh > /home/{{install.os.non_root_user.name}}/k3s_install.log"
       chdir: "/home/{{install.os.non_root_user.name}}"
 
   - name: Add alias of "k" for "kubectl"

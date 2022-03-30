@@ -1,0 +1,75 @@
+# This will only be executed on the Primary master server
+---
+###[ Install Kube-VIP Control Plane API Load Balancer Block ]#####################
+- name: Install Kube-VIP Control Plane API Load Balancer Block
+  block:
+
+  # K3s will process files placed into this directory once installed
+  - name: Create K3s Manifests Directory
+    file:
+      path: "{{k3s.manifests_path}}"
+      state: directory
+      mode: "0755"
+      owner: "root"
+      group: "root"
+
+  - name: Download Kube-VIP RBAC Manifest File
+    get_url:
+      url: "{{kube_vip.rbac_manifest_url}}"
+      dest: "{{k3s.manifests_path}}/kube-vip-rbac.yaml"
+      mode: '0640'
+
+  - name: Copy Kube-VIP DaemonSet Manifest File
+    template:
+      src: "templates/kube-vip/kube-vip.yaml.j2"
+      dest: "{{k3s.manifests_path}}/kube-vip.yaml"
+      mode: '0640'
+
+  when: 
+     - ansible_host == hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0])
+     - install.kube_vip.enabled|default(false)|bool == true
+
+###[ Install Kube-VIP Cloud Provider Load Balancer Block ]#####################
+- name: Install Kube-VIP Cloud Provider Load Balancer Block
+  block:
+  - name: Create Directory for Kube-VIP Configuration
+    file:
+      path: "/home/{{install.os.non_root_user.name}}/kube-vip"
+      state: directory
+      mode: 0750
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+
+  - name: Download Kube-VIP Cloud Provider Manifest File
+    get_url:
+      url: "{{kube_vip.cloud_provider_url}}"
+      dest: "/home/{{install.os.non_root_user.name}}/kube-vip/cloud-controller.yaml"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0640'
+
+  - name: Copy ConfigMap Template for Kube-VIP Load Balancer range
+    template:
+      src: "templates/kube-vip/lb-ip-range.yaml.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/kube-vip/lb-ip-range.yaml"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0640'
+
+  - name: Apply Kube-VIP Cloud Provider Manifest Files - Load Balancer IP Range
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/kube-vip/lb-ip-range.yaml"
+
+  - name: Apply Kube-VIP Cloud Provider Manifest Files - Cloud Controller
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/kube-vip/cloud-controller.yaml"
+
+  when: 
+     - ansible_host == hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0])
+     - install.kube_vip.enabled|default(false)|bool == true
+     - install.kube_vip.lb.enabled|default(false)|bool == true
+
+  tags:
+    - install_kube_vip
