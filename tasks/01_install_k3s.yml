@@ -6,11 +6,11 @@
 
   - name: Uninstall Snapd Demon
     apt:
-      name: "{{install.os.remove_snapd.packages}}"
+      name: "{{install.os.remove_packages.packages}}"
       state: absent
       autoremove: yes
     when:
-      - install.os.remove_snapd.remove_it|default(false)|bool == true 
+      - install.os.remove_packages.enabled|default(false)|bool == true 
 
   - name: Install Kubernetes packages for Ansible
     apt:

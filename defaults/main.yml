@@ -14,10 +14,10 @@ install:
 
     allow_passwordless_sudo: true             # Allow non-root use to passwordless sudo
 
-    remove_snapd:                             # Remove Snapd Demon, we don't need it.
-      remove_it: true
+    remove_packages:                             
+      enabled: true
       packages:
-        - snapd
+        - "snapd"                             # Remove Snapd Demon, we don't need it.
 
     # Send all logs to a centralized logging server. This will be the 1st server defined
     # within the "k3s_control" group. All other cluster members will send logs to this system.
@@ -25,9 +25,6 @@ install:
     
     central_logging:                          
       log_path: "/var/log/central"            # Directory on central server to hold logs
-
-      packages:
-        - lnav                                # Handy program to watch logs in real-time
 
   ###[ Traefik Installation Settings ]#############################################################
   traefik:
