@@ -27,13 +27,13 @@ data:
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: dashboard-ingressroute
+  name: traefik-dashboard
   namespace: kube-system
 spec:
   entryPoints:
     - {% if install.traefik.dashboard.enable_https|default(false)|bool == false %}web{% else %}websecure{% endif %}{{''}}
   routes:
-    - match: Host(`{{ansible_fqdn|lower}}`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
+    - match: Host(`{{install.traefik.dashboard.hostname|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.traefik.dashboard.path|default("/dashboard")}}`) || PathPrefix(`/api`))
       kind: Rule
 {% if install.traefik.dashboard.enable_basic_auth|default(false)|bool == true%}
       middlewares:

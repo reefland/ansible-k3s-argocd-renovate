@@ -39,7 +39,9 @@ install:
       create_route: true                      # Create Ingress Router to make accessible 
       enable_https: true                      # Require HTTPS to access dashboard
       enable_basic_auth: true                 # Require Authentication to access dashboard
-      
+      # Default Dashboard URL:  https://k3s.{{ansible_domain}}/dashboard/
+      hostname: "k3s.{{ansible_domain}}"      # Domain for ingress route
+      path: "/dashboard"                      # PathPrefix for dashboard
       # Encoded users and passwords for basic authentication
       allowed_users: "{{k3s.traefik.dashboard_users}}"    
 
@@ -316,6 +318,9 @@ install:
     dashboard:
       create_route: true           # Create Ingress Route to make accessible 
       enable_basic_auth: true      # Require Authentication to access dashboard
+
+      # Default Dashboard URL:  https://k3s.{{ansible_domain}}/dashboard/
+      hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
       path: "/longhorn"            # URI Path for Ingress Route
 
       # Encoded users and passwords for basic authentication
