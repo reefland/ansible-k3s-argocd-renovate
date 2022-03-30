@@ -1,6 +1,6 @@
 # This will only be executed on the Primary master server
 ---
-###[ Install Kube-VIP Control Plane API Load Balancer Block ]#####################
+###[ Install Kube-VIP Control Plane API Load Balancer Block ]######################################
 - name: Install Kube-VIP Control Plane API Load Balancer Block
   block:
 
@@ -44,7 +44,7 @@
   tags:
     - install_kube_vip
 
-###[ Install Kube-VIP Cloud Provider Load Balancer Block ]#####################
+###[ Install Kube-VIP Cloud Provider Load Balancer Block ]#########################################
 - name: Install Kube-VIP Cloud Provider Load Balancer Block
   block:
   - name: Create Directory for Kube-VIP Configuration
