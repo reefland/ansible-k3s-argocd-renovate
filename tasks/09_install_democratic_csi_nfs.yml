@@ -87,11 +87,6 @@
       wait_sleep: 5
       wait_timeout: 120
 
-
-#  - name: Pause for 60 seconds for deployment to spin up all pods. 
-#    wait_for:
-#     timeout: 60
-
   tags:
     - install_democratic_csi_nfs
   when:
