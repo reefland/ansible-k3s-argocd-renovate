@@ -26,14 +26,16 @@
       - rsyslog.yml
       - k3s.yml
       - containerd.yml
+      - helm.yml
+      - longhorn.yml
       - kube_vip.yml
       - metallb.yml
-      - helm.yml
       - cert_manager.yml
       - democratic-csi.yml
-      - longhorn.yml
       - prometheus-op.yml
       - grafana.yml
+  loop_control:
+    label: "{{item}}"
 
 ###[ Detect ZFS UUID from ZFS on Root installations ]##############################################
 - name: Detect ZFS Dataset UUID
@@ -74,24 +76,25 @@
   tags: ["always"]
   loop:
     - 00_config_rsyslog.yml
-    - 00-3_create_non_root_user.yml
+    - 00_create_non_root_user.yml
     - 01_install_k3s.yml
     - 02_install_containerd.yml
-    - 02-5_install_kube_vip.yml
-    - 03_validate_k3s.yml
-    - 03-5_install_metallb.yml
-    - 04_install_helm_client.yml
-    - 05_install_cert_manager.yml
-    - 06_config_traefik.yml
-    - 07_install_democratic_csi_iscsi.yml
-    - 08_validate_csi_iscsi.yml
+    - 03_install_helm_client.yml
+    - 04_install_longhorn.yml
+    - 05_validate_k3s.yml
+    - 05_validate_longhorn.yml
+    - 06_install_kube_vip.yml
+    - 06_install_metallb.yml
+    - 07_install_cert_manager.yml
+    - 08_config_traefik.yml
+    - 09_install_democratic_csi_iscsi.yml
     - 09_install_democratic_csi_nfs.yml
+    - 10_validate_csi_iscsi.yml
     - 10_validate_csi_nfs.yml
-    - 11_install_longhorn.yml
-    - 12_validate_longhorn.yml
     - 13_install_prometheus_op.yml
     - 14_install_grafana.yml
-
   loop_control:
+    label: "{{task_names}}"
     loop_var: task_names
+
 
