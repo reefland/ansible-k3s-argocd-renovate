@@ -23,6 +23,7 @@
   include_vars: "{{ item }}"
   tags: ["always"]
   loop:
+      - os.yml
       - rsyslog.yml
       - k3s.yml
       - containerd.yml

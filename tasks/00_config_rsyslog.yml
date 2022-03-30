@@ -1,13 +1,13 @@
 ---
 # Configure Centralized logging - !st server defined in master group is centralized server
 
-###[ Configure Central Logging Server ]########################################
+###[ Configure Central Logging Server ]############################################################
 - name: Configure Central Logging Server Block
   block:
   
   - name: Install Packages to Support Central Logging
     apt:
-      name: "{{install.os.central_logging.packages}}"
+      name: "{{os.central_logging.packages}}"
       state: present
 
   - name: Create folder for central logging
@@ -29,6 +29,8 @@
       - { find: 'input\(type="imudp"',   replace: 'input(type="imudp"' }
       - { find: 'module\(load="imtcp"',  replace: 'module(load="imtcp"' }
       - { find: 'input\(type="imtcp"',   replace: 'input(type="imtcp"' }
+    notify:
+     - Restart rsyslog service
 
   - name: Copy Central Logging Config File
     copy:
@@ -37,19 +39,15 @@
     loop:
       - { src: "central.conf", dest: "{{rsyslog.central_config}}" }
       - { src: "central",      dest: "{{rsyslog.logrotate_config}}" }
-
-  - name: Restart rsyslog service
-    ansible.builtin.systemd:
-      daemon_reload: yes
-      state: restarted
-      name: rsyslog
+    notify:
+     - Restart rsyslog service
 
   when: 
      - ansible_host == hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0])
   tags:
     - config_rsyslog
 
-###[ Configure Logging Clients ]########################################
+###[ Configure Logging Clients ]###################################################################
 
 # This is never run on the central logging server, only other nodes
 - name: Configure Logging Clients Block
@@ -60,14 +58,16 @@
       path: "{{rsyslog.config_file}}"
       insertafter: "# Default logging rules"
       line: "*.* @@{{ hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0]) }}:514"
-
-  - name: Restart rsyslog service
-    ansible.builtin.systemd:
-      daemon_reload: yes
-      state: restarted
-      name: rsyslog
+    notify:
+     - Restart rsyslog service
 
   when: 
      - ansible_host != hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0])
+  tags:
+    - config_rsyslog
+
+###[ Flush Handlers ]##############################################################################
+- name: Flush Handlers
+  meta: flush_handlers
   tags:
     - config_rsyslog
