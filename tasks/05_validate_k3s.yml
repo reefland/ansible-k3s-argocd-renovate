@@ -2,6 +2,33 @@
 ###[ Test k3s Running ]############################################################################
 - name: Confirm K3s Running and deployed default Block
   block:
+
+  - name: Copy config to non-root user config file
+    copy:
+      src: "/etc/rancher/k3s/k3s.yaml"
+      dest: "{{kubeconfig_path}}"
+      remote_src: yes
+      mode: 0600
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+
+  - name: Copy config to root user config file
+    copy:
+      src: "/etc/rancher/k3s/k3s.yaml"
+      dest: "/root/.kube/config"
+      remote_src: yes
+      mode: 0600
+      owner: "root"
+      group: "root"
+
+  - name: Add alias of "k" for "kubectl"
+    ansible.builtin.lineinfile:
+      path: "/home/{{install.os.non_root_user.name}}/.bash_aliases"
+      line: "alias {{install.k3s.alias.value}}='{{install.k3s.alias.command}}'"
+      create: yes
+      state: present
+    when: install.k3s.alias.enabled|default(false)|bool == true
+
   - name: Get kubectl node status
     command:
       cmd: "kubectl get node {{ansible_hostname}}"
