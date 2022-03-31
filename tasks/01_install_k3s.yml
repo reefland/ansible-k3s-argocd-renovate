@@ -14,12 +14,12 @@
 
   - name: Install Kubernetes packages for Ansible
     apt:
-      name: "{{install.k3s.packages}}"
+      name: "{{k3s.packages}}"
       state: present
 
   - name: Install Kubernetes pip3 packages for Ansible
     pip:
-      name: "{{install.k3s.packages_pip}}"
+      name: "{{k3s.packages_pip}}"
       state: present
 
   - name: Download k3s install script
@@ -57,24 +57,24 @@
 
   - name: Merge k3s_init_options and k3s_exec_options
     set_fact:
-      install_k3s_exec_options: "{{install.k3s.k3s_init_options + ' ' + install.k3s.k3s_exec_options|join(' ')}}"
+      install_k3s_exec_options: "{{k3s.k3s_init_options + ' ' + k3s.k3s_exec_options|join(' ')}}"
 
   - name: Merge in disable options to exec options list if local storage disabled
     set_fact:
-      install_k3s_exec_options: "{{install_k3s_exec_options + install.k3s.cli_disable_storage_options|join(' ')}}"
+      install_k3s_exec_options: "{{install_k3s_exec_options + k3s.cli_disable_storage_options|join(' ')}}"
     when:
       - install.longhorn.disable_local_path_as_default_storage_class|default(false)|bool == true
 
   - name: Merge in disable options to exec options list if MetalLB or Kube-VIP is enabled
     set_fact:
-      install_k3s_exec_options: "{{install_k3s_exec_options + ' ' + install.k3s.cli_disable_loadbalancer_options|join(' ')}}"
+      install_k3s_exec_options: "{{install_k3s_exec_options + ' ' + k3s.cli_disable_loadbalancer_options|join(' ')}}"
     when:
       - install.metallb.enabled|default(false)|bool == true or 
         install.kube_vip.lb.enabled|default(false)|bool == true
 
   - name: Merge in containerd options to exec options if containerd is enabled
     set_fact:
-      install_k3s_exec_options: "{{install_k3s_exec_options + ' ' + install.k3s.k3s_containerd_options|join(' ')}}"
+      install_k3s_exec_options: "{{install_k3s_exec_options + ' ' + k3s.k3s_containerd_options|join(' ')}}"
     when:
       - install.containerd.enabled|default(false)|bool == true
 

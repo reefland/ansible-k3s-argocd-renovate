@@ -24,9 +24,11 @@
   - name: Add alias of "k" for "kubectl"
     ansible.builtin.lineinfile:
       path: "/home/{{install.os.non_root_user.name}}/.bash_aliases"
-      line: "alias {{install.k3s.alias.value}}='{{install.k3s.alias.command}}'"
+      line: "alias {{item.alias_name}}='{{item.command}}'"
       create: yes
       state: present
+    with_items:
+      - "{{install.k3s.alias.entries}}"
     when: install.k3s.alias.enabled|default(false)|bool == true
 
   - name: Get kubectl node status
@@ -45,7 +47,5 @@
     debug:
       msg: "{{kubestl_status.stdout}}"
 
-  when: 
-    - install.k3s.confirm_running|default(false)|bool == true
   tags:
     - validate_k3s
