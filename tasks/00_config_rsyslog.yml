@@ -43,7 +43,7 @@
      - Restart rsyslog service
 
   when: 
-     - ansible_host == hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0])
+     - inventory_hostname == groups['k3s_control'][0]
   tags:
     - config_rsyslog
 
@@ -57,12 +57,12 @@
     lineinfile:
       path: "{{rsyslog.config_file}}"
       insertafter: "# Default logging rules"
-      line: "*.* @@{{ hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0]) }}:514"
+      line: "*.* @@{{ groups['k3s_control'][0] }}:514"
     notify:
      - Restart rsyslog service
 
   when: 
-     - ansible_host != hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0])
+     - inventory_hostname != groups['k3s_control'][0]
   tags:
     - config_rsyslog
 
