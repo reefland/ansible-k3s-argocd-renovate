@@ -9,6 +9,41 @@ k3s:
 
   manifests_path: "/var/lib/rancher/k3s/server/manifests/"
 
+  # Packages required for Ansible to issue Kubernetes and commands
+  packages:
+    - python3-pip
+  packages_pip:
+    - openshift
+    - pyyaml
+    - kubernetes
+
+  k3s_init_options: >-
+    {% if groups['k3s_control'] | length > 1 -%}
+    {% if inventory_hostname == groups['k3s_control'][0] -%}
+    --cluster-init
+    {%- else %}
+    --server https://{{ groups['k3s_control'][0] }}:6443
+    {%- endif %}
+    --token {{ K3S_TOKEN|default('top_secret') }}
+    {%- endif %}
+
+  # This becomes the "INSTALL_K3S_EXEC=" CLI parameter
+  k3s_exec_options:
+    - "{{k3s_cli_var|default('')}}"         # Options set in inventory or hosts vars
+
+  # When containerd for ZFS is enabled, this will be added to k3s_exec_options
+  k3s_containerd_options:
+    - "--container-runtime-endpoint unix:///run/containerd/containerd.sock"
+
+  # When "disable_local_path_as_default_storage_class = true" this will be added to k3s_exec_options
+  cli_disable_storage_options:              
+    - "--disable local-storage"   
+
+  # When "install.metallb.enabled == true" or "install.kube_vip.lb.enabled == true"
+  # this will be added to k3s_exec_options
+  cli_disable_loadbalancer_options:        
+    - "--disable servicelb"
+
   traefik:
     # Generate Staging Certificates - the "le_staging" allows for CLI override.
     staging: "ternary(({{le_staging|default(true)}})|true,false)"

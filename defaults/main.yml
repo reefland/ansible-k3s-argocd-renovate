@@ -36,9 +36,11 @@ install:
       create_route: true                      # Create Ingress Router to make accessible 
       enable_https: true                      # Require HTTPS to access dashboard
       enable_basic_auth: true                 # Require Authentication to access dashboard
+
       # Default Dashboard URL:  https://k3s.{{ansible_domain}}/dashboard/
       hostname: "k3s.{{ansible_domain}}"      # Domain for ingress route
       path: "/dashboard"                      # PathPrefix for dashboard
+
       # Encoded users and passwords for basic authentication
       allowed_users: "{{k3s.traefik.dashboard_users}}"    
 
@@ -77,15 +79,7 @@ install:
       - "192.168.10.240-192.168.10.253"
 
   k3s:
-    # Packages required for Ansible to issue Kubernetes and commands
-    packages:
-      - python3-pip
-    packages_pip:
-      - openshift
-      - pyyaml
-      - kubernetes
-
-    # CLI options passed directly to install script "as-is":
+    # CLI_options are passed directly to install script "as-is", you can add to list.
     cli_options:
       # Do not start service after installation as it will have issues with ZFS
       - "INSTALL_K3S_SKIP_START=true"
@@ -96,44 +90,13 @@ install:
       # Select installation channel to use (stable, latest, testing)
       # - "INSTALL_K3S_CHANNEL=latest"
 
-    k3s_init_options: >-
-      {% if groups['k3s_control'] | length > 1 -%}
-      {% if ansible_host == hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0]) -%}
-      --cluster-init
-      {%- else %}
-      --server https://{{ hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0]) }}:6443
-      {%- endif %}
-      --token {{ K3S_TOKEN|default('top_secret') }}
-      {%- endif %}
-
-    # This becomes the "INSTALL_K3S_EXEC=" CLI parameter
-    k3s_exec_options:
-      - "{{k3s_cli_var|default('')}}"         # Options set in inventory or hosts vars
-
-    # When containerd for ZFS is enabled, this will be added to k3s_exec_options
-    k3s_containerd_options:
-      - "--container-runtime-endpoint unix:///run/containerd/containerd.sock"
-
-    # When "disable_local_path_as_default_storage_class = true" this will be added to k3s_exec_options
-    cli_disable_storage_options:              
-      - "--disable local-storage"   
-
-    # When "install.metallb.enabled == true" or "install.kube_vip.lb.enabled == true"
-    # this will be added to k3s_exec_options
-    cli_disable_loadbalancer_options:        
-      - "--disable servicelb"
-
     # Location for K3s installation script
     url: "https://get.k3s.io"
 
-    # If enabled, will fail ansible deployment when "kubectl get node" returns "No resources found"
-    confirm_running: true
-  
-    # Create a handy alias for kubectl  ($ k get all -A)
     alias:
       enabled: true
-      value: "k"
-      command: "kubectl"
+      entries:
+        - { alias_name: "k", command: "kubectl" }   # alias for kubectl  ($ k get all -A)
 
   ###[ Containerd Installation Settings ]##########################################################
   containerd:
