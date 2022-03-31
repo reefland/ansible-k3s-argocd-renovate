@@ -160,13 +160,6 @@ install:
       namespace: "democratic-csi"
       release: "truenas-iscsi"
 
-      packages:
-        - open-iscsi
-        - lsscsi
-        - sg3-utils
-        - multipath-tools
-        - scsitools
-
       storage_class:
         default_class: false
         reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
@@ -220,9 +213,6 @@ install:
       provisioner: "freenas-nfs"
       namespace: "democratic-csi"
       release: "truenas-nfs"
-
-      packages:
-        - libnfs-utils
 
       storage_class:
         default_class: false
