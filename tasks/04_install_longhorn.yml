@@ -8,7 +8,7 @@
   block:
   - name: Install Longhorn Support packages
     apt:
-      name: "{{install.longhorn.packages}}"
+      name: "{{longhorn.packages}}"
       state: present
 
   - name: Add Longhorn Repository to Helm

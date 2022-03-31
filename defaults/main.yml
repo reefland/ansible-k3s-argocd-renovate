@@ -247,9 +247,6 @@ install:
   longhorn:
     install_this: true              # Install longhorn distributed cluster storage
 
-    packages:
-      - open-iscsi
-
     namespace: "longhorn-system"   # Add resources to this namespace
     release: "longhorn"            # Release value passed to Helm
 
