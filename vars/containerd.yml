@@ -1,8 +1,20 @@
 ---
 containerd:
-  # location of containerd configuration file
-  config_file: "{{install.containerd.config_path}}/config.toml"
-  
+  # List of packages to install
+  packages:
+    - containerd
+    - containernetworking-plugins
+    - iptables
+
+  # Location of containerd configuration file
+  config_path: "/etc/containerd"
+
+  # name of containerd configuration file
+  config_file: "config.toml"
+
+  # Location to place flannel.conflist
+  flannel_conflist_path: "/etc/cni/net.d"
+
   # Directory of Container Network Plugins
   cni_dir_path: "/usr/lib/cni"
 
