@@ -9,7 +9,7 @@
   block:
   - name: Install iSCSI Support packages
     apt:
-      name: "{{install.democratic_csi.iscsi.packages}}"
+      name: "{{democratic_csi.iscsi.packages}}"
       state: present
 
   - name: Copy multipath.Conf File

@@ -9,7 +9,7 @@
   block:
   - name: Install NFS Support packages
     apt:
-      name: "{{install.democratic_csi.nfs.packages}}"
+      name: "{{democratic_csi.nfs.packages}}"
       state: present
 
   - name: Add democratic-csi Repository to Helm
