@@ -27,12 +27,12 @@
   block:
   - name: Install containerd packages
     apt:
-      name: "{{install.containerd.packages}}"
+      name: "{{containerd.packages}}"
       state: present
 
-  - name: Create path /etc/containerd
+  - name: Create Containerd config path
     file:
-      path: "{{install.containerd.config_path}}"
+      path: "{{containerd.config_path}}"
       state: directory
 
   - name: Start Containerd Service
@@ -42,11 +42,11 @@
 
   - name: Generate Default Containerd Configuration
     shell:
-      cmd: "containerd config default > {{containerd.config_file}}"
+      cmd: "containerd config default > {{containerd.config_path}}/{{containerd.config_file}}"
 
   - name: Confirm ZFS snapshotter has status ok
     shell:
-      cmd: "ctr --address /run/containerd/containerd.sock plugins ls | grep zfs"
+      cmd: "ctr --address {{containerd.runtime_endpoint}} plugins ls | grep zfs"
     register: zfs_snapshotter
 
   - name: Fail if ZFS snapshooter status is not ok
@@ -66,13 +66,13 @@
 
   - name: Update snapshotter to zfs
     replace: 
-      path: "{{containerd.config_file}}"
+      path: "{{containerd.config_path}}/{{containerd.config_file}}"
       regexp: '(?m)snapshotter.*"overlayfs"'
       replace: 'snapshotter = "zfs"'
       
   - name: Update CNI Binary location
     replace: 
-      path: "{{containerd.config_file}}"
+      path: "{{containerd.config_path}}/{{containerd.config_file}}"
       regexp: '(?m)bin_dir.*"/opt/cni/bin"'
       replace: 'bin_dir = "{{containerd.cni_dir_path}}"'
 
@@ -86,14 +86,17 @@
   - name: Copy Flannel Conflist File
     copy:
       src: "files/10-flannel.conflist"
-      dest: "{{install.containerd.flannel_conflist_path}}"
+      dest: "{{containerd.flannel_conflist_path}}"
     notify:
       - Restart Containerd Service
       - Restart k3s Service
 
-  - name: Flush Handlers
-    meta: flush_handlers
   when:
     - install.containerd.enabled|default(false)|bool == true
+  tags:
+    - install_containerd
+
+- name: Flush Handlers
+  meta: flush_handlers
   tags:
     - install_containerd

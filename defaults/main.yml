@@ -102,17 +102,6 @@ install:
   containerd:
     enabled: true
 
-    packages:
-      - containerd
-      - containernetworking-plugins
-      - iptables
-    
-    # Location generate config.toml file
-    config_path: "/etc/containerd"
-
-    # Location to place flannel.conflist
-    flannel_conflist_path: "/etc/cni/net.d"
-
     # Hint to find the ZFS pool & dataset to create containerd mount point
     zfs:
       # detect_uuid will determine the UUID name used for the dataset name and include it.
