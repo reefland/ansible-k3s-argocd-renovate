@@ -172,13 +172,13 @@ Simple playbook I'm using for testing, named `kubernetes.yml`:
 The most basic way to deploy K3s Kubernetes with ContainerD:
 
 ```bash
-ansible-playbook -i inventory kubernetes.yml
+ansible-playbook -i inventory.yml kubernetes.yml
 ```
 
 To limit execution to a single machine:
 
 ```bash
-ansible-playbook -i inventory kubernetes.yml -l k3s01.example.com
+ansible-playbook -i inventory.yml kubernetes.yml -l k3s01.example.com
 ```
 
 ## Build in Stages
@@ -186,7 +186,7 @@ ansible-playbook -i inventory kubernetes.yml -l k3s01.example.com
 Instead of running the entire playbook, you can run smaller logical steps using tags. Or use a tag to re-run a specific step you are troubleshooting.
 
 ```bash
-ansible-playbook -i inventory kubernetes.yml -l k3s01.example.com --tags="<tag_goes_here>"
+ansible-playbook -i inventory.yml kubernetes.yml -l k3s01.example.com --tags="<tag_goes_here>"
 ```
 
 The following tags are supported and should be used in this order:
