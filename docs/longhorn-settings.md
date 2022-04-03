@@ -53,38 +53,6 @@ The Longhorn Settings are in variable namespace `install.longhorn`.
           volblocksize: "16k"
 ```
 
-### Increasing Zvol Size in the Future
-
-You can increase the `volsize` manually in the future using standard ZFS commands such as:
-
-```shell
-$ sudo zfs set volsize=15G rpool/longhorn
-
-$ zfs get volsize rpool/longhorn
-
-NAME            PROPERTY  VALUE    SOURCE
-rpool/longhorn  volsize   15G      local
-```
-
-Then expand the filesystem to use newly allocated space:
-
-```shell
-$ sudo xfs_growfs /var/lib/longhorn
-
-meta-data=/dev/zd0               isize=512    agcount=4, agsize=655360 blks
-         =                       sectsz=512   attr=2, projid32bit=1
-         =                       crc=1        finobt=1, sparse=1, rmapbt=0
-         =                       reflink=1
-data     =                       bsize=4096   blocks=2621440, imaxpct=25
-         =                       sunit=0      swidth=0 blks
-naming   =version 2              bsize=4096   ascii-ci=0, ftype=1
-log      =internal log           bsize=4096   blocks=2560, version=2
-         =                       sectsz=512   sunit=0 blks, lazy-count=1
-realtime =none                   extsz=4096   blocks=0, rtextents=0
-data blocks changed from 2621440 to 3932160
-```
-
-Within a few seconds the new size should be reflected in the Longhorn dashboard.
 
 ### Longhorn Default Mountpoint
 
@@ -141,7 +109,7 @@ LONGHORN_DASHBOARD_USERS: "{{TRAEFIK_DASHBOARD_USERS}}"
 NOTE: by default, any users defined in the Traefik Dashboard allowed user list is allowed to log into the Longhorn dashboard.
 
 * If you need to restrict access to the dashboard to different set of users or require different passwords, then update the file as needed.
-* As stated in the commons this is not a shared Kubernetes secrets with Traefik. Once deployed a change in one will not be reflected in the other.  This is just to make initial setup easier.
+* As stated in the comments this is not a shared Kubernetes secrets with Traefik. Once deployed a change in one will not be reflected in the other.  This is just to make initial setup easier.
 
 ### Test Claim
 
@@ -154,6 +122,59 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
     size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
     remove: true                # true = remove claim when test is completed (false leaves it alone)
 ```
+
+---
+
+## Increasing Zvol Size in the Future
+
+You can easily check the current `volsize` using standard ZFS commands:
+
+```shell
+$ zfs get volsize rpool/longhorn
+
+NAME           PROPERTY  VALUE    SOURCE
+rpool/longhorn  volsize   10G      local
+```
+
+Determine how much space you have available before increasing the `volsize`:
+
+```shell
+$ zfs get available rpool/longhorn
+
+NAME           PROPERTY   VALUE  SOURCE
+rpool/longhorn  available  783G   -
+```
+
+You can increase the `volsize` manually in the future using standard ZFS commands such as:
+
+```shell
+$ sudo zfs set volsize=15G rpool/longhorn
+
+$ zfs get volsize rpool/longhorn
+
+NAME            PROPERTY  VALUE    SOURCE
+rpool/longhorn  volsize   15G      local
+```
+
+Then expand the filesystem to use newly allocated space:
+
+```shell
+$ sudo xfs_growfs /var/lib/longhorn
+
+meta-data=/dev/zd0               isize=512    agcount=4, agsize=655360 blks
+         =                       sectsz=512   attr=2, projid32bit=1
+         =                       crc=1        finobt=1, sparse=1, rmapbt=0
+         =                       reflink=1
+data     =                       bsize=4096   blocks=2621440, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0, ftype=1
+log      =internal log           bsize=4096   blocks=2560, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+data blocks changed from 2621440 to 3932160
+```
+
+Within a few seconds the new size should be reflected in the Longhorn dashboard.
 
 ---
 
