@@ -60,7 +60,7 @@ spec:
   entryPoints:
     - {% if install.traefik.dashboard.enable_https|default(false)|bool == false %}web{% else %}websecure{% endif %}{{''}}
   routes:
-    - match: Host(`{{install.traefik.dashboard.hostname|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.longhorn.dashboard.path|default("/longhorn")}}`))
+    - match: Host(`{{install.longhorn.dashboard.hostname|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.longhorn.dashboard.path|default("/longhorn")}}`))
       kind: Rule
       services:
       - kind: Service
