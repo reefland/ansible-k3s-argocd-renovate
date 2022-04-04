@@ -53,7 +53,6 @@ The Longhorn Settings are in variable namespace `install.longhorn`.
           volblocksize: "16k"
 ```
 
-
 ### Longhorn Default Mountpoint
 
 The ZFS Zvol will be formatted and mounted at the location specified below and Longhorn installation is set to look at this location.
