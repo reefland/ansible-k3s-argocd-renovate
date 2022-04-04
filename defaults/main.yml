@@ -255,7 +255,7 @@ install:
       create_route: true           # Create Ingress Route to make accessible 
       enable_basic_auth: true      # Require Authentication to access dashboard
 
-      # Default Dashboard URL:  https://k3s.{{ansible_domain}}/dashboard/
+      # Default Dashboard URL:  https://k3s.{{ansible_domain}}/longhorn/
       hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
       path: "/longhorn"            # URI Path for Ingress Route
 
