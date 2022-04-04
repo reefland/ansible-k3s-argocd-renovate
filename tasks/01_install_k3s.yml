@@ -61,7 +61,7 @@
 
   - name: Merge in disable options to exec options list if local storage disabled
     set_fact:
-      install_k3s_exec_options: "{{install_k3s_exec_options + k3s.cli_disable_storage_options|join(' ')}}"
+      install_k3s_exec_options: "{{install_k3s_exec_options + ' ' + k3s.cli_disable_storage_options|join(' ')}}"
     when:
       - install.longhorn.disable_local_path_as_default_storage_class|default(false)|bool == true
 
