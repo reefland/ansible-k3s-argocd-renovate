@@ -19,17 +19,17 @@ The Longhorn Settings are in variable namespace `install.longhorn`.
 
 * Enable or disable installation of Longhorn Distributed storage:
 
-```yml
-  longhorn:
-    install_this: true              # Install longhorn distributed cluster storage
-```
+  ```yml
+    longhorn:
+      install_this: true              # Install longhorn distributed cluster storage
+  ```
 
 * The name space and release name Helm will use to install Longhorn:
 
-```yml
-    namespace: "longhorn-system"
-    release: "longhorn"
-```
+  ```yml
+      namespace: "longhorn-system"
+      release: "longhorn"
+  ```
 
 ### ZFS Zvol for Longhorn
 
@@ -37,21 +37,21 @@ The Longhorn Settings are in variable namespace `install.longhorn`.
 
   * The `pool` can be defined per host or host group using variable `longhorn_zfs_pool` if this is not defined, it will default to `rpool` as shown below.
 
-```yml
-    zfs:                           # Combined "rpool/longhorn"
-      pool: "{{longhorn_zfs_pool|default('rpool')}}"
-      volume_name: "longhorn"              
-```
+  ```yml
+      zfs:                           # Combined "rpool/longhorn"
+        pool: "{{longhorn_zfs_pool|default('rpool')}}"
+        volume_name: "longhorn"
+  ```
 
 * Define some properties to be used with Zvol creation. The `volsize` specifies storage space dedicated to Longhorn usage.  You can select different compression if you like.
 
-```yml
-      zvol:
-        options:
-          volsize: "10G"
-          compression: "lz4"        # "" (inherit), lz4, gzip-9, etc
-          volblocksize: "16k"
-```
+  ```yml
+        zvol:
+          options:
+            volsize: "10G"
+            compression: "lz4"        # "" (inherit), lz4, gzip-9, etc
+            volblocksize: "16k"
+  ```
 
 ### Longhorn Default Mountpoint
 
@@ -75,15 +75,24 @@ The intent of longhorn is to be used instead of "local-path" storage class. Once
 
 * Settings for the Longhorn Web Dashboard. The `create_route` will create a Traefik Ingress route to expose the dashboard on the URI defined in `path`.
 
-```yml
-    # Longhorn Dashboard
-    dashboard:
-      create_route: true           # Create Ingress Route to make accessible 
-      enable_basic_auth: true      # Require Authentication to access dashboard
-      path: "/longhorn"            # URI Path for Ingress Route
-```
+  ```yml
+      # Longhorn Dashboard
+      dashboard:
+        create_route: true           # Create Ingress Route to make accessible 
+        enable_basic_auth: true      # Require Authentication to access dashboard
 
-The Dashboard URL path will resemble: `https://testlinux.example.com/longhorn/#/dashboard`
+        # Default Dashboard URL:  https://k3s.{{ansible_domain}}/longhorn/
+        hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
+        path: "/longhorn"            # URI Path for Ingress Route
+
+        # Encoded users and passwords for basic authentication
+        allowed_users: "{{longhorn.dashboard_users}}"
+  ```
+
+* The `hostname` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes.
+* The `allowed_users` maps to which users are allowed to access the Longhorn Dashboard.
+
+The Longhorn Dashboard URL path will resemble: `https://k3s.example.com/longhorn/#/dashboard`
 
 ![Longhorn Storage Dashboard](../images/longhorn-dashboard.png)
 
@@ -120,6 +129,18 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
     mode: "ReadWriteOnce"       # storage claim access mode
     size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
     remove: true                # true = remove claim when test is completed (false leaves it alone)
+```
+
+---
+
+### Show Storage Claim Provisioners and Claim Policy
+
+```shell
+$ kubectl get sc
+
+NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+longhorn (default)   driver.longhorn.io     Delete          Immediate           true                   4d3h
+
 ```
 
 ---
