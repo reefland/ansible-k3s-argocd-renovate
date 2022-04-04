@@ -488,7 +488,6 @@ $ kubectl logs pod/truenas-nfs-democratic-csi-controller-5d8dc94bc-55wvs  csi-dr
 $ kubectl get sc
 
 NAME                   PROVISIONER                RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-local-path (default)   rancher.io/local-path      Delete          WaitForFirstConsumer   false                  7d11h
 freenas-iscsi-csi      org.democratic-csi.iscsi   Delete          Immediate              true                   40h
 freenas-nfs-csi        org.democratic-csi.nfs     Delete          Immediate              true                   20h
 ```
