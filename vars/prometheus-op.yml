@@ -1,7 +1,8 @@
 ---
-prometheus:
-  # Name space to be created for Prometheus Operator
-  namespace: "monitoring"
+prometheus_operator:
+  # Define the Repo URL to download from:
+  repo_url: "https://prometheus-community.github.io/helm-charts"
+  repo_chart_ref: "prometheus-community/kube-prometheus-stack"
 
-  # This specifies the version of Prometheus Operator bundle.yaml to install
-  bundle_url: "https://github.com/prometheus-operator/prometheus-operator/releases/download/{{install.prometheus.install_version}}/bundle.yaml"
+  prometheus:
+    dashboard_users: "{{PROMETHEUS_DASHBOARD_USERS}}"

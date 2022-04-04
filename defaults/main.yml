@@ -287,52 +287,38 @@ install:
       remove: true                # true = remove claim when test is completed (false leaves it alone)
 
   ###[ Prometheus Operator Installation Settings ]#################################################
-  prometheus:
+  prometheus_operator:
     install_this: true              # Install Prometheus Operator
 
-    # Select release to use:  https://github.com/prometheus-operator/prometheus-operator/releases
-    install_version: "v0.54.1"
+    namespace: "monitoring"
+    release: "kube-stack-prometheus"
 
-    retention: "7d"                 # How long to retain data
-    monitor_services:               # Services to monitor
-      - kube-state-metrics
-      - node-exporter
-      - kubelet
-      - traefik
+    # Select release to use:  https://github.com/prometheus-community/helm-charts/releases
+    install_version: "34.7.1"
 
-    storage_claim:                  # Define where and how data is stored
-      access_mode: "ReadWriteOnce"
-      class_name: "freenas-iscsi-csi"
-      claim_size: 20Gi
+    prometheus:
+      retention: "7d"                 # How long to retain data
 
-    node_exporter:
-      # https://quay.io/repository/prometheus/node-exporter?tab=tags&tag=latest
-      install_version: "1.3.1"
-      image_name: "quay.io/prometheus/node-exporter"
+      storage_claim:                  # Define where and how data is stored
+        access_mode: "ReadWriteOnce"
+        class_name: "freenas-iscsi-csi"
+        claim_size: 20Gi
 
-    kube_state_metrics:
-      # https://github.com/kubernetes/kube-state-metrics/releases
-      install_version: "2.4.2"  #2.3.0
-      image_name: "k8s.gcr.io/kube-state-metrics/kube-state-metrics"
-      node_selector: "kubernetes.io/os: linux"    # Any linux node
-      # node_selector: "node-type: worker"        # custom label example
+      # Prometheus Web Interface
+      dashboard:
+        create_route: true           # Create Ingress Route to make accessible 
+        enable_basic_auth: true      # Require Authentication to access dashboard
 
-    kube_rbac_proxy:
-      # https://quay.io/repository/brancz/kube-rbac-proxy?tab=tags&tag=latest
-      install_version: "0.8.0"
-      image_name: "quay.io/brancz/kube-rbac-proxy"
+        # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
+        hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
+        path: "/prometheus"            # URI Path for Ingress Route
 
-  ###[ Grafana Installation Settings ]#############################################################
-  grafana:
-    install_this: true              # Install Grafana
+        # Encoded users and passwords for basic authentication
+        allowed_users: "{{prometheus_operator.prometheus.dashboard_users}}"
 
-    image_name: "grafana/grafana"
-    install_version: "latest"
+    grafana:
+      storage_claim:                  # Define where and how data is stored
+        access_mode: "ReadWriteOnce"
+        class_name: "freenas-iscsi-csi"
+        claim_size: 10Gi
 
-    storage_claim:                  # Define where and how data is stored
-      access_mode: "ReadWriteOnce"
-      class_name: "freenas-iscsi-csi"
-      claim_size: 10Gi
-
-    node_selector: "kubernetes.io/os: linux"    # Any linux node
-    # node_selector: "node-type: worker"        # custom label example

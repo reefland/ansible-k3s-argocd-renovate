@@ -1,0 +1,28 @@
+---
+# Create ClusterIP to expose Traefik Metrics as we do not want it exposed externally
+# on the LoadBalancerIP address.  This is used by Traefik ServiceMonitor for prometheus.
+
+apiVersion: v1
+kind: List
+metadata:
+  name: traefik-metrics
+items:
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: traefik-metrics
+      namespace: kube-system
+      labels:
+        app.kubernetes.io/name: traefik-metrics
+        app.kubernetes.io/instance: traefik-metrics
+      annotations:
+    spec:
+      type: ClusterIP
+      selector:
+        app.kubernetes.io/name: traefik
+        app.kubernetes.io/instance: traefik
+      ports:
+      - port: 9100
+        name: metrics
+        targetPort: "metrics"
+        protocol: TCP

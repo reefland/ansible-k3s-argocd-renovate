@@ -1,0 +1,38 @@
+# Reference: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
+
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      ## Using PersistentVolumeClaim
+      ##
+      volumeClaimTemplate:
+        spec:
+          storageClassName: {{install.prometheus_operator.prometheus.storage_claim.class_name}}
+          accessModes: 
+            - {{install.prometheus_operator.prometheus.storage_claim.access_mode}}
+          resources:
+            requests:
+              storage: {{install.prometheus_operator.prometheus.storage_claim.claim_size}}
+
+    retention: {{install.prometheus_operator.prometheus.retention}}
+{% if install.prometheus_operator.prometheus.dashboard.path is defined %}
+    externalUrl: {{install.prometheus_operator.prometheus.dashboard.path}}
+{% endif %}
+
+# Graphana values
+# Reference: https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
+
+grafana:
+  persistence:
+    type: pvc
+    enabled: true
+    storageClassName: {{install.prometheus_operator.grafana.storage_claim.class_name}}
+    accessModes: 
+      - {{install.prometheus_operator.grafana.storage_claim.access_mode}}
+    size: {{install.prometheus_operator.grafana.storage_claim.claim_size}}
+    # annotations: {}
+    finalizers:
+      - kubernetes.io/pvc-protection
+    # selectorLabels: {}
+    # subPath: ""
+    # existingClaim:

@@ -1,0 +1,27 @@
+---
+# Monitor Traefik ClusterIP Service
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name:  traefik-metrics
+  namespace: {{install.prometheus_operator.namespace}}
+  labels:
+    app: traefik-metrics
+    release: kube-stack-prometheus
+    name: traefik-metrics
+spec:
+  jobLabel: traefik-metrics
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: traefik-metrics
+      app.kubernetes.io/name: traefik-metrics
+  namespaceSelector:
+    matchNames:
+      - kube-system
+  endpoints:
+    - port: metrics
+      targetPort: 9100
+      path: /metrics
+      interval: 10s
+      honorLabels: true

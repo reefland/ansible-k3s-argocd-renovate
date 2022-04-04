@@ -1,131 +1,132 @@
 ---
-# Based on: https://rpi4cluster.com/monitoring/k3s-svcmonitors/
-
 ### [ Install Prometheus Operator Block ]##########################################################
 - name: Install Prometheus Operator Block
   block:
 
   - name: Create directory for Prometheus Operator files for non-root user
     file:
-      path: "/home/{{install.os.non_root_user.name}}/prometheus"
+      path: "/home/{{install.os.non_root_user.name}}/prometheus-op"
       state: directory
       mode: '0700'
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
 
-  - name: Download Prometheus Operator bundle.yaml file
-    get_url:
-      url: "{{prometheus.bundle_url}}"
-      dest: "/home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml"
-      mode: '0660'
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-
-  - name: Replace default namespace with defined namespace
-    replace: 
-      path: "/home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml"
-      regexp: "(?m)namespace: default"
-      replace: "namespace: {{prometheus.namespace}}"
-      backup: yes
-
-  - name: Create Prometheus Operator Namespace
-    kubernetes.core.k8s:
-      state: present
-      name: "{{prometheus.namespace}}"
-      kind: Namespace
-
-# [Issue 1] items within the bundle file prevent it from being processed directly by ansible kubernetes.core.k8s such as:
-#  "message": "pods \"prometheus-operator-cdcc7b85c-\" is forbidden: error looking up service account monitoring/prometheus-operator: serviceaccount \"prometheus-operator\" not found",
-#             "reason": "FailedCreate",
-
-# This did fix that message:
-# The kubernetes.core.k8s task to process the file would fail unless the equal signs were wrapped with single quotes.
-#  - name: Replace "- =" with "- '='" to prevent failure
-#    replace: 
-#      path: "/home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml"
-#      regexp: "(?m)- =$"
-#      replace: "- '='"
-
-# This would still fail due to size of CRD being to long.
-#  - name: Install Prometheus Operator Namespace via static Manifest
-#    kubernetes.core.k8s:
-#      state: present
-#      src: "/home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml"
-#      namespace: "{{prometheus.namespace}}"
-#      wait: yes
-#      wait_timeout: 300
-
-# [Issue 2] Attempting "kubectl appl -f" results in issue: https://github.com/prometheus-community/helm-charts/issues/1500
-#  This was observed as well... "The CustomResourceDefinition "prometheuses.monitoring.coreos.com" is invalid: metadata.annotations: Too long: must have at most 262144 bytes"
-
-  # added "--server-sde" gets around the CDR message.
-  - name: Process Prometheus Operator bundle.yaml file
-    command: "kubectl apply -n {{prometheus.namespace}} -f /home/{{install.os.non_root_user.name}}/prometheus/bundle.yaml --server-side"
-
-  tags:
-    - never
-    - install_prometheus_op
-
-###[ Install Prometheus Service Monitors Block ]###################################################
-- name: Install Prometheus Service Monitors Block
-  block:
-  - name: Copy Prometheus Service Monitor Template Files
+  - name: Copy Prometheus Template Files
     template:
       src: "templates/prometheus-op/{{item}}.j2"
-      dest: "/home/{{install.os.non_root_user.name}}/prometheus/{{item}}"
+      dest: "/home/{{install.os.non_root_user.name}}/prometheus-op/{{item}}"
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
       mode: '0660'
     loop:
-      - node-exporter.yaml
-      - kube-state-metrics.yaml
-      - kubelet-servicemonitor.yaml
-      - traefik-servicemonitor.yaml
-      - prometheus.yaml
-      - prometheus-node-port.yaml
-  
-  # This will collect metrics from individual cluster nodes, underlying HW, etc...
-  - name: Install Node Exporter Service Monitor
+      - chart_values.yaml
+      - prometheus_op_ingress_route.yaml
+      - traefik_servicemonitor.yaml
+      - traefik_clusterip.yaml
+
+  - name: Add Prometheus Operator to Helm
+    kubernetes.core.helm_repository:
+      name: prometheus-community
+      repo_url: "{{prometheus_operator.repo_url}}"
+
+  - name: Create Prometheus Operator Namespace
     kubernetes.core.k8s:
       state: present
-      src: "/home/{{install.os.non_root_user.name}}/prometheus/node-exporter.yaml"
-      namespace: "{{prometheus.namespace}}"
+      name: "{{install.prometheus_operator.namespace}}"
+      kind: Namespace
+
+  - name: Install Prometheus Operator via Helm
+    kubernetes.core.helm:
+      update_repo_cache: yes
+      atomic: yes
+      create_namespace: yes
+      chart_ref: "{{prometheus_operator.repo_chart_ref}}"
+      chart_version: "{{install.prometheus_operator.install_version}}" 
+      release_name: "{{install.prometheus_operator.release}}"
+      release_namespace: "{{install.prometheus_operator.namespace}}"
+      release_state: present
+      values_files:
+       - "/home/{{install.os.non_root_user.name}}/prometheus-op/chart_values.yaml"
+      wait: yes
+      wait_timeout: 5m
+
+  - name: Check Prometheus Stack Operator Pods are Running
+    k8s_info:
+      kind: Pod
+      namespace: "{{install.prometheus_operator.namespace}}"
+      label_selectors:
+        - "app=kube-prometheus-stack-operator"
+      wait: yes
+      wait_condition:
+        type: Ready
+      wait_sleep: 5
+      wait_timeout: 120
+
+  - name: Check Prometheus Pods are Running
+    k8s_info:
+      kind: Pod
+      namespace: "{{install.prometheus_operator.namespace}}"
+      label_selectors:
+        - "app.kubernetes.io/name=prometheus"
+      wait: yes
+      wait_condition:
+        type: Ready
+      wait_sleep: 5
+      wait_timeout: 120
+ 
+  - name: Check Grafana Pods are Running
+    k8s_info:
+      kind: Pod
+      namespace: "{{install.prometheus_operator.namespace}}"
+      label_selectors:
+        - "app.kubernetes.io/name=grafana"
+      wait: yes
+      wait_condition:
+        type: Ready
+      wait_sleep: 5
+      wait_timeout: 120
+
+  - name: Check Prometheus Node Export Pods are Running
+    k8s_info:
+      kind: Pod
+      namespace: "{{install.prometheus_operator.namespace}}"
+      label_selectors:
+        - "app=prometheus-node-exporter"
+      wait: yes
+      wait_condition:
+        type: Ready
+      wait_sleep: 5
+      wait_timeout: 120
+
+  - name: Add Traefik ClusterIP for Traefik ServiceMonitor to use
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/prometheus-op/traefik_clusterip.yaml"
+      namespace: "kube-system"
       wait: yes
       wait_timeout: 300
 
-  - name: Install Kube State Metrics Service Monitor
+  - name: Add Traefik Metrics ServiceMonitor for Prometheus
     kubernetes.core.k8s:
       state: present
-      src: "/home/{{install.os.non_root_user.name}}/prometheus/kube-state-metrics.yaml"
-      namespace: "{{prometheus.namespace}}"
+      src: "/home/{{install.os.non_root_user.name}}/prometheus-op/traefik_servicemonitor.yaml"
+      namespace: "{{install.prometheus_operator.namespace}}"
       wait: yes
       wait_timeout: 300
-
-  - name: Install Kubelet Service Monitor
+ 
+  - name: Add Prometheus Web Interface Route for Traefik 
     kubernetes.core.k8s:
       state: present
-      src: "/home/{{install.os.non_root_user.name}}/prometheus/kubelet-servicemonitor.yaml"
-      namespace: "{{prometheus.namespace}}"
+      src: "/home/{{install.os.non_root_user.name}}/prometheus-op/prometheus_op_ingress_route.yaml"
+      namespace: "{{install.prometheus_operator.namespace}}"
       wait: yes
       wait_timeout: 300
+    when:
+      - install.prometheus_operator.prometheus.dashboard.create_route|default(true)|bool == true
 
-#  - name: Install Traefik Service Monitor
-#    kubernetes.core.k8s:
-#      state: present
-#      src: "/home/{{install.os.non_root_user.name}}/prometheus/traefik-servicemonitor.yaml"
-#      namespace: "{{prometheus.namespace}}"
-#      wait: yes
-#      wait_timeout: 300
-
-  - name: Install Prometheus
-    kubernetes.core.k8s:
-      state: present
-      src: "/home/{{install.os.non_root_user.name}}/prometheus/prometheus.yaml"
-      namespace: "{{prometheus.namespace}}"
-      wait: yes
-      wait_timeout: 300
   when:
-    - install.prometheus.install_this|default(false)|bool == true
+    - install.prometheus_operator.install_this|default(false)|bool == true
   tags:
-    - install_prometheus_op
+    - install_prometheus_operator
+    - never
   
