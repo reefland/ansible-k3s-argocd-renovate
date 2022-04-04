@@ -86,6 +86,7 @@ Review the non-root user account that will be created for Kubernetes with option
 * Review [democratic-csi for TrueNAS Settings](docs/democratic-csi-settings.md)
 * Review [Longhorn Distributed Storage Settings](docs/longhorn-settings.md)
 * Review [Centralized Cluster System Logs Settings](docs/rsyslog-settings.md)
+* Review [Prometheus Operator with Grafana Settings](docs/prometheus-op-settings.md)
 
 ---
 
@@ -98,19 +99,18 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
 ```yaml
   k3s_control:
     hosts:
-      k3s01.example.com:
+      k3s01.example.com:                        # Master #1
+        vip_interface: "enp1s0"
         longhorn_zfs_pool: "tank"
-        k3s_cli_var: "server --cluster-init"                            # Master 1
       k3s02.example.com:
-        longhorn_zfs_pool: "tank"
-        k3s_cli_var: "server --server https://{{primary_server}}:6443 " # Master 2
+        longhorn_zfs_pool: "tank"               # Master #2
       k3s03.example.com:
-        longhorn_zfs_pool: "tank"
-        k3s_cli_var: "server --server https://{{primary_server}}:6443 " # Master 3
+        longhorn_zfs_pool: "tank"               # Master #3 (add more if needed)
   k3s_workers:
     hosts:
-      k3s-worker01.example.com:                                        # Worker #1
-        k3s_cli_var: "K3S_URL='https://{{primary_server}}:6443'"
+      k3s-worker01.example.com:                # Worker #1
+        vip_interface: "enp0s3"
+#        k3s_cli_var: "K3S_URL='https://{{primary_server}}:6443'"
         k3s_labels: "{'kubernetes.io/role=worker', 'node-type=worker'}"
 
   k3s:
@@ -119,8 +119,6 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
       k3s_workers:
 
     vars:
-      rsyslog_server: "k3s01.example.com"       # Centralized Logging Host
-      primary_server: "k3s01.example.com"       # Name of cluster member to join against
       K3S_TOKEN: 'secret_here'                  # Set to any value you like
 ```
 
@@ -148,9 +146,6 @@ For simplicity I show the variables within the inventory file.  You can place th
 * The `longhorn_zfs_pool` lets you define the ZFS pool to create Longhorn cluster storage with. It will use the ZFS pool `rpool` if not defined. This can be host specific or group scoped.
 * The `k3s_cli_var` passes host specific variables to the K3s installation script. 
 * The `k3s_labels` can be used to set labels on the cluster members.  This can be host specific or group scoped.
-* The `rsyslog_server` variable defines the [centralized cluster system logging](docs/rsyslog-settings.md) host.
-  * If you already have a rsyslog server point it there.  Otherwise point this to the primary master node.
-* The `primary_server` specifies which node to contact during the process of adding a new cluster member.  This can be any of the existing master nodes.
 * The `K3S_TOKEN` is a secret value required for a node to be added to the cluster.  Better to define this in an Ansible secrets file or groups var file.
 
 ### Create a Playbook
@@ -194,27 +189,39 @@ The following tags are supported and should be used in this order:
 * `config_rsyslog`
 * `install_k3s`
 * `install_containerd`
-* `validate_k3s`
-* `install_metallb`
 * `install_helm_client`
+* `install_longhorn`
+* `validate_k3s`
+* `validate_longhorn`
+* `install_kube_vip`
+* `install_metallb`
 * `install_cert_manager`
 * `config_traefik_dns_certs`
 * `config_traefik_dashboard`
 * `install_democratic_csi_iscsi`
-* `validate_csi_iscsi`
 * `install_democratic_csi_nfs`
+* `validate_csi_iscsi`
 * `validate_csi_nfs`
-* `install_longhorn`
-* `validate_longhorn`
+* `install_prometheus_operator`
 
 ---
 
+## Prometheus Operator with Grafana
 
-## Prometheus Operator and Grafana
+These products are not installed by default, but can easily be deployed once everything above is functional.  This will install [Kube Prometheus Stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) project.
 
-These products are not installed by default, but can easily be deployed once everything above is functional.
-
-* **Prometheus Operator** extends the Kubernetes API, so that when we create some of the yaml deployments it will looks as if we’re telling Kubernetes to deploy something, but it’s actually telling Prometheus Operator to do it for us. Official git: [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator)
-* **Prometheus** is the collector of metrics, it uses something called service monitors that provide information Prometheus can come and scrape. Prometheus will use persistent storage, and we will specify for how long it will keep the data. You can have more than one instance of Prometheus in your cluster collecting separate data.
-* **Service Monitors** - are other containers/deployments. They can be considered middle steps between the data and Prometheus. We will deploy some that are a single deployment such as for Kubernetes API to collect metrics from a server. node-exporter will use a daemonset deployment which deploys containers to each node to collects underlying OS information per node.
+* **Prometheus Operator** extends the Kubernetes API, so that when we create some of the yaml deployments it will looks as if we’re telling Kubernetes to deploy something, but it’s actually telling Prometheus Operator to do it for us.
+* **Prometheus** is the collector of metrics, it uses something called service monitors that provide information Prometheus can come and scrape. Prometheus will use persistent storage with a specified duration for how long it will keep the data. You can have more than one instance of Prometheus in your cluster collecting separate data.
+  * An ingress route can be created to expose the Prometheus Web Interface.
+* **Service Monitors** - are other containers/deployments. They can be considered middle steps between the data and Prometheus. This will deploy several service monitors needed to collect Kubernetes, Traefik ingress and underlying OS information per node.
 * **Grafana** takes data from one or more Prometheus instances to combine them into a single dashboard.  Dashboards can be customized as you wish.
+
+* Review [Prometheus Operator with Grafana Settings](docs/prometheus-op-settings.md)
+
+### Installation
+
+Prometheus Operator with Grafana cane be installed using the Ansible Tag:
+
+```text
+--tags="install_prometheus_operator"
+```
