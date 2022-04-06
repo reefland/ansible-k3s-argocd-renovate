@@ -1,0 +1,70 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: svc-grafana-headers
+  namespace: {{install.prometheus_operator.namespace}}
+spec:
+  headers:
+    customRequestHeaders:
+      X-Forwarded-Proto: "https"
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  namespace: {{install.prometheus_operator.namespace}}
+  name: grafana-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - {{install.prometheus_operator.grafana.dashboard.path|default("/grafana")}}
+    forceSlash: true
+
+{% if install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool == true%}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: dashboard-basic-auth-grafana
+  namespace: {{install.prometheus_operator.namespace}}
+spec:
+  basicAuth:
+    secret: authsecret
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: authsecret
+  namespace: {{install.prometheus_operator.namespace}}
+data:
+  users: |
+{% if install.prometheus_operator.grafana.dashboard.allowed_users is defined %}{% filter indent(width=4) %}
+    {{install.prometheus_operator.grafana.dashboard.allowed_users}}{% endfilter %}
+{% else %}
+  MUST_ENCODED_USERS_HERE or to "vars/secrets/grafana_dashboard_secrets.yml" on Ansible Controller
+{% endif %}{{''}}
+{% endif -%}
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: {{install.prometheus_operator.namespace}}
+  name: grafana-ingress-route
+spec:
+  entryPoints:
+    - {% if install.traefik.dashboard.enable_https|default(false)|bool == false %}web{% else %}websecure{% endif %}{{''}}
+  routes:
+    - match: Host(`{{install.prometheus_operator.grafana.dashboard.hostname|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.prometheus_operator.grafana.dashboard.path|default("/grafana")}}`))
+      kind: Rule
+      services:
+      - kind: Service
+        name: kube-stack-prometheus-grafana
+        port: 80
+      middlewares:
+      - name: grafana-stripprefix
+      - name: svc-grafana-headers
+{% if install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool == true%}
+      - name: dashboard-basic-auth-grafana
+{% endif %}

@@ -23,6 +23,11 @@ prometheus:
 # Reference: https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
 
 grafana:
+  ingress:
+    path: {{install.prometheus_operator.grafana.dashboard.path}}
+  grafana.ini:
+    server:
+      root_url: https://{{install.prometheus_operator.grafana.dashboard.hostname|default(ansible_fqdn)|lower}}{{install.prometheus_operator.grafana.dashboard.path}}/
   persistence:
     type: pvc
     enabled: true

@@ -21,6 +21,7 @@
     loop:
       - chart_values.yaml
       - prometheus_op_ingress_route.yaml
+      - grafana_ingress_route.yaml
       - traefik_servicemonitor.yaml
       - traefik_clusterip.yaml
 
@@ -114,7 +115,7 @@
       wait: yes
       wait_timeout: 300
  
-  - name: Add Prometheus Web Interface Route for Traefik 
+  - name: Add Prometheus Web Interface Ingress Route for Traefik 
     kubernetes.core.k8s:
       state: present
       src: "/home/{{install.os.non_root_user.name}}/prometheus-op/prometheus_op_ingress_route.yaml"
@@ -123,6 +124,16 @@
       wait_timeout: 300
     when:
       - install.prometheus_operator.prometheus.dashboard.create_route|default(true)|bool == true
+
+  - name: Add Grafana Dashboard Ingress Route for Traefik 
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/prometheus-op/grafana_ingress_route.yaml"
+      namespace: "{{install.prometheus_operator.namespace}}"
+      wait: yes
+      wait_timeout: 300
+    when:
+      - install.prometheus_operator.grafana.dashboard.create_route|default(true)|bool == true
 
   when:
     - install.prometheus_operator.install_this|default(false)|bool == true
