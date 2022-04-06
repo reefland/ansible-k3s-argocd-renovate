@@ -31,6 +31,10 @@ The Prometheus Operator Settings are in variable namespace `install.prometheus_o
       install_version: "34.7.1"
   ```
 
+---
+
+## Review `defaults/main.yml` for Prometheus Settings
+
 Prometheus Specific Settings are in variable namespace `install.prometheus_operator.prometheus`.
 
 * Define how long data should be retained.
@@ -94,5 +98,51 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
 
 * If you need to restrict access to the Prometheus Web Interface to different set of users or require different passwords, then update the file as needed.
 * As stated in the comments this is not a shared Kubernetes secrets with Traefik. Once deployed a change in one will not be reflected in the other.  This is just to make initial setup easier.
+
+---
+
+## Review `defaults/main.yml` for Grafana Settings
+
+* Define the type of Persistent Volume Storage Claim to use and its size.  The `class_name` can be `freenas-iscsi-csi`, `freenas-nfs-csi`, or `longhorn` to use the provided storage classes.
+
+  ```yml
+        storage_claim:                  # Define where and how data is stored
+          access_mode: "ReadWriteOnce"
+          class_name: "freenas-iscsi-csi"
+          claim_size: 10Gi
+  ```
+
+* Settings for the Grafana Dashboard. The `create_route` will create a Traefik Ingress route to expose the Grafana Dashboard on the URI defined in `path`.
+
+  ```yml
+        # Grafana Dashboard
+        dashboard:
+          create_route: true           # Create Ingress Route to make accessible 
+          enable_basic_auth: false      # Require Authentication to access dashboard
+
+          # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
+          hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
+          path: "/prometheus"            # URI Path for Ingress Route
+
+  ```
+
+* The `hostname` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes.
+* The `enable_basic_auth` is set to false as Grafana already requires its own authentication by default.
+
+To extract the default ID & Password for Grafana Dashboard from the secrets:
+
+```shell
+$ kubectl get secret --namespace monitoring kube-stack-prometheus-grafana -o jsonpath='{.data.admin-user}' | base64 -d ;echo
+admin
+
+$ kubectl get secret --namespace monitoring kube-stack-prometheus-grafana -o jsonpath='{.data.admin-password}' | base64 -d; echo
+prom-operator
+```
+
+* Above shows the default may be ID: `admin` and Password: `prom-operator`.
+
+The Grafana Dashboard URL path will resemble: `https://k3s.example.com/grafana/`
+
+![Grafana Dashboard](../images/grafana_dashboard.png)
 
 [Back to README.md](../README.md)

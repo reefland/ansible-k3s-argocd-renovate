@@ -317,12 +317,12 @@ install:
         allowed_users: "{{prometheus_operator.prometheus.dashboard_users}}"
 
     grafana:
-
       storage_claim:                  # Define where and how data is stored
         access_mode: "ReadWriteOnce"
         class_name: "freenas-iscsi-csi"
         claim_size: 10Gi
 
+      # Grafana Dashboard
       dashboard:
         create_route: true           # Create Ingress Route to make accessible 
         enable_basic_auth: false   # Has its own login page
