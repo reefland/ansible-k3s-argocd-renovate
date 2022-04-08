@@ -35,7 +35,6 @@
       - cert_manager.yml
       - democratic-csi.yml
       - prometheus-op.yml
-      - grafana.yml
   loop_control:
     label: "{{item}}"
 
@@ -94,7 +93,6 @@
     - 10_validate_csi_iscsi.yml
     - 10_validate_csi_nfs.yml
     - 13_install_prometheus_op.yml
-    - 14_install_grafana.yml
   loop_control:
     label: "{{task_names}}"
     loop_var: task_names
