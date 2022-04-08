@@ -17,6 +17,7 @@
     - secrets/truenas_api_secrets.yml
     - secrets/longhorn_dashboard_secrets.yml
     - secrets/prometheus_dashboard_secrets.yml
+    - secrets/alertmanager_dashboard_secrets.yml
   no_log: "{{no_log_secrets|default(true)}}"
 
 ###[ Load up the variable files ]##################################################################

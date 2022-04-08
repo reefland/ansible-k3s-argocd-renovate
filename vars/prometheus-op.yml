@@ -6,3 +6,6 @@ prometheus_operator:
 
   prometheus:
     dashboard_users: "{{PROMETHEUS_DASHBOARD_USERS}}"
+
+  alertmanager:
+    dashboard_users: "{{ALERTMANAGER_DASHBOARD_USERS}}"

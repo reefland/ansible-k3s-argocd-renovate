@@ -25,6 +25,7 @@
       - traefik_servicemonitor.yaml
       - traefik_clusterip.yaml
       - longhorn_servicemonitor.yaml
+      - alertmanager_ingress_route.yaml
 
   - name: Add Prometheus Operator to Helm
     kubernetes.core.helm_repository:
@@ -145,6 +146,16 @@
       wait_timeout: 300
     when:
       - install.prometheus_operator.grafana.dashboard.create_route|default(true)|bool == true
+
+  - name: Add AlertManager Ingress Route for Traefik
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/prometheus-op/alertmanager_ingress_route.yaml"
+      namespace: "{{install.prometheus_operator.namespace}}"
+      wait: yes
+      wait_timeout: 300
+    when:
+      - install.prometheus_operator.alertmanager.dashboard.create_route|default(true)|bool == true
 
   when:
     - install.prometheus_operator.install_this|default(false)|bool == true

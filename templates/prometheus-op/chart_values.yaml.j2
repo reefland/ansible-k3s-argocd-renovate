@@ -41,3 +41,20 @@ grafana:
     # selectorLabels: {}
     # subPath: ""
     # existingClaim:
+
+# AlertManager values
+# Reference: https://prometheus.io/docs/alerting/latest/configuration/
+
+alertmanager:
+  # Reference: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#alertmanagerspec
+  alertmanagerSpec:
+    # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/storage.md
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: {{install.prometheus_operator.alertmanager.storage_claim.class_name}}
+          accessModes: 
+            - {{install.prometheus_operator.alertmanager.storage_claim.access_mode}}
+          resources:
+            requests:
+              storage: {{install.prometheus_operator.alertmanager.storage_claim.claim_size}}
