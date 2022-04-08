@@ -24,6 +24,7 @@
       - grafana_ingress_route.yaml
       - traefik_servicemonitor.yaml
       - traefik_clusterip.yaml
+      - longhorn_servicemonitor.yaml
 
   - name: Add Prometheus Operator to Helm
     kubernetes.core.helm_repository:
@@ -114,6 +115,16 @@
       namespace: "{{install.prometheus_operator.namespace}}"
       wait: yes
       wait_timeout: 300
+
+  - name: Add Longhorn ServiceMonitor for Prometheus
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/prometheus-op/longhorn_servicemonitor.yaml"
+      namespace: "{{install.prometheus_operator.namespace}}"
+      wait: yes
+      wait_timeout: 300
+    when:
+      - install.longhorn.install_this|default(false)|bool == true
  
   - name: Add Prometheus Web Interface Ingress Route for Traefik 
     kubernetes.core.k8s:
