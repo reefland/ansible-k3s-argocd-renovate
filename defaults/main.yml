@@ -288,7 +288,7 @@ install:
 
   ###[ Prometheus Operator Installation Settings ]#################################################
   prometheus_operator:
-    install_this: true              # Install Prometheus Operator
+    install_this: true            # Install Prometheus Operator
 
     namespace: "monitoring"
     release: "kube-stack-prometheus"
@@ -297,54 +297,54 @@ install:
     install_version: "34.7.1"
 
     prometheus:
-      retention: "7d"                 # How long to retain data
+      retention: "7d"             # How long to retain data
 
-      storage_claim:                  # Define where and how data is stored
+      storage_claim:              # Define where and how data is stored
         access_mode: "ReadWriteOnce"
         class_name: "freenas-iscsi-csi"
         claim_size: 20Gi
 
       # Prometheus Web Interface
       dashboard:
-        create_route: true           # Create Ingress Route to make accessible 
-        enable_basic_auth: true      # Require Authentication to access dashboard
+        create_route: true        # Create Ingress Route to make accessible 
+        enable_basic_auth: true   # Require Authentication to access dashboard
 
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
         hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
-        path: "/prometheus"            # URI Path for Ingress Route
+        path: "/prometheus"       # URI Path for Ingress Route
 
         # Encoded users and passwords for basic authentication
         allowed_users: "{{prometheus_operator.prometheus.dashboard_users}}"
 
     grafana:
-      storage_claim:                  # Define where and how data is stored
+      storage_claim:              # Define where and how data is stored
         access_mode: "ReadWriteOnce"
         class_name: "freenas-iscsi-csi"
         claim_size: 10Gi
 
       # Grafana Dashboard
       dashboard:
-        create_route: true           # Create Ingress Route to make accessible 
-        enable_basic_auth: false   # Has its own login page
+        create_route: true        # Create Ingress Route to make accessible 
+        enable_basic_auth: false  # Has its own login page
 
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
         hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
-        path: "/grafana"           # URI Path for Ingress Route
+        path: "/grafana"          # URI Path for Ingress Route
 
     alertmanager:
-      storage_claim:                  # Define where and how data is stored
+      storage_claim:              # Define where and how data is stored
         access_mode: "ReadWriteOnce"
         class_name: "freenas-iscsi-csi"
         claim_size: 5Gi
 
-      # Alert Manager Dashboard
+      # Alertmanager Web Interface
       dashboard:
-        create_route: true           # Create Ingress Route to make accessible 
+        create_route: true        # Create Ingress Route to make accessible 
         enable_basic_auth: true   # Has its own login page
 
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
         hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
-        path: "/alertmanager"           # URI Path for Ingress Route
+        path: "/alertmanager"     # URI Path for Ingress Route
 
         # Encoded users and passwords for basic authentication
         allowed_users: "{{prometheus_operator.alertmanager.dashboard_users}}"
