@@ -69,5 +69,3 @@ spec:
     services:
     - name: whoami
       port: 80
-  tls:
-    certResolver: {% if k3s.traefik.staging|default(true)|bool == true %}letsencrypt-staging{% else %}letsencrypt-prod{% endif %}
