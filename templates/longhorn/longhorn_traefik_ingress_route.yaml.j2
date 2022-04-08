@@ -33,13 +33,13 @@ metadata:
   namespace: {{install.longhorn.namespace}}
 spec:
   basicAuth:
-    secret: authsecret
+    secret: longhorn-authsecret
 
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: authsecret
+  name: longhorn-authsecret
   namespace: {{install.longhorn.namespace}}
 data:
   users: |

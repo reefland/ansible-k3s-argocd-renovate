@@ -7,13 +7,13 @@ metadata:
   namespace: kube-system
 spec:
   basicAuth:
-    secret: authsecret
+    secret: dashboard-authsecret
 
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: authsecret
+  name: dashboard-authsecret
   namespace: kube-system
 data:
   users: |

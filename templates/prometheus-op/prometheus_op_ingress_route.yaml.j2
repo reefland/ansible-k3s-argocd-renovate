@@ -29,13 +29,13 @@ metadata:
   namespace: {{install.prometheus_operator.namespace}}
 spec:
   basicAuth:
-    secret: authsecret
+    secret: prometheus-authsecret
 
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: authsecret
+  name: prometheus-authsecret
   namespace: {{install.prometheus_operator.namespace}}
 data:
   users: |
