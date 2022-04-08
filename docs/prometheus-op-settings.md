@@ -145,4 +145,6 @@ The Grafana Dashboard URL path will resemble: `https://k3s.example.com/grafana/`
 
 ![Grafana Dashboard](../images/grafana_dashboard.png)
 
+To Search for Dashboards to add to Grafana: [https://grafana.com/grafana/dashboards/](https://grafana.com/grafana/dashboards/)
+
 [Back to README.md](../README.md)
