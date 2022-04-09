@@ -58,3 +58,25 @@ alertmanager:
           resources:
             requests:
               storage: {{install.prometheus_operator.alertmanager.storage_claim.claim_size}}
+  config:
+    global:
+      resolve_timeout: 5m
+    # Reference: https://prometheus.io/docs/alerting/latest/configuration/
+    route:
+      receiver: default-receiver
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      group_by: [cluster, alertname]
+      # All alerts that do not match the following child routes
+      # will remain at the root node and be dispatched to 'default-receiver'.
+      #routes:
+      #  - matchers:
+      #    - service=~"foo1|foo2|baz"
+      #  receiver: database-team
+      routes: []
+{% if prometheus_operator.alertmanager.receivers is defined %}{% filter indent(width=4) %}
+    {{prometheus_operator.alertmanager.receivers}}{% endfilter %}
+{% else %}
+    receivers: []
+{% endif -%}

@@ -18,6 +18,7 @@
     - secrets/longhorn_dashboard_secrets.yml
     - secrets/prometheus_dashboard_secrets.yml
     - secrets/alertmanager_dashboard_secrets.yml
+    - secrets/alertmanager_receivers.yml
   no_log: "{{no_log_secrets|default(true)}}"
 
 ###[ Load up the variable files ]##################################################################
@@ -94,6 +95,7 @@
     - 10_validate_csi_iscsi.yml
     - 10_validate_csi_nfs.yml
     - 13_install_prometheus_op.yml
+    
   loop_control:
     label: "{{task_names}}"
     loop_var: task_names
