@@ -18,7 +18,7 @@
     - secrets/longhorn_dashboard_secrets.yml
     - secrets/prometheus_dashboard_secrets.yml
     - secrets/alertmanager_dashboard_secrets.yml
-    - secrets/alertmanager_receivers.yml
+    - secrets/alertmanager_secrets.yml
   no_log: "{{no_log_secrets|default(true)}}"
 
 ###[ Load up the variable files ]##################################################################

@@ -9,6 +9,5 @@ prometheus_operator:
 
   alertmanager:
     dashboard_users: "{{ALERTMANAGER_DASHBOARD_USERS}}"
-  
-    receivers: "{{ALERTMANAGER_RECEIVERS}}"
+
   
