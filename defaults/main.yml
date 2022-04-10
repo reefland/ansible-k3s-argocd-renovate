@@ -297,7 +297,7 @@ install:
     install_version: "34.7.1"
 
     prometheus:
-      retention: "7d"             # How long to retain data
+      retention: "14d"             # How long to retain data
 
       storage_claim:              # Define where and how data is stored
         access_mode: "ReadWriteOnce"
@@ -320,7 +320,7 @@ install:
       storage_claim:              # Define where and how data is stored
         access_mode: "ReadWriteOnce"
         class_name: "freenas-iscsi-csi"
-        claim_size: 10Gi
+        claim_size: 5Gi
 
       # Grafana Dashboard
       dashboard:
@@ -335,7 +335,7 @@ install:
       storage_claim:              # Define where and how data is stored
         access_mode: "ReadWriteOnce"
         class_name: "freenas-iscsi-csi"
-        claim_size: 5Gi
+        claim_size: 3Gi
 
       # Alertmanager Web Interface
       dashboard:
@@ -372,7 +372,6 @@ install:
             # https://prometheus.io/docs/alerting/latest/configuration/#slack_config
             slack_configs:
               - api_url: "{{vault_slack_config_api_url}}"
-                icon_url: "https://github.com/kubernetes/kubernetes/blob/master/logo/logo.png"
                 send_resolved: true
                 channel: 'monitoring'
                 {% raw %}text: "{{ range .Alerts }}<!channel> {{ .Annotations.summary }}\n{{ .Annotations.description }}\n{{ end }}"{% endraw %}
