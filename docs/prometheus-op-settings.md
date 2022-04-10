@@ -41,7 +41,7 @@ Prometheus Specific Settings are in variable namespace `install.prometheus_opera
 
   ```yml
       prometheus:
-        retention: "7d"                 # How long to retain data
+        retention: "14d"                 # How long to retain data
   ```
 
 * Define the type of Persistent Volume Storage Claim to use and its size.  The `class_name` can be `freenas-iscsi-csi`, `freenas-nfs-csi`, or `longhorn` to use the provided storage classes.
@@ -109,7 +109,7 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
         storage_claim:                  # Define where and how data is stored
           access_mode: "ReadWriteOnce"
           class_name: "freenas-iscsi-csi"
-          claim_size: 10Gi
+          claim_size: 5Gi
   ```
 
 * Settings for the Grafana Dashboard. The `create_route` will create a Traefik Ingress route to expose the Grafana Dashboard on the URI defined in `path`.
@@ -159,7 +159,7 @@ Alertmanager Specific Settings are in variable namespace `install.prometheus_ope
         storage_claim:                  # Define where and how data is stored
           access_mode: "ReadWriteOnce"
           class_name: "freenas-iscsi-csi"
-          claim_size: 5Gi
+          claim_size: 3Gi
   ```
 
 * Settings for the Alertmanager Web Interface. The `create_route` will create a Traefik Ingress route to expose the web interface on the URI defined in `path`.
@@ -210,6 +210,38 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
 
 ---
 
+## K3s and Prometheus / Alertmanager Expected Issues
+
+K3s has been designed for low resource consumption, as such the etcd (not used by default; but enabled by default with this Ansible script), Kube Control Manager, Kube Scheduler, Kube Proxy are not deployed as pods but included in the k3s binary.  This means standard `Kube Prometheus Stack` is unable to obtain any metrics from these services.  
+
+* You will typically have down alerts such as the following:
+
+  ![Alertmanager Down Notices](../images/alertmanager_k3s_alerts.png)
+
+To resolve these issues, the following are performed by this Ansible script:
+
+* If the file `/etc/rancher/k3s/config.yaml` does not exist (it does not by default) on the master then it will be created with the content below to enable these resources to expose Prometheus metrics.
+
+  ```yaml
+  etcd-expose-metrics: true
+  kube-controller-manager-arg:
+  - bind-address=0.0.0.0
+  kube-proxy-arg:
+  - metrics-bind-address=0.0.0.0
+  kube-scheduler-arg:
+  - bind-address=0.0.0.0
+  ```
+
+  * IMPORTANT: If the file already exists, it is not modified. You will have to manually add the entries above.
+  * NOTE: K3s needs to be restarted for the above parameters to be enabled.
+
+* The Kube Prometheus Operator Helm Chart values file on the master node, non-root user home directory `~/prometheus-op/chart_values.yaml` will adjust `kubeApiServer`, `kubeControllerManager`, `kubeScheduler`, `kubeProxy`, `kubeEtcd` entries to use IP & Port information instead of pods.  It will attempt to add all detected node IPs who are members of the Kubernetes Control-Plane Role.
+* One the installation is completed all of these services should be active targets in Prometheus:
+
+  ![Prometheus Additional Services](../images/prometheus_k3s_additional_services.png)
+
+---
+
 ## Review `defaults/main.yml` for Alertmanager Routes and Receivers Settings
 
 Alertmanager has the ability to send notifications to many services.  Note that `kube-prometheus-operator` and or `prommetheus-operator` Project may lag behind in supporting all the notifications that Alertmanager itself supports.
@@ -254,9 +286,12 @@ The `receivers:` sections defined which configuration to use for the `default-re
 
 * NOTE: The Slack API URL `{{vault_slack_config_api_url}}` is an ansible secret you should store in a vault file.
 
-If the configuration is good then within seconds you should at least get the `watchdog` alert. The Slack example send me this:
+If the configuration is good then within seconds you should at least get the `watchdog` alert. The Slack example sent me this:
 
 ![Alertmanager Watchdog Alert on Slack](../images/slack_alert_manager_watchdog_alert.png)
+
+---
+
 ### Troubleshooting Alertmanager Configuration
 
 * Review the current configuration as displayed in the **Alertmanager Web Interface** `Status > Config` page.  It should include your configuration and related global defaults. The configuration should be available within seconds of a valid configuration update.  If it does not then there is likely a parsing issue with the configuration. The Alertmanager Web Interface URL path will resemble: `https://k3s.example.com/alertmanager/`
@@ -302,10 +337,28 @@ There should not be any reason to alter the configuration secret(s) themseleves,
 ```shell
 # Current configuration:
 
-kubectl -n monitoring get secret alertmanager-kube-stack-prometheus-kube-alertmanager -o jsonpath='{.data}' | cut -d'"' -f 4 | base64 --decode
+$ kubectl -n monitoring get secret alertmanager-kube-stack-prometheus-kube-alertmanager -o jsonpath='{.data}' | cut -d'"' -f 4 | base64 --decode
 
 # Configuration from possible parse / templating / rendering issue:
- kubectl -n monitoring get secret alertmanager-kube-stack-prometheus-kube-alertmanager-generated -o jsonpath='{.data}' | cut -d'"' -f 4 | base64 --decode
- ```
+$ kubectl -n monitoring get secret alertmanager-kube-stack-prometheus-kube-alertmanager-generated -o jsonpath='{.data}' | cut -d'"' -f 4 | base64 --decode
+```
+
+---
+
+## Uninstall Prometheus Operator
+
+Should you need to remove Prometheus Operator:
+
+```shell
+$ helm uninstall kube-stack-prometheus -n monitoring
+release "kube-stack-prometheus" uninstalled
+```
+
+**WARNING:** Upon deleting the namespace all associated Persistent Volume Claims will be deleted.
+
+```shell
+$ kubectl delete namespace monitoring
+namespace "monitoring" deleted
+```
 
 [Back to README.md](../README.md)
