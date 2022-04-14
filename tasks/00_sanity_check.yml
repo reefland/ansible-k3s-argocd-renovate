@@ -1,0 +1,66 @@
+---
+# Try to fail early if required values are undefined.
+
+- name: Sanity Check Variable Block
+  block:
+    - name: Variable vip_endpoint_ip is undefined
+      fail:
+        msg: |
+          Since install.kube_vip.enabled is True
+
+          You must define variable "vip_endpoint_ip" at host or group level within inventory, host_var
+          or group_var file. This must be set to an IP address. This IP address will become a Load 
+          Balanced VIP cluster wide for the API service.  You can point kubectl to this IP address.
+          Example:
+          
+          vip_endpoint_ip: "192.168.10.239"
+      when:
+        - vip_endpoint_ip is undefined
+        - install.kube_vip.enabled|default(false)|bool == true
+
+    - name: Variable vip_lb_ip_range is undefined
+      fail:
+        msg: |
+          Since install.kube_vip.lb.enabled is True
+
+          You must define variable "vip_lb_ip_range" at host or group level within inventory, host_var
+          or group_var file. This must be set to an IP range or CIDR range.  This will be the pool
+          of IP addressed used for services of LoadBalancer type.
+          Examples:
+      
+          vip_lb_ip_range: "range-global: 192.168.1.220-192.168.1.227"
+          vip_lb_ip_range: "cidr-global: 192.168.1.220/29"
+      
+      when:
+        - vip_lb_ip_range is undefined
+        - install.kube_vip.lb.enabled|default(false)|bool == true
+
+    - name: Do not enable Kube-VIP LB and MetalLB at the same time
+      fail:
+        msg: |
+          Both install.kube_vip.lb.enabled and install.metallb.enabled is true
+
+          Do not enable both Load Balancer providers. You must disable one of them.
+      when:
+        - install.kube_vip.lb.enabled|default(false)|bool == true
+        - install.metallb.enabled|default(false)|bool == true
+
+    - name: Variable metallb_ip_range is undefined
+      fail:
+        msg: |
+          Since install.metallb.enabled is True
+
+          You must define variable "metallb_ip_range" at host or group level within inventory, host_var
+          or group_var file. This must be set to an IP range or CIDR range.  This will be the pool
+          of IP addressed used for services of LoadBalancer type.
+          Examples:
+      
+          metallb_ip_range: "192.168.1.220-192.168.1.227"
+          metallb_ip_range: "192.168.1.220/29"
+      
+      when:
+        - metallb_ip_range is undefined
+        - install.metallb.enabled|default(false)|bool == true
+
+  tags:
+    - always
