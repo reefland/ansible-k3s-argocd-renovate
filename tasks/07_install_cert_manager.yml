@@ -44,7 +44,7 @@
   - name: Create Cert-manager Namespace
     kubernetes.core.k8s:
       state: present
-      name: cert-manager
+      name: "{{install.cert_manager.namespace}}"
       kind: Namespace
 
   - name: Install Cert-manager via static Manifest
@@ -57,7 +57,7 @@
   - name: Check if Cert-Manager Controller Pod Running
     k8s_info:
       kind: Pod
-      namespace: "cert-manager"
+      namespace: "{{install.cert_manager.namespace}}"
       label_selectors:
         - "app=cert-manager"
         - "app.kubernetes.io/component=controller"
@@ -70,7 +70,7 @@
   - name: Check if Cert-Manager CA Injector Pod Running
     k8s_info:
       kind: Pod
-      namespace: "cert-manager"
+      namespace: "{{install.cert_manager.namespace}}"
       label_selectors:
         - "app=cainjector"
         - "app.kubernetes.io/component=cainjector"
@@ -83,7 +83,7 @@
   - name: Check if Cert-Manager Webhook Pod Running
     k8s_info:
       kind: Pod
-      namespace: "cert-manager"
+      namespace: "{{install.cert_manager.namespace}}"
       label_selectors:
         - "app=webhook"
         - "app.kubernetes.io/component=webhook"
@@ -93,5 +93,8 @@
       wait_sleep: 5
       wait_timeout: 120
 
+  when:
+    - inventory_hostname == groups['k3s_control'][0]
+    
   tags:
     - install_cert_manager
