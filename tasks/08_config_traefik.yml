@@ -48,6 +48,9 @@
       - letsencrypt_wildcard_cert.yaml
       - letsencrypt.yaml
       - traefik_default_tls_store.yaml
+  when:
+    - inventory_hostname == groups['k3s_control'][0]
+  
   tags:
    - config_traefik_dns_certs
 
@@ -86,5 +89,8 @@
     when:
       - install.traefik.dashboard.create_route|default(false) == false
 
+  when:
+    - inventory_hostname == groups['k3s_control'][0]
+    
   tags:
    - config_traefik_dashboard

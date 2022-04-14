@@ -38,7 +38,7 @@
       wait_timeout: 120
 
   when: 
-     - ansible_host == hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0])
+     - inventory_hostname == groups['k3s_control'][0]
      - install.kube_vip.enabled|default(false)|bool == true
 
   tags:
@@ -95,7 +95,7 @@
       wait_timeout: 120
 
   when: 
-     - ansible_host == hostvars[groups['k3s_control'][0]]['ansible_host'] | default(groups['k3s_control'][0])
+     - inventory_hostname == groups['k3s_control'][0]
      - install.kube_vip.enabled|default(false)|bool == true
      - install.kube_vip.lb.enabled|default(false)|bool == true
 

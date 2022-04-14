@@ -62,6 +62,7 @@
       wait_timeout: 120
 
   when:
+    - inventory_hostname == groups['k3s_control'][0]
     - install.metallb.enabled|default(false)|bool == true
   tags:
     - install_metallb

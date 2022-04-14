@@ -87,8 +87,9 @@
       wait_sleep: 5
       wait_timeout: 120
 
-  tags:
-    - install_democratic_csi_nfs
   when:
+    - inventory_hostname == groups['k3s_control'][0]
     - install.democratic_csi.nfs.provisioner is defined
     - install.democratic_csi.nfs.install_this|default(false)|bool == true
+  tags:
+    - install_democratic_csi_nfs
