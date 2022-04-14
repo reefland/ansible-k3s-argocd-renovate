@@ -88,6 +88,7 @@
       atomic: yes
       create_namespace: yes
       chart_ref: "{{longhorn.repo_chart_ref}}"
+      chart_version: "{{install.longhorn.install_version}}"
       release_name: "{{install.longhorn.release}}"
       release_namespace: "{{install.longhorn.namespace}}"
       release_state: present
