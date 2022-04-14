@@ -11,4 +11,4 @@ spec:
   dnsNames: {{install.traefik.domains}}
   issuerRef:
     kind: ClusterIssuer
-    name: {% if k3s.traefik.staging|default(true)|bool == true %}letsencrypt-staging{% else %}letsencrypt-prod{% endif %}{{''}}
+    name: {% if install.traefik.le_staging|default(true)|bool == true %}letsencrypt-staging{% else %}letsencrypt-prod{% endif %}{{''}}

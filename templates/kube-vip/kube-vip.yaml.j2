@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: kube-vip-ds
-    app.kubernetes.io/version: {{ install.kube_vip.install_version }}
+    app.kubernetes.io/version: {{ kube_vip_install_version|default(install.kube_vip.install_version) }}
   name: kube-vip-ds
   namespace: kube-system
 spec:
@@ -16,7 +16,7 @@ spec:
       creationTimestamp: null
       labels:
         app.kubernetes.io/name: kube-vip-ds
-        app.kubernetes.io/version: {{ install.kube_vip.install_version }}
+        app.kubernetes.io/version: {{ kube_vip_install_version|default(install.kube_vip.install_version) }}
     spec:
       affinity:
         nodeAffinity:
@@ -57,10 +57,10 @@ spec:
         - name: vip_retryperiod
           value: "1"
         - name: address
-          value: {{ install.kube_vip.endpoint_address }}
+          value: {{ vip_endpoint_ip }}
         - name: vip_configmap
           value: kubevip
-        image: ghcr.io/kube-vip/kube-vip:{{ install.kube_vip.install_version }}
+        image: ghcr.io/kube-vip/kube-vip:{{ kube_vip_install_version|default(install.kube_vip.install_version) }}
         imagePullPolicy: Always
         name: kube-vip
         resources: {}

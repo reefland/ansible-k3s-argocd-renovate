@@ -69,6 +69,7 @@
     set_fact:
       install_k3s_exec_options: "{{install_k3s_exec_options + ' ' + k3s.cli_disable_loadbalancer_options|join(' ')}}"
     when:
+      - inventory_hostname == groups['k3s_control'][0]
       - install.metallb.enabled|default(false)|bool == true or 
         install.kube_vip.lb.enabled|default(false)|bool == true
 
@@ -80,8 +81,9 @@
 
   - name: Add in TLS-SAN flag if Kube-VIP is enabled
     set_fact:
-      install_k3s_exec_options: "{{install_k3s_exec_options}} --tls-san={{install.kube_vip.endpoint_address}}"
+      install_k3s_exec_options: "{{install_k3s_exec_options}} --tls-san={{vip_endpoint_ip}}"
     when:
+      - inventory_hostname == groups['k3s_control'][0]
       - install.kube_vip.enabled|default(false)|bool == true
 
 #  - debug:
@@ -91,8 +93,6 @@
     ansible.builtin.shell:
       cmd: "{{ install.k3s.cli_options|join(' ')}} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options}}\" /home/{{install.os.non_root_user.name}}/k3s_install.sh > /home/{{install.os.non_root_user.name}}/k3s_install.log"
       chdir: "/home/{{install.os.non_root_user.name}}"
-    notify:
-      - Restart k3s Service
 
   tags:
     - install_k3s

@@ -29,55 +29,62 @@ install:
   ###[ Traefik Installation Settings ]#############################################################
   traefik:
     # List of Domain Names for LetsEncrypt Certificates
-    domains: "{{k3s.traefik.le_domains}}"
-      
+    domains: "{{traefik.le_domains}}"
+
+    # to create prod certificates --extra-vars "le_staging=false"
+    le_staging: "{{le_staging|default(true)}}"
+
     # Traefik Dashboard
     dashboard:
       create_route: true                      # Create Ingress Router to make accessible 
       enable_https: true                      # Require HTTPS to access dashboard
       enable_basic_auth: true                 # Require Authentication to access dashboard
 
+      # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+      # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+      ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
+      
       # Default Dashboard URL:  https://k3s.{{ansible_domain}}/dashboard/
-      hostname: "k3s.{{ansible_domain}}"      # Domain for ingress route
       path: "/dashboard"                      # PathPrefix for dashboard
 
       # Encoded users and passwords for basic authentication
-      allowed_users: "{{k3s.traefik.dashboard_users}}"    
+      allowed_users: "{{traefik.dashboard_users}}"    
 
   ###[ Kube-VIP Installation Settings ]############################################################
   # Kube-VIP provides HA Load Balancer for the API service and optionally LoadBalancer services
   # It can optionally also provide Load Balancer services a pool of address to use instead of
   # using MetalLB.  When enabled this will disable k3s built-in Klipper Load Balancer.
   kube_vip:
+    # When enabled, you must define variable "vip_endpoint_ip" at host or group level within 
+    # inventory, host_var or group_var file. This must be set to an IP address. This IP address will
+    # be a Load Balanced VIP cluster wide for the API service.  You can point kubectl to this IP 
+    # address.
     enabled: true
 
     # Select release to use: https://github.com/kube-vip/kube-vip/releases
-    install_version: "v0.4.2"
-
-    # Define address for HA VIP (Kubenetes API will use this), you can set kubectl config to point here
-    endpoint_address: "192.168.10.239"
+    install_version: "{{kube_vip_install_version|default('v0.4.2')}}"
 
     # To use Kube-VIP Cloud Provider as LoadBalancer instead of MetalLB
     lb:
-      enabled: true
-      # to use a range:  range-global: 92.168.1.220-192.168.1.230
-      # to use a CIDR:   cidr-global: 192.168.0.220/29
-      ip_range: "range-global: 192.168.10.240-192.168.10.253"
+      # When enabled, this will disable k3s built-in Klipper Load Balancer and enable kube-vip LB
+      # instead.
+
+      # When enabled, you must define variable "vip_lb_ip_range" at host or group level within 
+      # inventory, host_var or group_var file. This must be set to an IP range or CIDR range.
+      # This will define the pool of IP addresses to hand out to serviced of type LoadBalancer.
+      enabled: false
 
   ###[ MetalLB Installation Settings ]#############################################################
   # When enabled this will disable k3s built-in Klipper Load Balancer and enable MetalLB instead.
   # This can provide Load Balancer services a pool of addresses to use
   metallb:
-    enabled: false
+    enabled: true
 
     # Select release to use:  https://github.com/metallb/metallb/releases
     # Alternate: https://metallb.universe.tf/installation/
-    install_version: "v0.12.1"
+    install_version: "{{metallb_install_version|default('v0.12.1')}}"
 
-    # Ranges of IP Addresses MetalLB can handout for LoadBalancer Services
-    ip_ranges: 
-      - "192.168.10.240-192.168.10.253"
-
+  ### [ K3s Installation Settings ]################################################################
   k3s:
     # CLI_options are passed directly to install script "as-is", you can add to list.
     cli_options:
@@ -85,7 +92,8 @@ install:
       - "INSTALL_K3S_SKIP_START=true"
       
       # This is to pin a specific version of k3s for initial installation
-      - "INSTALL_K3S_VERSION=v1.23.4+k3s1"
+      # Select Release: https://github.com/k3s-io/k3s/releases
+      - "INSTALL_K3S_VERSION={{k3s_install_version|default('v1.23.5+k3s1')}}"
       
       # Select installation channel to use (stable, latest, testing)
       # - "INSTALL_K3S_CHANNEL=latest"
@@ -93,6 +101,7 @@ install:
     # Location for K3s installation script
     url: "https://get.k3s.io"
 
+    # Define handy alias names for commands
     alias:
       enabled: true
       entries:
@@ -120,7 +129,9 @@ install:
   ###[ Cert Manager Installation Settings ]########################################################
   cert_manager:
     # Select release to use:  https://github.com/cert-manager/cert-manager/releases
-    install_version: "v1.7.1"
+    install_version: "{{cert_manager_install_version|default('v1.7.1')}}"
+
+    namespace: "cert-manager"
 
   ###[ Democratic CSI Installation Settings ]######################################################
   democratic_csi:
@@ -245,7 +256,10 @@ install:
 
   ###[ Longhorn Installation Settings ]############################################################
   longhorn:
-    install_this: true              # Install longhorn distributed cluster storage
+    install_this: "{{longhorn_enabled|default(true)}}"  # Install longhorn distributed cluster storage
+
+    # Select Release to use: https://github.com/longhorn/longhorn/releases 
+    install_version: "{{longhorn_install_version|default('v1.2.4')}}"
 
     namespace: "longhorn-system"   # Add resources to this namespace
     release: "longhorn"            # Release value passed to Helm
@@ -269,7 +283,7 @@ install:
 
       zvol:
         options:
-          volsize: "10G"
+          volsize: "{{longhorn_vol_size|default('10G')}}"
           compression: "lz4"       # "" (inherit), lz4, gzip-9, etc
           volblocksize: "16k"
 
@@ -283,18 +297,18 @@ install:
     test_claim:
       enabled: true               # true = attempt longhorn storage claim
       mode: "ReadWriteOnce"       # storage claim access mode
-      size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
+      size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mibibytes)
       remove: true                # true = remove claim when test is completed (false leaves it alone)
 
   ###[ Prometheus Operator Installation Settings ]#################################################
   prometheus_operator:
     install_this: true            # Install Prometheus Operator
 
+    # Select release to use:  https://github.com/prometheus-community/helm-charts/releases
+    install_version: "{{prometheus_op_install_version|default('34.7.1')}}"
+
     namespace: "monitoring"
     release: "kube-stack-prometheus"
-
-    # Select release to use:  https://github.com/prometheus-community/helm-charts/releases
-    install_version: "34.7.1"
 
     prometheus:
       retention: "14d"             # How long to retain data

@@ -8,5 +8,5 @@ data:
     address-pools:
     - name: default
       protocol: layer2
-      addresses:
-        {{install.metallb.ip_ranges|list}}
+      addresses: 
+      - {{metallb_ip_range}}

@@ -33,7 +33,7 @@ spec:
   entryPoints:
     - {% if install.traefik.dashboard.enable_https|default(false)|bool == false %}web{% else %}websecure{% endif %}{{''}}
   routes:
-    - match: Host(`{{install.traefik.dashboard.hostname|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.traefik.dashboard.path|default("/dashboard")}}`) || PathPrefix(`/api`))
+    - match: Host(`{{install.traefik.dashboard.ingress_name|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.traefik.dashboard.path|default("/dashboard")}}`) || PathPrefix(`/api`))
       kind: Rule
 {% if install.traefik.dashboard.enable_basic_auth|default(false)|bool == true%}
       middlewares:
