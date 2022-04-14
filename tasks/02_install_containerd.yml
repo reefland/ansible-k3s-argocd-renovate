@@ -17,6 +17,7 @@
       - UUID.stdout|length > 0
     
   when:
+    - install.containerd.enabled|default(false)|bool == true
     - install.containerd.zfs.detect_uuid|default(false)|bool == true
   tags:
     - install_containerd
