@@ -21,25 +21,6 @@
     - secrets/alertmanager_secrets.yml
   no_log: "{{no_log_secrets|default(true)}}"
 
-###[ Load up the variable files ]##################################################################
-- name: Include Var Files
-  include_vars: "{{ item }}"
-  tags: ["always"]
-  loop:
-      - os.yml
-      - rsyslog.yml
-      - k3s.yml
-      - containerd.yml
-      - helm.yml
-      - longhorn.yml
-      - kube_vip.yml
-      - metallb.yml
-      - cert_manager.yml
-      - democratic-csi.yml
-      - prometheus-op.yml
-  loop_control:
-    label: "{{item}}"
-
 ###[ Detect ZFS UUID from ZFS on Root installations ]##############################################
 - name: Detect ZFS Dataset UUID
   shell:
@@ -78,6 +59,7 @@
   include_tasks: "{{task_names}}"
   tags: ["always"]
   loop:
+    - 00_sanity_check.yml
     - 00_config_rsyslog.yml
     - 00_create_non_root_user.yml
     - 01_install_k3s.yml
@@ -99,5 +81,3 @@
   loop_control:
     label: "{{task_names}}"
     loop_var: task_names
-
-

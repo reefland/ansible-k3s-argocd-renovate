@@ -1,4 +1,0 @@
----
-grafana:
-  # Name space to be created for Grafana
-  namespace: "{{prometheus.namespace}}"         # Keep same as Prometheus

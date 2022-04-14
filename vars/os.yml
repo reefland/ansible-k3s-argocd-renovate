@@ -1,5 +1,0 @@
----
-os:
-  central_logging:
-    packages:
-      - lnav                                # Handy program to watch logs in real-time
