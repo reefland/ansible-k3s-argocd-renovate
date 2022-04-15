@@ -21,8 +21,11 @@ rsyslog:
 kubeconfig_path: "/home/{{install.os.non_root_user.name}}/.kube/config"
 
 k3s:
-  node_token_path: "/var/lib/rancher/k3s/server/node-token"
 
+  # Location for K3s installation script
+  url: "https://get.k3s.io"
+
+  node_token_path: "/var/lib/rancher/k3s/server/node-token"
   manifests_path: "/var/lib/rancher/k3s/server/manifests/"
 
   # Packages required for Ansible to issue Kubernetes and commands
@@ -75,11 +78,6 @@ traefik:
   le_staging_server: "https://acme-staging-v02.api.letsencrypt.org/directory"
   le_production_server: "https://acme-v02.api.letsencrypt.org/directory"
 
-  # Define the name of the Let's Encrypt Domain List Key stored in k3s_traefik_api_secrets.yml
-  le_domains: "{{LE_DOMAINS}}"
-
-  dashboard_users: "{{TRAEFIK_DASHBOARD_USERS}}"
-
 ###[ Containerd Installation Setting ]#############################################################
 containerd:
   # List of packages to install
@@ -121,8 +119,6 @@ longhorn:
     # Format of the filesystem used for Longhorn storage
     zvol:
       format: "xfs"
-
-  dashboard_users: "{{LONGHORN_DASHBOARD_USERS}}"
 
 ###[ Kube-VIP Configuration Settings ]#############################################################
 kube_vip:

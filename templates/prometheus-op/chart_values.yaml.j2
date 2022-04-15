@@ -78,7 +78,7 @@ grafana:
     path: {{install.prometheus_operator.grafana.dashboard.path}}
   grafana.ini:
     server:
-      root_url: https://{{install.prometheus_operator.grafana.dashboard.hostname|default(ansible_fqdn)|lower}}{{install.prometheus_operator.grafana.dashboard.path}}/
+      root_url: https://{{install.prometheus_operator.grafana.dashboard.ingress_name|default(ansible_fqdn)|lower}}{{install.prometheus_operator.grafana.dashboard.path}}/
   persistence:
     type: pvc
     enabled: true

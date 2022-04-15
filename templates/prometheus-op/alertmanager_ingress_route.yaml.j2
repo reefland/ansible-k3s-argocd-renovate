@@ -56,7 +56,7 @@ spec:
   entryPoints:
     - {% if install.traefik.dashboard.enable_https|default(false)|bool == false %}web{% else %}websecure{% endif %}{{''}}
   routes:
-    - match: Host(`{{install.prometheus_operator.alertmanager.dashboard.hostname|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.prometheus_operator.alertmanager.dashboard.path|default("/alertmanager")}}`))
+    - match: Host(`{{install.prometheus_operator.alertmanager.dashboard.ingress_name|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.prometheus_operator.alertmanager.dashboard.path|default("/alertmanager")}}`))
       kind: Rule
       services:
       - kind: Service

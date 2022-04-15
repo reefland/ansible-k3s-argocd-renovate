@@ -24,7 +24,7 @@
 
   - name: Download k3s install script
     get_url:
-      url: "{{install.k3s.url}}"
+      url: "{{k3s.url}}"
       dest: "/home/{{install.os.non_root_user.name}}/k3s_install.sh"
       mode: ug+x
 

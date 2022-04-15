@@ -56,7 +56,7 @@ spec:
   entryPoints:
     - {% if install.traefik.dashboard.enable_https|default(false)|bool == false %}web{% else %}websecure{% endif %}{{''}}
   routes:
-    - match: Host(`{{install.prometheus_operator.prometheus.dashboard.hostname|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.prometheus_operator.prometheus.dashboard.path|default("/prometheus")}}`))
+    - match: Host(`{{install.prometheus_operator.prometheus.dashboard.ingress_name|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.prometheus_operator.prometheus.dashboard.path|default("/prometheus")}}`))
       kind: Rule
       services:
       - kind: Service
