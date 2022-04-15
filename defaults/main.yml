@@ -26,64 +26,6 @@ install:
     central_logging:                          
       log_path: "/var/log/central"            # Directory on central server to hold logs
 
-  ###[ Traefik Installation Settings ]#############################################################
-  traefik:
-    # List of Domain Names for LetsEncrypt Certificates
-    domains: "{{traefik.le_domains}}"
-
-    # to create prod certificates --extra-vars "le_staging=false"
-    le_staging: "{{le_staging|default(true)}}"
-
-    # Traefik Dashboard
-    dashboard:
-      create_route: true                      # Create Ingress Router to make accessible 
-      enable_https: true                      # Require HTTPS to access dashboard
-      enable_basic_auth: true                 # Require Authentication to access dashboard
-
-      # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
-      # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
-      ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
-      
-      # Default Dashboard URL:  https://k3s.{{ansible_domain}}/dashboard/
-      path: "/dashboard"                      # PathPrefix for dashboard
-
-      # Encoded users and passwords for basic authentication
-      allowed_users: "{{traefik.dashboard_users}}"    
-
-  ###[ Kube-VIP Installation Settings ]############################################################
-  # Kube-VIP provides HA Load Balancer for the API service and optionally LoadBalancer services
-  # It can optionally also provide Load Balancer services a pool of address to use instead of
-  # using MetalLB.  When enabled this will disable k3s built-in Klipper Load Balancer.
-  kube_vip:
-    # When enabled, you must define variable "vip_endpoint_ip" at host or group level within 
-    # inventory, host_var or group_var file. This must be set to an IP address. This IP address will
-    # be a Load Balanced VIP cluster wide for the API service.  You can point kubectl to this IP 
-    # address.
-    enabled: true
-
-    # Select release to use: https://github.com/kube-vip/kube-vip/releases
-    install_version: "{{kube_vip_install_version|default('v0.4.2')}}"
-
-    # To use Kube-VIP Cloud Provider as LoadBalancer instead of MetalLB
-    lb:
-      # When enabled, this will disable k3s built-in Klipper Load Balancer and enable kube-vip LB
-      # instead.
-
-      # When enabled, you must define variable "vip_lb_ip_range" at host or group level within 
-      # inventory, host_var or group_var file. This must be set to an IP range or CIDR range.
-      # This will define the pool of IP addresses to hand out to serviced of type LoadBalancer.
-      enabled: false
-
-  ###[ MetalLB Installation Settings ]#############################################################
-  # When enabled this will disable k3s built-in Klipper Load Balancer and enable MetalLB instead.
-  # This can provide Load Balancer services a pool of addresses to use
-  metallb:
-    enabled: true
-
-    # Select release to use:  https://github.com/metallb/metallb/releases
-    # Alternate: https://metallb.universe.tf/installation/
-    install_version: "{{metallb_install_version|default('v0.12.1')}}"
-
   ### [ K3s Installation Settings ]################################################################
   k3s:
     # CLI_options are passed directly to install script "as-is", you can add to list.
@@ -97,9 +39,6 @@ install:
       
       # Select installation channel to use (stable, latest, testing)
       # - "INSTALL_K3S_CHANNEL=latest"
-
-    # Location for K3s installation script
-    url: "https://get.k3s.io"
 
     # Define handy alias names for commands
     alias:
@@ -125,7 +64,90 @@ install:
       dataset_prefix: "containerd"            # "ROOT/ubuntu"
       uuid: ""                                # "_"
       dataset_postfix: ""                     # "/var/lib/containerd"
-  
+
+  ###[ Longhorn Installation Settings ]############################################################
+  longhorn:
+    install_this: "{{longhorn_enabled|default(true)}}"  # Install longhorn distributed cluster storage
+
+    # Select Release to use: https://github.com/longhorn/longhorn/releases 
+    install_version: "{{longhorn_install_version|default('v1.2.4')}}"
+
+    namespace: "longhorn-system"   # Add resources to this namespace
+    release: "longhorn"            # Release value passed to Helm
+
+    # Longhorn Dashboard
+    dashboard:
+      create_route: true           # Create Ingress Route to make accessible 
+      enable_basic_auth: true      # Require Authentication to access dashboard
+
+      # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+      # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+      ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
+
+      # Default Dashboard URL:  https://k3s.{{ansible_domain}}/longhorn/
+      path: "/longhorn"            # URI Path for Ingress Route
+
+      # Encoded users and passwords for basic authentication
+      allowed_users: "{{LONGHORN_DASHBOARD_USERS}}"
+
+    # Define where ZFS Zvol should be created for Longhorn storage
+    zfs:                           # Combined "rpool/longhorn"
+      pool: "{{longhorn_zfs_pool|default('rpool')}}"
+      volume_name: "longhorn"              
+
+      zvol:
+        options:
+          volsize: "{{longhorn_vol_size|default('10G')}}"
+          compression: "lz4"       # "" (inherit), lz4, gzip-9, etc
+          volblocksize: "16k"
+
+        mountpoint: "/var/lib/longhorn"
+        
+    # The intent of longhorn is to be used instead of "local-path" storage class
+    # once Longhorn is installed "local-path" will be disabled as the default storage class
+    disable_local_path_as_default_storage_class: true
+
+    # Once installed and validated, a test claim can be processed.
+    test_claim:
+      enabled: true               # true = attempt longhorn storage claim
+      mode: "ReadWriteOnce"       # storage claim access mode
+      size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
+      remove: true                # true = remove claim when test is completed (false leaves it alone)
+
+  ###[ Kube-VIP Installation Settings ]############################################################
+  # Kube-VIP provides HA Load Balancer for the API service and optionally LoadBalancer services
+  # It can optionally also provide Load Balancer services a pool of address to use instead of
+  # using MetalLB.  When enabled this will disable k3s built-in Klipper Load Balancer.
+  kube_vip:
+    # When enabled, you must define variable "vip_endpoint_ip" at host or group level within 
+    # inventory, host_var or group_var file. This must be set to an IP address. This IP address will
+    # be a Load Balanced VIP cluster wide for the API service.  You can point kubectl to this IP 
+    # address.
+    enabled: true
+
+    # Select release to use: https://github.com/kube-vip/kube-vip/releases
+    install_version: "{{kube_vip_install_version|default('v0.4.2')}}"
+
+    # To use Kube-VIP Cloud Provider as LoadBalancer instead of MetalLB
+    lb:
+      # When enabled, this will disable k3s built-in Klipper Load Balancer and enable kube-vip LB
+      # instead.
+
+      # When enabled, you must define variable "vip_lb_ip_range" at host or group level within 
+      # inventory, host_var or group_var file. This must be set to an IP range or CIDR range.
+      # This will define the pool of IP addresses to hand out to serviced of type LoadBalancer.
+      enabled: true
+
+  ###[ MetalLB Installation Settings ]#############################################################
+  # When enabled this will disable k3s built-in Klipper Load Balancer and enable MetalLB instead.
+  # This can provide Load Balancer services a pool of addresses to use
+  metallb:
+    enabled: false
+
+    # Select release to use:  https://github.com/metallb/metallb/releases
+    # Alternate: https://metallb.universe.tf/installation/
+    install_version: "{{metallb_install_version|default('v0.12.1')}}"
+
   ###[ Cert Manager Installation Settings ]########################################################
   cert_manager:
     # Select release to use:  https://github.com/cert-manager/cert-manager/releases
@@ -133,9 +155,32 @@ install:
 
     namespace: "cert-manager"
 
+  ###[ Traefik Installation Settings ]#############################################################
+  traefik:
+    # List of Domain Names for LetsEncrypt Certificates stored in k3s_traefik_api_secrets.yml
+    domains: "{{LE_DOMAINS}}"
+
+    # to create prod certificates --extra-vars "le_staging=false"
+    le_staging: "{{le_staging|default(true)}}"
+
+    # Traefik Dashboard
+    dashboard:
+      create_route: true                      # Create Ingress Router to make accessible 
+      enable_https: true                      # Require HTTPS to access dashboard
+      enable_basic_auth: true                 # Require Authentication to access dashboard
+
+      # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+      # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+      ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
+      
+      # Default Dashboard URL:  https://k3s.{{ansible_domain}}/dashboard/
+      path: "/dashboard"                      # PathPrefix for dashboard
+
+      # Encoded users and passwords for basic authentication stored in k3s_traefik_api_secrets.yml
+      allowed_users: "{{TRAEFIK_DASHBOARD_USERS}}"    
+
   ###[ Democratic CSI Installation Settings ]######################################################
   democratic_csi:
-
     truenas:
       # See file "truenas_api_secrets.yml" to set secrets (and be sure to use ansible vault to encrypt!)
       http_connection:
@@ -214,7 +259,7 @@ install:
       test_claim:
         enabled: true               # true = attempt iscsi storage claim
         mode: "ReadWriteOnce"       # storage claim access mode
-        size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
+        size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
         remove: true                # true = remove claim when test is completed (false leaves it alone)
 
     ###[ Democratic CSI NFS Settings ]#############################################################
@@ -251,54 +296,8 @@ install:
       test_claim:
         enabled: true               # true = attempt nfs storage claim
         mode: "ReadWriteOnce"       # storage claim access mode
-        size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
+        size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
         remove: true                # true = remove claim when test is completed (false leaves it alone)
-
-  ###[ Longhorn Installation Settings ]############################################################
-  longhorn:
-    install_this: "{{longhorn_enabled|default(true)}}"  # Install longhorn distributed cluster storage
-
-    # Select Release to use: https://github.com/longhorn/longhorn/releases 
-    install_version: "{{longhorn_install_version|default('v1.2.4')}}"
-
-    namespace: "longhorn-system"   # Add resources to this namespace
-    release: "longhorn"            # Release value passed to Helm
-
-    # Longhorn Dashboard
-    dashboard:
-      create_route: true           # Create Ingress Route to make accessible 
-      enable_basic_auth: true      # Require Authentication to access dashboard
-
-      # Default Dashboard URL:  https://k3s.{{ansible_domain}}/longhorn/
-      hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
-      path: "/longhorn"            # URI Path for Ingress Route
-
-      # Encoded users and passwords for basic authentication
-      allowed_users: "{{longhorn.dashboard_users}}"    
-
-    # Define where ZFS Zvol should be created for Longhorn storage
-    zfs:                           # Combined "rpool/longhorn"
-      pool: "{{longhorn_zfs_pool|default('rpool')}}"
-      volume_name: "longhorn"              
-
-      zvol:
-        options:
-          volsize: "{{longhorn_vol_size|default('10G')}}"
-          compression: "lz4"       # "" (inherit), lz4, gzip-9, etc
-          volblocksize: "16k"
-
-        mountpoint: "/var/lib/longhorn"
-        
-    # The intent of longhorn is to be used instead of "local-path" storage class
-    # once Longhorn is installed "local-path" will be disabled as the default storage class
-    disable_local_path_as_default_storage_class: true
-
-    # Once installed and validated, a test claim can be processed.
-    test_claim:
-      enabled: true               # true = attempt longhorn storage claim
-      mode: "ReadWriteOnce"       # storage claim access mode
-      size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mibibytes)
-      remove: true                # true = remove claim when test is completed (false leaves it alone)
 
   ###[ Prometheus Operator Installation Settings ]#################################################
   prometheus_operator:
@@ -323,8 +322,11 @@ install:
         create_route: true        # Create Ingress Route to make accessible 
         enable_basic_auth: true   # Require Authentication to access dashboard
 
+        # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+        # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+        ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
+
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
-        hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
         path: "/prometheus"       # URI Path for Ingress Route
 
         # Encoded users and passwords for basic authentication
@@ -341,8 +343,11 @@ install:
         create_route: true        # Create Ingress Route to make accessible 
         enable_basic_auth: false  # Has its own login page
 
-        # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
-        hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
+        # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+        # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+        ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
+
+        # Default Dashboard URL:  https://k3s.{{ansible_domain}}/grafana/
         path: "/grafana"          # URI Path for Ingress Route
 
     alertmanager:
@@ -356,8 +361,11 @@ install:
         create_route: true        # Create Ingress Route to make accessible 
         enable_basic_auth: true   # Has its own login page
 
-        # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
-        hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
+        # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+        # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+        ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
+
+        # Default Dashboard URL:  https://k3s.{{ansible_domain}}/alertmanager/
         path: "/alertmanager"     # URI Path for Ingress Route
 
         # Encoded users and passwords for basic authentication
