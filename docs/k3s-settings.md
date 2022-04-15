@@ -18,12 +18,10 @@ There should not be a need to update any settings for K3S. The K3s Settings are 
 CLI parameters passed to the K3s installation script can be customized by updating the section below.
 
 ```yml
-k3s:
-  # CLI options passed directly to install script "as-is":
-  cli_options:
-      # Define it below or in the inventory file or group vars file.
-      - "K3S_TOKEN={{K3S_TOKEN}}|default('top_secret')"
-
+install:
+  k3s:
+    # CLI options passed directly to install script "as-is":
+    cli_options:
       # Do not start service after installation as it will have issues with ZFS
       - "INSTALL_K3S_SKIP_START=true"
       
@@ -34,59 +32,59 @@ k3s:
       #- "INSTALL_K3S_CHANNEL=stable"
 ```
 
-* The `K3S_TOKEN=` is a secret required for nodes to be able to join the cluster.  The value of the secret can be anything you like.  The variable needs to be scoped to the installation group.  
-  * While it can be defined directly within the `defaults/mains.yml` is better to create a variable named `K3S_TOKEN`in using Ansible's secrets file, or group vars file or an inventory file.
-  * If you do not define this variable then the default `top_secret` which is lame will be used.
-  * If you need inspiration for an easy to create a secret value:
-
-  ```shell
-  $ date | md5sum
-
-  0097661c0c55ccc8921617e0997d2e73
-  ```
-
 * The `INSTALL_K3S_VERSION=` lets you pin a specific version to use.  This will make sure a standardized version is used even with different installs over time.  Only you determine which version to use.
 
 * The `INSTALL_K3S_CHANNEL=` sets the installation channel to use. It can be set to `stable`, `latest` or `testing`. You probably do not want this as it will result in different versions being installed over time.
 
 You can add to this CLI last as needed.  See [Installation Options for Scripts](https://rancher.com/docs/k3s/latest/en/installation/install-options/) in Rancher documentation for details.
 
-### K3s Exec Options
+---
 
-These are CLI parameters which will be merged together to become the `INSTALL_K3S_EXEC=` installation parameter.  This list of values are used to configure the `k3s` systemd service. Depending on which products are enabled items will be added or removed from the final list.  You can add additional values to the `k3s_exec_options` list directly or just define a variable named `k3s_cli_var` scoped to the individual host using Ansible's host vars or inventory file.
+### Kubernetes Command Aliases
 
-```yml
-    # Becomes the "INSTALL_K3S_EXEC=" parameter
-    k3s_exec_options:  
-      - "{{k3s_cli_var|default('')}}"         # Options set in inventory or hosts vars
-      - "--container-runtime-endpoint unix:///run/containerd/containerd.sock"
+It can be annoying typing `kubectl` all day.  And alias lets you assign an alternate name to a command.  
 
-    cli_disable_storage_options:              # If disable_local_path_as_default_storage_class = true
-      - "--disable local-storage"   
+```yaml
+install:
+  k3s:
 
-    cli_disable_loadbalancer_options:         # If metallb.enabled = true
-      - "--disable servicelb"
+     # Define handy alias names for commands
+    alias:
+      enabled: true
+      entries:
+        - { alias_name: "k", command: "kubectl" }   # alias for kubectl  ($ k get all -A)
+
+
 ```
+
+By default `k` will be setup as an alias for `kubectl`:
+
+```shell
+$ k version
+
+Client Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.5+k3s1", GitCommit:"313aaca547f030752788dce696fdf8c9568bc035", GitTreeState:"clean", BuildDate:"2022-03-31T01:02:40Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.5+k3s1", GitCommit:"313aaca547f030752788dce696fdf8c9568bc035", GitTreeState:"clean", BuildDate:"2022-03-31T01:02:40Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
+```
+
+* If you want something like `kga` to be an alias for `kubectl get all --all-namespaces` this is where you can define that. Be as creative as you want.
+
+---
 
 ### K3S Validation Step
 
-Confirm k3s is up and running at end of its installation. If any configuration issues exist between k3s, containerd and container network plugs then k3s will not be able to deploy properly to reach a "Ready" state. This script by default will check if `kubectl get node` returns `No resources found` indicating a configuration issue.  If this is detected, the install will fail at this point to allow troubleshooting.
+This Ansible script will confirm k3s is up and running at end of its installation. If any configuration issues exist between k3s, containerd and container network plugs then k3s will not be able to deploy properly to reach a "Ready" state. This script will check if `kubectl get node` returns `No resources found` indicating a configuration issue.  If this is detected, the install will fail at this point to allow troubleshooting.
 
-```yml
-k3s:
-  # If enabled, will fail ansible deployment when "kubectl get node" returns "No resources found"
-  confirm_running: true
-```
-
-When enabled, it can be run independently on its own:
+It can be run independently on its own:
 
 ```shell
 $ ansible-playbook -i inventory kubernetes.yml --tags="validate_k3s"
 
   MSG:
 
-  NAME        STATUS   ROLES                  AGE   VERSION
-  testlinux   Ready    control-plane,master   64m   v1.23.3+k3s1
+  NAME        STATUS   ROLES                       AGE   VERSION
+  testlinux   Ready    control-plane,etcd,master   18h   v1.23.5+k3s1
 ```
+
+---
 
 [Back to README.md](../README.md)

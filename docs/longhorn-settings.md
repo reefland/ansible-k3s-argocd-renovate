@@ -17,11 +17,19 @@
 
 The Longhorn Settings are in variable namespace `install.longhorn`.
 
-* Enable or disable installation of Longhorn Distributed storage:
+* Enable or disable installation of Longhorn Distributed storage.  Setting will default to `true` but you can override this value per host to prevent a host(s) from allocating local storage to Longhorn.
 
   ```yml
+  install:
     longhorn:
-      install_this: true              # Install longhorn distributed cluster storage
+      install_this: "{{longhorn_enabled|default(true)}}"  # Install longhorn distributed cluster storage
+  ```
+
+* Pin which version of Longhorn to install. This value should be defined in the inventory file or group_vars file or can be updated directly here.
+
+  ```yml
+      # Select Release to use: https://github.com/longhorn/longhorn/releases 
+      install_version: "{{longhorn_install_version|default('v1.2.4')}}"
   ```
 
 * The name space and release name Helm will use to install Longhorn:
@@ -30,6 +38,8 @@ The Longhorn Settings are in variable namespace `install.longhorn`.
       namespace: "longhorn-system"
       release: "longhorn"
   ```
+
+---
 
 ### ZFS Zvol for Longhorn
 
@@ -63,13 +73,17 @@ zfs:
     mountpoint: "/var/lib/longhorn"
 ```
 
+---
+
 ### Change Default Storage Class
 
-The intent of longhorn is to be used instead of "local-path" storage class. Once Longhorn is installed "local-path" will be disabled as the default storage class.
+The intent of longhorn is to be used instead of "local-path" storage class. Once Longhorn is installed kubernetes "local-path" will no longer be available.
 
 ```yaml
    disable_local_path_as_default_storage_class: true
 ```
+
+---
 
 ### Longhorn Dashboard
 
@@ -81,16 +95,19 @@ The intent of longhorn is to be used instead of "local-path" storage class. Once
         create_route: true           # Create Ingress Route to make accessible 
         enable_basic_auth: true      # Require Authentication to access dashboard
 
+        # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+        # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+        ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
+
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/longhorn/
-        hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
         path: "/longhorn"            # URI Path for Ingress Route
 
         # Encoded users and passwords for basic authentication
-        allowed_users: "{{longhorn.dashboard_users}}"
+        allowed_users: "{{LONGHORN_DASHBOARD_USERS}}"
   ```
 
-* The `hostname` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes.
-* The `allowed_users` maps to which users are allowed to access the Longhorn Dashboard.
+* The `ingress_name` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes. If a name is not provided it will default to hostname `k3s` and use the domain of the Kubernetes Linux host.
+* The `allowed_users` maps to which users are allowed to access the Longhorn Dashboard (see more below).
 
 The Longhorn Dashboard URL path will resemble: `https://k3s.example.com/longhorn/#/dashboard`
 
@@ -119,6 +136,8 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
 * If you need to restrict access to the dashboard to different set of users or require different passwords, then update the file as needed.
 * As stated in the comments this is not a shared Kubernetes secrets with Traefik. Once deployed a change in one will not be reflected in the other.  This is just to make initial setup easier.
 
+---
+
 ### Test Claim
 
 * Adjust if you want a Longhorn storage test claim performed once all validations have completed:
@@ -127,7 +146,7 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
   test_claim:
     enabled: true               # true = attempt longhorn storage claim
     mode: "ReadWriteOnce"       # storage claim access mode
-    size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
+    size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
     remove: true                # true = remove claim when test is completed (false leaves it alone)
 ```
 

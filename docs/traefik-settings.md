@@ -4,17 +4,13 @@
 
 ## Important Notes
 
-* **Traefik's Letsencrypt** is configured for **Staging** certificates, but you can default it to **Prod** or use provided CLI parameter to force **Prod** certificates only when needed `--extra-vars '{le_staging:false}'`
+* **Traefik's Letsencrypt** is configured for **Staging** certificates, but you can default it to **Prod** or use provided CLI parameter `--extra-vars 'le_staging=false'` to generate **Prod** certificates once you have a working configuration. 
 * **Traefik's Dashboard** is exposed by IngressRoute to URI `/dashboard/`, this can be disabled if needed.
 * Access to the dashboard can be restricted to defined users via basic authentication.
 
 ## Review `vars/secrets/k3s_traefik_api_secrets.yml` for Traefik Let's Encrypt Settings
 
-### Let's Encrypt Configuration
-
-The file `vars/k3s_traefik_api_secrets.yml` needs to be configured to provide **four** variables:
-
-#### Configure CloudFlare DNS Challenge
+### Configure CloudFlare DNS Challenge
 
 * `CF_DNS_API_TOKEN` - CloudFlare API token value
 * `CF_AUTH_EMAIL` - CloudFlare Email address associated with the API token
@@ -39,24 +35,7 @@ LE_DOMAINS:
   - "*.example.com"
 ```
 
-### Staging or Production Certificates
-
-By default staging certificates are generated and controlled by (`vars/k3s.yml`):
-
-```yaml
-k3s:
-  traefik:
-    # Generate Staging Certificates
-    staging: true
-```
-
-Don't change this value. Once staging certificates are verified to be working, the playbook can be run to switch to production certificates:
-
-```shell
-ansible-playbook -i inventory kubernetes.yml --tags="config_traefik_dns_certs" --extra-vars '{le_staging:false}' 
-```
-
-* _See below for using a test deployment with certificates._
+---
 
 ## Review ``vars/secrets/k3s_traefik_api_secrets.yml`` for Traefik Authenticated Users
 
@@ -79,29 +58,65 @@ TRAEFIK_DASHBOARD_USERS: |
 ansible-vault encrypt vars/k3s_traefik_api_secrets.yml
 ```
 
+---
+
 ## Review `default/main.yml` for Traefik Settings
 
 The Traefik Settings are in variable namespace `install.traefik`.
 
-By default a Ingress Route will be created to allow the Dashboard to be accessible on URI `/dashboard/` (the trailing slash is REQUIRED).  
+### Staging or Production Certificates
 
-![Traefik Dark Mode Dashboard](../images/traefik_dark_dashboard.png)
+```yaml
+install:
+  traefik:
+    # to create prod certificates --extra-vars "le_staging=false"
+    le_staging: "{{le_staging|default(true)}}"
+```
 
-Set `create_route` to `false` to prevent the route from being created.  If you need to apply a change do the dashboard then run the playbook with tag `--tags="config_traefik_dashboard"` to apply changes.
+Don't change this value. Once the default staging certificates are verified to be working, the playbook can be run to switch to production certificates:
+
+```shell
+ansible-playbook -i inventory kubernetes.yml --tags="config_traefik_dns_certs" --extra-vars 'le_staging=false' 
+```
+
+---
+
+### Review Traefik Dashboard Settings
+
+The `create_route` will create a Traefik Ingress route to expose the dashboard on the URI defined in `path`.
+
+* Set `create_route` to `false` to prevent the route from being created.  If you need to apply a change do the dashboard then run the playbook with tag `--tags="config_traefik_dashboard"` to apply changes.
+
+* By default basic authentication for the dashboard is enabled.  Individual users allowed to access the dashboard are defined in `vars/secrets/k3s_traefik_api_secrets.yml`.
 
 ```yml
   ###[ Traefik Installation Settings ]#############################################################
-  traefik:
-    ...
+  install:
+    traefik:
+      ...
 
-    # Traefik Dashboard
-    dashboard:
-    create_route: true                      # Create Ingress Router to make accessible 
-    enable_https: true                      # Require HTTPS to access dashboard
-    enable_basic_auth: true                 # Require Authentication to access dashboard
+      # Traefik Dashboard
+      dashboard:
+        create_route: true                      # Create Ingress Router to make accessible 
+        enable_https: true                      # Require HTTPS to access dashboard
+        enable_basic_auth: true                 # Require Authentication to access dashboard
+
+        # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+        # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+        ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
+        
+        # Default Dashboard URL:  https://k3s.{{ansible_domain}}/dashboard/
+        path: "/dashboard"                      # PathPrefix for dashboard
+
+        # Encoded users and passwords for basic authentication stored in k3s_traefik_api_secrets.yml
+        allowed_users: "{{TRAEFIK_DASHBOARD_USERS}}"    
 ```
 
-* The ID & Password's which are allowed access to the dashboard are defined in the file `vars/k3s_traefik_api_secrets.yml` as discussed above.
+* The `ingress_name` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes. If a name is not provided it will default to hostname `k3s` and use the domain of the Kubernetes Linux host.
+
+The Traefik Dashboard URL path will resemble: `https://k3s.example.com/dashboard/`
+
+![Traefik Dark Mode Dashboard](../images/traefik_dark_dashboard.png)
 
 ---
 

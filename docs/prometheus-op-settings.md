@@ -61,15 +61,18 @@ Prometheus Specific Settings are in variable namespace `install.prometheus_opera
           create_route: true           # Create Ingress Route to make accessible 
           enable_basic_auth: true      # Require Authentication to access dashboard
 
+          # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+          # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+          ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
+
           # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
-          hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
-          path: "/prometheus"          # URI Path for Ingress Route
+          path: "/prometheus"       # URI Path for Ingress Route
 
           # Encoded users and passwords for basic authentication
           allowed_users: "{{prometheus_operator.prometheus.dashboard_users}}"
   ```
 
-* The `hostname` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes.
+* The `ingress_name` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes.
 * The `allowed_users` maps to which users are allowed to access the Prometheus Web Interface.
 
 The Prometheus Web Interface URL path will resemble: `https://k3s.example.com/prometheus/`
@@ -120,13 +123,15 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
           create_route: true           # Create Ingress Route to make accessible 
           enable_basic_auth: false     # Require Authentication to access dashboard
 
-          # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
-          hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
-          path: "/prometheus"          # URI Path for Ingress Route
+          # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+          # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+          ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
 
+          # Default Dashboard URL:  https://k3s.{{ansible_domain}}/grafana/
+          path: "/grafana"          # URI Path for Ingress Route
   ```
 
-* The `hostname` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes.
+* The `ingress_name` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes.
 * The `enable_basic_auth` is set to false as Grafana already requires its own authentication by default.
 
 To extract the default ID & Password for Grafana Dashboard from the secrets:
@@ -170,15 +175,18 @@ Alertmanager Specific Settings are in variable namespace `install.prometheus_ope
           create_route: true           # Create Ingress Route to make accessible 
           enable_basic_auth: true      # Require Authentication to access dashboard
 
-          # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
-          hostname: "k3s.{{ansible_domain}}"    # Domain for ingress route
-          path: "/alertmanager"        # URI Path for Ingress Route
+          # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+          # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+          ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
+
+          # Default Dashboard URL:  https://k3s.{{ansible_domain}}/alertmanager/
+          path: "/alertmanager"     # URI Path for Ingress Route
 
           # Encoded users and passwords for basic authentication
           allowed_users: "{{prometheus_operator.alertmanager.dashboard_users}}"
   ```
 
-* The `hostname` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes.
+* The `ingress_name` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes.
 * The `allowed_users` maps to which users are allowed to access the Alertmanager Web Interface.
 
 The Alertmanager Web Interface URL path will resemble: `https://k3s.example.com/alertmanager/`
@@ -284,7 +292,7 @@ The `receivers:` sections defined which configuration to use for the `default-re
           {% raw %}text: "{{ range .Alerts }}<!channel> {{ .Annotations.summary }}\n{{ .Annotations.description }}\n{{ end }}"{% endraw %}
 ```
 
-* NOTE: The Slack API URL `{{vault_slack_config_api_url}}` is an ansible secret you should store in a vault file.
+* NOTE: The Slack API URL variable `vault_slack_config_api_url` is an ansible secret you should store in a vault file.
 
 If the configuration is good then within seconds you should at least get the `watchdog` alert. The Slack example sent me this:
 

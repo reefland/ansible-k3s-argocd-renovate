@@ -19,47 +19,42 @@ The MetalLB Settings are in variable namespace `install.metallb`.
   ###[ MetalLB Installation Settings ]#############################################################
   # When enabled this will disable k3s built-in Klipper Load Balancer and enable MetalLB instead.
   metallb:
-    enabled: true
+    enabled: false
 
     # Select release to use:  https://github.com/metallb/metallb/releases
     # Alternate: https://metallb.universe.tf/installation/
-    install_version: "v0.12.1"
-
-    # Ranges of IP Addresses MetalLB can handout for LoadBalancer Services
-    ip_ranges: 
-      - "192.168.10.240-192.168.10.253"
+    install_version: "{{metallb_install_version|default('v0.12.1')}}"
 ```
 
 * When `enabled` is `true` this will flag K3s to disable its own internal load balance called Klipper and use MetalLB Load Balancer instead.
 * MetalLB is under rapid development, keep it pinned to a known working version.
-* The `ip_ranges` allow multiple ranges to be defined. CIDR ranges are also supported:
+
+
+---
+
+## Define Metallb LoadBalancer IP Range
+
+* You must define a variable named `metallb_ip_range` which contains the range of IP address range to use for the Load Balancer IP pool.
+  * This variable must be defined and accessible to primary cluster host(master #1). Can be defined in the Ansible inventory file, host_var or group_var location.
+
+NOTE: This example shows a YAML formatted inventory file, if you use INI then adjust accordingly (or use Ansible host_var files).
 
 ```yaml
-ip_ranges:
-  - 192.168.12.0/24
-  - 192.168.144.0/20
+k3s_control:
+  hosts:
+    k3s01.example.com:                  # Master 1
+      vip_interface: "enp0s3"
+      vip_endpoint_ip: "192.168.10.220"
+      metallb_ip_range: "192.168.10.221-192.168.10.224"   # 4 Addresses
+
+    k3s02.example.com:                  # Master 2
+      vip_interface: "enp01sf0"
+
+    k3s03.example.com:                  # Master 3
+      vip_interface: "eth0"
 ```
 
----
-
-If you choose not to enable MetalLB initially, it can be enabled at a later point and the K3s Klipper Load Balancer will be disabled.  All existing LoadBalancer services will then be issued an IP Address from the MetalLB Load Balancer Pool within a few seconds.  
-
-```shell
-ansible-playbook -i inventory.yml kubernetes.yml --tags="install_k3s,install_metallb"
-```
-
----
-
-Once MetalLB was installed, Traefik was automatically assigned an `EXTERNAL-IP` from the MetalLB Pool:
-
-```text
-$ kubectl get services traefik -n kube-system
-
-NAME      TYPE           CLUSTER-IP     EXTERNAL-IP      PORT(S)                      AGE
-traefik   LoadBalancer   10.43.227.65   192.168.10.240   80:30070/TCP,443:31909/TCP   2d1h
-```
-
-The IP address used by Traefik is no longer tied to a specific node IP, it is now node independent.
+* NOTE: Example above shows using Kube-vip for Kubernetes API load balancer but using Metallb for the LoadBalancer service IP pool.
 
 ---
 

@@ -30,6 +30,9 @@ install:
 A utility called `lnav` can be used to watch centralized system logs in real-time:
 
 ```yaml
+lnav
+
+# From an account without native access
 sudo lnav /var/log/central
 ```
 

@@ -256,46 +256,50 @@ The democratic-csi Settings are in variable namespace `install.democratic_csi`.
 
 * Set http protocol settings to connect to TrueNAS (http or https), port number (80, 443), and if insecure connections are allowed:
 
-```yml
-democratic_csi:
+  ```yml
+  install:
+    ###[ Democratic CSI Installation Settings ]######################################################  
+    democratic_csi:
 
-  truenas:
-    http_connection:
-      protocol: "https"
-      port: 443
-      allow_insecure: false
-```
+      truenas:
+        http_connection:
+          protocol: "https"
+          port: 443
+          allow_insecure: false
+  ```
 
 * Set the SSH port to connect to TrueNAS:
 
-```yml
-    ssh_connection:
-      port: 22
-```
+  ```yml
+        ssh_connection:
+          port: 22
+  ```
 
 * Set the iSCSI port to connect to TrueNAS:
 
-```yml
-    iscsi_connection:
-      port: 3260
-```
+  ```yml
+        iscsi_connection:
+          port: 3260
+  ```
 
 ### iSCSI Storage Settings
 
 * Enable or disable installation of iSCSI provisioner:
 
-```yml
-  iscsi:
-    install_this: true            # Install the iSCSI provisioner
-```
+  ```yml
+    ###[ Democratic CSI iSCSI Settings ]###########################################################
+    iscsi:
+      install_this: true            # Install the iSCSI provisioner
+  ```
 
 * Settings for the storage class:
 
-```yml
-    default_class: false
-    reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
-    volume_expansion: true
-```
+  ```yml
+      storage_class:
+        default_class: false
+        reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
+        volume_expansion: true
+  ```
   
 * The `reclaim_policy` values are:
 
@@ -308,77 +312,79 @@ democratic_csi:
 
 * Confirm the dataset and detached snapshot dataset names match what you created above:
 
-```yml
-    zfs:
-    # Assumes pool named "main", dataset named "k8s", child dataset "iscsi"
-    # Any additional provisioners such as NFS would be at the same level as "iscsi" (sibling of it)
-    # IMPORTANT:
-    #   total volume name (zvol/<datasetParentName>/<pvc name>) length cannot exceed 63 chars
-    #   https://www.ixsystems.com/documentation/freenas/11.2-U5/storage.html#zfs-zvol-config-opts-tab
-    #   standard volume naming overhead is 46 chars
-    #   Which means names **MUST-BE** 17 characters or LESS!!!!
-    datasets:
-      parent_name: "main/k8s/iscsi/v"
-      snapshot_ds_name: "main/k8s/iscsi/s"
-```
+  ```yml
+      zfs:
+      # Assumes pool named "main", dataset named "k8s", child dataset "iscsi"
+      # Any additional provisioners such as NFS would be at the same level as "iscsi" (sibling of it)
+      # IMPORTANT:
+      #   total volume name (zvol/<datasetParentName>/<pvc name>) length cannot exceed 63 chars
+      #   https://www.ixsystems.com/documentation/freenas/11.2-U5/storage.html#zfs-zvol-config-opts-tab
+      #   standard volume naming overhead is 46 chars
+      #   Which means names **MUST-BE** 17 characters or LESS!!!!
+      datasets:
+        parent_name: "main/k8s/iscsi/v"
+        snapshot_ds_name: "main/k8s/iscsi/s"
+  ```
 
 * Settings for the iSCSI zvols to create can be adjusted:
 
-```yml
-    zvol:
-      compression: "lz4"     # "" (inherit), lz4, gzip-9, etc
-      blocksize: ""          # 512, 1K, 2K, 4K, 8K, 16K, 64K, 128K default is 16K
-      enable_reservation: false
-```
+  ```yml
+      zvol:
+        compression: "lz4"     # "" (inherit), lz4, gzip-9, etc
+        blocksize: ""          # 512, 1K, 2K, 4K, 8K, 16K, 64K, 128K default is 16K
+        enable_reservation: false
+  ```
 
 * Settings for the iSCSI target group and iSCSI authentication:
 
-```yml
-  target_group:
-    portal_group: 1             # get the correct ID from the "portal" section in the UI
-    initiator_group: 1          # get the correct ID from the "initiators" section in the UI
-    auth_type: "None"           # None, CHAP, or CHAP Mutual
+  ```yml
+    target_group:
+      portal_group: 1             # get the correct ID from the "portal" section in the UI
+      initiator_group: 1          # get the correct ID from the "initiators" section in the UI
+      auth_type: "None"           # None, CHAP, or CHAP Mutual
 
-    # get the correct ID from the "Authorized Access" section of the UI
-    auth_group: ""              # only required if using CHAP
-```
+      # get the correct ID from the "Authorized Access" section of the UI
+      auth_group: ""              # only required if using CHAP
+  ```
 
 * Settings for the iSCSI extents created:
 
-```yml
-  extent:
-    fs_type: "xfs"              # zvol block-based storage can be formatted as ext3, ext4, xfs
-    block_size: 4096            # 512, 1024, 2048, or 4096
-    rpm: "5400"                 # "" (let FreeNAS decide, currently defaults to SSD), Unknown, SSD, 5400, 7200, 10000, 15000
-    avail_threshold: 0          # 0-100 (0 == ignore)
-```
+  ```yml
+    extent:
+      fs_type: "xfs"              # zvol block-based storage can be formatted as ext3, ext4, xfs
+      block_size: 4096            # 512, 1024, 2048, or 4096
+      rpm: "5400"                 # "" (let FreeNAS decide, currently defaults to SSD), Unknown, SSD, 5400, 7200, 10000, 15000
+      avail_threshold: 0          # 0-100 (0 == ignore)
+  ```
 
 * Adjust if you want a iSCSi storage test claim performed once all validations have completed:
 
-```yml
-  test_claim:
-    enabled: true               # true = attempt iscsi storage claim
-    mode: "ReadWriteOnce"       # storage claim access mode
-    size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
-    remove: true                # true = remove claim when test is completed (false leaves it alone)
-```
+  ```yml
+    test_claim:
+      enabled: true               # true = attempt iscsi storage claim
+      mode: "ReadWriteOnce"       # storage claim access mode
+      size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
+      remove: true                # true = remove claim when test is completed (false leaves it alone)
+  ```
 
 ### NFS Storage Settings
 
 * Enable or disable installation of NFS provisioner:
 
-```yml
-  nfs:
-    install_this: true            # Install the NFS provisioner
-```
+  ```yml
+    ###[ Democratic CSI NFS Settings ]#############################################################
+    nfs:
+      install_this: true            # Install the NFS provisioner
+  ```
 
 * Settings for the storage class:
 
-```yml
-    default_class: false
-    reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
-    volume_expansion: true
-```
+  ```yml
+      storage_class:
+        default_class: false
+        reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
+        volume_expansion: true
+  ```
 
 * The `reclaim_policy` values are:
 
@@ -391,26 +397,25 @@ democratic_csi:
 
 * Has sudo access been enabled for the SSH account? This is required for TrueNAS Core 12.
 
-```yml
-    zfs:
-      sudo_enabled: true          # TrueNAS Core 12 requires non-root account have sudo access
-```
+  ```yml
+      zfs:
+        sudo_enabled: true          # TrueNAS Core 12 requires non-root account have sudo access
+  ```
 
 * Confirm the dataset and detached snapshot dataset names match what you created above:
 
-```yml
-    zfs:
-      # Assumes pool named "main", dataset named "k8s", child dataset "nfs"
-      # Any additional provisioners such as iSCSI would be at the same level as "nfs" (sibling of it)
-      datasets:
-        parent_name: "main/k8s/nfs/v"
-        snapshot_ds_name: "main/k8s/nfs/s"     
-```
+  ```yml
+      zfs:
+        # Assumes pool named "main", dataset named "k8s", child dataset "nfs"
+        # Any additional provisioners such as iSCSI would be at the same level as "nfs" (sibling of it)
+        datasets:
+          parent_name: "main/k8s/nfs/v"
+          snapshot_ds_name: "main/k8s/nfs/s"     
+  ```
 
 ### Additional ZFS settings for NFS
 
 ```yml
-
         enable_quotas: true
         enable_reservation: false
 
@@ -426,7 +431,7 @@ democratic_csi:
     test_claim:
       enabled: true               # true = attempt iscsi storage claim
       mode: "ReadWriteOnce"       # storage claim access mode
-      size: "1Gi"                 # size of claim to request ("1Gi" is 1 Gibibytes)
+      size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
       remove: true                # true = remove claim when test is completed (false leaves it alone)
 ```
 

@@ -1,35 +1,36 @@
 # K3s Kubernetes with ContainerD for ZFS
 
-Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enhancements:
+An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enhancements:
 
 * **non-root** user account for Kubernetes, passwordless access to `kubectl` by default.
-* **condainerd** to provide ZFS snapshotter support
+* [condainerd](https://containerd.io/) to provide [ZFS snapshotter](https://github.com/containerd/zfs) support
+* **Centralized cluster system logging** via [rsyslog](https://www.rsyslog.com/) with real-time viewing with [lnav](https://lnav.org/) utility.
 * [Helm Client](https://helm.sh/docs/intro/using_helm/)
 * [Cert-manager](https://cert-manager.io/)
-* [MetalLB](https://metallb.universe.tf/) Load Balancer to replace K3s Klipper Load Balancer.
-* **Traefik** ingress with **Letsencrypt wildcard certificates** for domains against LE staging or prod (Cloudflare DNS validator)
-* [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide **Persistent Volume Claim** storage via **iSCSI** and **NFS** from TrueNAS
-* [Longhorn](https://longhorn.io/) distributed Persistent Volume Claims as default storage class
-* Optionally **Prometheus Operator** and **Grafana** can be deployed with customized storage claims
-* Centralized cluster system logging via `rsyslog` with real-time viewing with [lnav](https://lnav.org/) utility.
+* [kube-vip](https://kube-vip.chipzoller.dev/) for Kubernetes API Load Balancer (point kubectl to this instead of a specific host)
+* [MetalLB](https://metallb.universe.tf/) OR [kube-vip](https://kube-vip.chipzoller.dev/) Load Balancer to replace [K3s Klipper](https://github.com/k3s-io/klipper-lb) Load Balancer for ingress traffic.
+* [Traefik](https://traefik.io/) ingress with [Let's Encrypt](https://letsencrypt.org/) **wildcard certificates** for domains against Let's Encrypt staging or prod (Cloudflare DNS validator)
+* [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) storage via **iSCSI** and **NFS** from [TrueNAS](https://www.truenas.com/)
+* [Longhorn](https://longhorn.io/) distributed [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) as default storage class
+* Optional [Kube Prometheus Stack](https://github.com/prometheus-operator/kube-prometheus) provides [Prometheus](https://prometheus.io/), [Alertmanager](https://github.com/prometheus/alertmanager), [node-exporter](https://github.com/prometheus/node_exporter), [Kubernetes API Adapter](https://github.com/DirectXMan12/k8s-prometheus-adapter), [Kube State Metrics](https://github.com/kubernetes/kube-state-metrics) and [Grafana](https://grafana.com/) Dashboards can be deployed with customized persistent storage claims.
 
 ---
 
 ## TL;DR
 
 * You should read it. :)
-* The **democratic-csi** section will require steps completed on your TrueNAS installation in addition to setting values in Ansible.
-* MetalLB Load Balancer section will require you to specify a range of IP addresses available for use
-* Traefik configuration for Lets Encrypt will require you to define your challenge credentials.
-* Longhorn Distributed storage is intended to be the default storage class, the `local-path` StorageClass is not installed.
+* The **democratic-csi** section will require configuration steps on your TrueNAS installation in addition to setting values in Ansible.
+* **Kube-vip** and/or **MetalLB** Load Balancer section will require you to specify a range of IP addresses available for use
+* **Traefik** configuration for Lets Encrypt will require you to define your challenge credentials.
+* **Longhorn** Distributed storage is intended to be the default storage class, the `local-path` StorageClass is not installed.
 
 ---
 
 ## Environments Tested
 
-* Ubuntu 20.04.4 based [ZFS on Root](https://gitea.rich-durso.us/reefland/ansible-zfs_on_root) installation
+* Ubuntu 20.04.4 based [ZFS on Root](https://github.com/reefland/ansible-zfs_on_root) installation
 * TrueNAS Core 12-U8
-* K3s v1.23.3 / v1.23.4+k3s1
+* K3s v1.23.3 / v1.23.4+k3s1 / v1.23.5+k3s1
 
 ---
 
@@ -59,33 +60,22 @@ Automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enha
   ```
 
 ---
-I provide a lot of documentation notes below for my own use.  If you find it overwhelming, keep in mind most of it you do not need to change.  Also note that towards the bottom is a section which shows how to use Ansible to run this in stages to built it up in layers using `tags`.
+I provide a lot of documentation notes below for my own use.  If you find it overwhelming, keep in mind most of it you do not need.  Also note that towards the bottom is a section which shows how to use Ansible to run this in stages (step by step) to built it up in layers using `tags`.
 
 ---
 
 ## Review `defaults/main.yml` for initial settings
 
-Review the non-root user account that will be created for Kubernetes with optional passwordless access to `kubectl` command.
-
-  ```yml
-  install:
-    os:
-      non_root_user:
-        name: "kube"
-        shell: "/bin/bash"
-        groups: "sudo"
-
-      allow_passwordless_sudo: true
-  ```
-
+* Review [Linux OS Settings](docs/os-settings.md)
+* Review [Centralized Cluster System Logs Settings](docs/rsyslog-settings.md)
 * Review [K3S Configuration Settings](docs/k3s-settings.md)
 * Review [Containerd Configuration Settings](docs/containerd-settings.md)
-* Review [MetalLB Load Balancer Settings](docs/metallb-settings.md)
-* Review [Traefik LetsEncrypt and Dashboard Settings](docs/traefik-settings.md)
-* Review [CertManager Configuration Settings](docs/cert-manager.md)
-* Review [democratic-csi for TrueNAS Settings](docs/democratic-csi-settings.md)
 * Review [Longhorn Distributed Storage Settings](docs/longhorn-settings.md)
-* Review [Centralized Cluster System Logs Settings](docs/rsyslog-settings.md)
+* Review [Kube-vip API Load Balancer Settings](docs/kube-vip-settings.md)
+* Review [MetalLB Load Balancer Settings](docs/metallb-settings.md)
+* Review [CertManager Configuration Settings](docs/cert-manager.md)
+* Review [Traefik LetsEncrypt and Dashboard Settings](docs/traefik-settings.md)
+* Review [democratic-csi for TrueNAS Settings](docs/democratic-csi-settings.md)
 * Review [Prometheus Operator with Grafana Settings](docs/prometheus-op-settings.md)
 
 ---
@@ -100,12 +90,18 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
   k3s_control:
     hosts:
       k3s01.example.com:                        # Master #1
-        vip_interface: "enp1s0"
+        vip_interface: "enp0s3"
+        vip_endpoint_ip: "192.168.10.220"
+        vip_lb_ip_range: "cidr-global: 192.168.10.221/30"   # 4 Addresses
         longhorn_zfs_pool: "tank"
-      k3s02.example.com:
-        longhorn_zfs_pool: "tank"               # Master #2
+        longhorn_vol_size: "10G"
+      k3s02.example.com:                        # Master #2
+        vip_interface: "enp01sf0"
+        longhorn_zfs_pool: "tank"             
       k3s03.example.com:
+        vip_interface: "enp01sf0"
         longhorn_zfs_pool: "tank"               # Master #3 (add more if needed)
+
   k3s_workers:
     hosts:
       k3s-worker01.example.com:                # Worker #1
@@ -119,6 +115,14 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
       k3s_workers:
 
     vars:
+      k3s_install_version: "v1.23.5+k3s1"
+      kube_vip_install_version: "v0.4.2"
+      metallb_install_version: "v0.12.1"
+      longhorn_install_version: "v1.2.4"
+      cert_manager_install_version: "v1.7.1"
+      prometheus_op_install_version: "34.7.1"
+      k3s_cluster_ingress_name: "k3s-test.{{ansible_domain}}"
+
       K3S_TOKEN: 'secret_here'                  # Set to any value you like
 ```
 
@@ -138,15 +142,60 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
 
   * Kubernetes uses the [RAFT consensus algorithm](https://kubernetes.io/blog/2019/08/30/announcing-etcd-3-4/) for quorum for HA.
   * More then 7 master nodes will result in a overhead for determining cluster membership and quorum, it is not recommended. Depending on your needs, you typically end up with 3 or 5 master nodes for HA.
-  
-#### Inventory Variables
 
-For simplicity I show the variables within the inventory file.  You can place these in respective group vars and host vars files.
+---
 
-* The `longhorn_zfs_pool` lets you define the ZFS pool to create Longhorn cluster storage with. It will use the ZFS pool `rpool` if not defined. This can be host specific or group scoped.
-* The `k3s_cli_var` passes host specific variables to the K3s installation script. 
-* The `k3s_labels` can be used to set labels on the cluster members.  This can be host specific or group scoped.
-* The `K3S_TOKEN` is a secret value required for a node to be added to the cluster.  Better to define this in an Ansible secrets file or groups var file.
+#### Inventory Variables for IP & Load Balancers
+
+For simplicity I show the variables within the inventory file.  You can place these in respective group vars and host vars files.  
+
+* `vip_interface` specifies which network interface will be used for the Kubernetes API Load Balancer provided by kube-vip.  This can be specified for each individual host.
+* `vip_endpoint_ip` specifies the IP address to be used for the Kubernetes API Load Balancer provided by Kube-vip
+* `vip_lb_ip_range` defines the IP address range kube-vip can use to provide IP addresses for LoadBalancer services.
+* `metallb_ip_range` does the equivalent of `vip_lb_ip_range` but for Metallb Load Balancer if you choose to use that instead.
+
+---
+
+#### Inventory Variables for Longhorn Distributed Storage
+
+* `longhorn_zfs_pool` lets you define the ZFS pool to create Longhorn cluster storage with. It will use the ZFS pool `rpool` if not defined. This can be host specific or group scoped.
+
+* `longhorn_vol_size` specifies how much storage space you wish to dedicate to Longhorn distributed storage. This can be host specific or group scoped.
+
+---
+
+#### Inventory Variables for K3s Installation
+
+* `k3s_cluster_ingress_name` is the Fully Qualified Domain Name (FQDN) you plan to use for the cluster.  This will point to the Traefik Ingress controller's Load Balancer IP Address.  
+  * If not provided it will default to `k3s` and the domain name of the Kubernetes Primary Master server... something like `k3s.localdomain` or `k3s.example.com`
+  * All of the respective dashboards (Traefik, Longhorn, Prometheus, Grafana, etc) will be available from this FQDN.
+* `k3s_cli_var` passes host specific variables to the K3s installation script.
+* `k3s_labels` can be used to set labels on the cluster members.  This can be host specific or group scoped.
+* `K3S_TOKEN` is a secret required for nodes to be able to join the cluster.  The value of the secret can be anything you like.  The variable needs to be scoped to the installation group.  
+  * While it can be defined directly within the inventory file or group_var it better to create a variable named `K3S_TOKEN`in using Ansible's vault.
+  * If you do not define this variable then the default `top_secret` which is lame will be used.
+  * If you need inspiration for an easy to create a secret value:
+
+  ```shell
+  $ date | md5sum
+
+  0097661c0c55ccc8921617e0997d2e73
+  ```
+
+---
+
+#### Inventory Variables for Installed Versions
+
+The idea behind pinning specific versions of software is so that an installation done on Monday can be identical when installed on Tuesday or Friday, or sometime next month.  Without pinning specific versions you have no way of knowing what random combination of versions you will get.
+
+* `k3s_install_version` pins the K3s [Release](https://github.com/k3s-io/k3s/releases) version.
+* `kube_vip_install_version` pins the kube-vip [Release](https://github.com/kube-vip/kube-vip/releases) version.
+* `metallb_install_version` pins the Metallb [Release](https://github.com/metallb/metallb/releases) version.
+* `longhorn_install_version` pins the Longhorn [Release](https://github.com/longhorn/longhorn/releases) version.
+* `cert_manager_install_version` pins the Cert-manager [Release](https://github.com/cert-manager/cert-manager/releases) version.
+* `prometheus_op_install_version` pins the Prometheus Operator [Chart](https://github.com/prometheus-community/helm-charts/releases) version.
+
+---
 
 ### Create a Playbook
 
