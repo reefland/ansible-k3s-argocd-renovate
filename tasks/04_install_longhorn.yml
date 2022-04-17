@@ -16,12 +16,6 @@
       name: longhorn
       repo_url: "{{longhorn.repo_url}}"
 
-  - name: Enable and Start open-iscsi Service
-    ansible.builtin.systemd:
-      enabled: yes
-      state: started
-      name: open-iscsi
-
   - name: Create directory for Longhorn yaml files for non-root user
     file:
       path: "/home/{{install.os.non_root_user.name}}/longhorn"
@@ -40,47 +34,6 @@
     loop:
       - "longhorn_traefik_ingress_route.yaml"
       - "longhorn-test-claim.yaml"
-
-  # Expected to return no output if not found, this is needed to prevent error below.
-  - name: Check if Longhorn Volume is already exists
-    shell:
-      cmd: "echo $(findmnt -t {{longhorn.zfs.zvol.format|string}} --target {{install.longhorn.zfs.zvol.mountpoint}})"
-    register: longhorn_zvol
-    
-  # This would error with volblocksize as read-only property if volume already existed.
-  # When clause added to get around this error condition
-  - name: Create ZFS Zvol for Longhorn (if does not exist)
-    community.general.zfs:
-      name: "{{install.longhorn.zfs.pool}}/{{install.longhorn.zfs.volume_name}}"
-      extra_zfs_properties: "{{install.longhorn.zfs.zvol.options}}"
-      state: present
-    when:
-      - longhorn_zvol.stdout.find("TARGET") == -1
-
-  - name: Create Filesystem for Longhorn ZVOL
-    community.general.filesystem:
-      fstype: "{{longhorn.zfs.zvol.format}}"
-      dev: "/dev/zvol/{{install.longhorn.zfs.pool}}/{{install.longhorn.zfs.volume_name}}"
-
-  - name: Mount Longhorn Volume into /etc/fstab
-    ansible.posix.mount:
-      path: "{{install.longhorn.zfs.zvol.mountpoint}}"
-      src: "/dev/zvol/{{install.longhorn.zfs.pool}}/{{install.longhorn.zfs.volume_name}}"
-      opts: noatime,discard
-      fstype: "{{longhorn.zfs.zvol.format}}"
-      state: mounted
-
-  # Expected to return no output if not found
-  - name: Confirm Longhorn Volume is mounted
-    shell:
-      cmd: "findmnt -t {{longhorn.zfs.zvol.format|string}} --target {{install.longhorn.zfs.zvol.mountpoint}}"
-    register: longhorn_zvol
-
-  - name: Fail if Longhorn volume is not mounted
-    fail:
-      msg: "Longhorn volume not mounted as expected."
-    when:
-      - longhorn_zvol.stdout.find("TARGET") == -1
 
   - name: Install Longhorn via Helm
     kubernetes.core.helm:
@@ -135,4 +88,5 @@
   tags:
     - install_longhorn
   when:
+    - inventory_hostname == groups['k3s_control'][0]
     - install.longhorn.install_this|default(false)|bool == true

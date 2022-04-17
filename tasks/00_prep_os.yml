@@ -1,4 +1,5 @@
 ---
+###[ Setup non-root User ]#########################################################################
 # Setup non-root user for interacting with Kubernetes.
 
 - name: Create non-Root User Block
@@ -19,6 +20,63 @@
       validate: "visudo -cf %s"
     when:
       - install.os.allow_passwordless_sudo|default(false)|bool == true
-
   tags:
-    - create_non_root_user
+    - prep_os
+
+###[ Setup Longhorn Storage Location ]#############################################################
+# Storage for longhorn needs to be in-place before node joins the cluster.
+
+- name: Setup Longhorn Storage Location
+  block:
+
+  - name: Enable and Start open-iscsi Service
+    ansible.builtin.systemd:
+      enabled: yes
+      state: started
+      name: open-iscsi
+
+  # Expected to return no output if not found, this is needed to prevent error below.
+  - name: Check if Longhorn Volume is already exists
+    shell:
+      cmd: "echo $(findmnt -t {{longhorn.zfs.zvol.format|string}} --target {{install.longhorn.zfs.zvol.mountpoint}})"
+    register: longhorn_zvol
+    
+  # This would error with volblocksize as read-only property if volume already existed.
+  # When clause added to get around this error condition
+  - name: Create ZFS Zvol for Longhorn (if does not exist)
+    community.general.zfs:
+      name: "{{install.longhorn.zfs.pool}}/{{install.longhorn.zfs.volume_name}}"
+      extra_zfs_properties: "{{install.longhorn.zfs.zvol.options}}"
+      state: present
+    when:
+      - longhorn_zvol.stdout.find("TARGET") == -1
+
+  - name: Create Filesystem for Longhorn ZVOL
+    community.general.filesystem:
+      fstype: "{{longhorn.zfs.zvol.format}}"
+      dev: "/dev/zvol/{{install.longhorn.zfs.pool}}/{{install.longhorn.zfs.volume_name}}"
+
+  - name: Mount Longhorn Volume into /etc/fstab
+    ansible.posix.mount:
+      path: "{{install.longhorn.zfs.zvol.mountpoint}}"
+      src: "/dev/zvol/{{install.longhorn.zfs.pool}}/{{install.longhorn.zfs.volume_name}}"
+      opts: noatime,discard
+      fstype: "{{longhorn.zfs.zvol.format}}"
+      state: mounted
+
+  # Expected to return no output if not found
+  - name: Confirm Longhorn Volume is mounted
+    shell:
+      cmd: "findmnt -t {{longhorn.zfs.zvol.format|string}} --target {{install.longhorn.zfs.zvol.mountpoint}}"
+    register: longhorn_zvol
+
+  - name: Fail if Longhorn volume is not mounted
+    fail:
+      msg: "Longhorn volume not mounted as expected."
+    when:
+      - longhorn_zvol.stdout.find("TARGET") == -1
+
+  when:
+    - install.longhorn.install_this|default(false)|bool == true
+  tags:
+    - prep_os
