@@ -11,9 +11,8 @@
           You must define variable "vip_endpoint_ip" at host or group level within inventory, host_var
           or group_var file. This must be set to an IP address. This IP address will become a Load 
           Balanced VIP cluster wide for the API service.  You can point kubectl to this IP address.
-          Example:
-          
-          vip_endpoint_ip: "192.168.10.239"
+
+          Example   vip_endpoint_ip: "192.168.10.239"
       when:
         - vip_endpoint_ip is undefined
         - install.kube_vip.enabled|default(false)|bool == true
@@ -26,6 +25,7 @@
           You must define variable "vip_lb_ip_range" at host or group level within inventory, host_var
           or group_var file. This must be set to an IP range or CIDR range.  This will be the pool
           of IP addressed used for services of LoadBalancer type.
+
           Examples:
       
           vip_lb_ip_range: "range-global: 192.168.1.220-192.168.1.227"
@@ -62,5 +62,7 @@
         - metallb_ip_range is undefined
         - install.metallb.enabled|default(false)|bool == true
 
+  when:
+    - inventory_hostname == groups['k3s_control'][0]
   tags:
     - always
