@@ -76,4 +76,5 @@
   tags:
     - validate_longhorn
   when:
+    - inventory_hostname == groups['k3s_control'][0]
     - install.longhorn.install_this|default(false)|bool == true
