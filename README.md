@@ -236,6 +236,7 @@ ansible-playbook -i inventory.yml kubernetes.yml -l k3s01.example.com --tags="<t
 The following tags are supported and should be used in this order:
 
 * `config_rsyslog`
+* `create_non_root_user`
 * `install_k3s`
 * `install_containerd`
 * `install_helm_client`
