@@ -90,22 +90,17 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
   k3s_control:
     hosts:
       k3s01.example.com:                        # Master #1
-        vip_interface: "enp0s3"
         vip_endpoint_ip: "192.168.10.220"
         vip_lb_ip_range: "cidr-global: 192.168.10.221/30"   # 4 Addresses
         longhorn_zfs_pool: "tank"
         longhorn_vol_size: "10G"
       k3s02.example.com:                        # Master #2
-        vip_interface: "enp01sf0"
-        longhorn_zfs_pool: "tank"             
-      k3s03.example.com:
-        vip_interface: "enp01sf0"
-        longhorn_zfs_pool: "tank"               # Master #3 (add more if needed)
+
+      k3s03.example.com:                        # Master #3 (add more if needed)
 
   k3s_workers:
     hosts:
       k3s-worker01.example.com:                # Worker #1
-        vip_interface: "enp0s3"
 #        k3s_cli_var: "K3S_URL='https://{{primary_server}}:6443'"
         k3s_labels: "{'kubernetes.io/role=worker', 'node-type=worker'}"
 
@@ -149,7 +144,6 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
 
 For simplicity I show the variables within the inventory file.  You can place these in respective group vars and host vars files.  
 
-* `vip_interface` specifies which network interface will be used for the Kubernetes API Load Balancer provided by kube-vip.  This can be specified for each individual host.
 * `vip_endpoint_ip` specifies the IP address to be used for the Kubernetes API Load Balancer provided by Kube-vip
 * `vip_lb_ip_range` defines the IP address range kube-vip can use to provide IP addresses for LoadBalancer services.
 * `metallb_ip_range` does the equivalent of `vip_lb_ip_range` but for Metallb Load Balancer if you choose to use that instead.
