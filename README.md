@@ -91,7 +91,7 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
     hosts:
       k3s01.example.com:                        # Master #1
         vip_endpoint_ip: "192.168.10.220"
-        vip_lb_ip_range: "cidr-global: 192.168.10.221/30"   # 4 Addresses
+        vip_lb_ip_range: "cidr-global: 192.168.10.221/30"   # 4 Addresses pool
         longhorn_zfs_pool: "tank"
         longhorn_vol_size: "10G"
       k3s02.example.com:                        # Master #2
@@ -101,8 +101,11 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
   k3s_workers:
     hosts:
       k3s-worker01.example.com:                # Worker #1
-#        k3s_cli_var: "K3S_URL='https://{{primary_server}}:6443'"
-        k3s_labels: "{'kubernetes.io/role=worker', 'node-type=worker'}"
+
+    vars:
+      k3s_labels:
+        - "kubernetes.io/role=worker"
+        - "node-type=worker"
 
   k3s:
     children:
@@ -164,7 +167,15 @@ For simplicity I show the variables within the inventory file.  You can place th
   * If not provided it will default to `k3s` and the domain name of the Kubernetes Primary Master server... something like `k3s.localdomain` or `k3s.example.com`
   * All of the respective dashboards (Traefik, Longhorn, Prometheus, Grafana, etc) will be available from this FQDN.
 * `k3s_cli_var` passes host specific variables to the K3s installation script.
-* `k3s_labels` can be used to set labels on the cluster members.  This can be host specific or group scoped.
+* `k3s_labels` can be used to set labels on the cluster nodes.  This can be host specific or group scoped.  For example, instead of worker nodes having a default role of `<NONE>`, the followings gives them a more kubernetes like role name:
+
+  ```yaml
+  vars:
+    k3s_labels:
+      - "kubernetes.io/role=worker"
+      - "node-type=worker"
+  ```
+
 * `K3S_TOKEN` is a secret required for nodes to be able to join the cluster.  The value of the secret can be anything you like.  The variable needs to be scoped to the installation group.  
   * While it can be defined directly within the inventory file or group_var it better to create a variable named `K3S_TOKEN`in using Ansible's vault.
   * If you do not define this variable then the default `top_secret` which is lame will be used.
@@ -237,6 +248,7 @@ The following tags are supported and should be used in this order:
 * `install_longhorn`
 * `validate_k3s`
 * `validate_longhorn`
+* `apply_labels`
 * `install_kube_vip`
 * `install_metallb`
 * `install_cert_manager`

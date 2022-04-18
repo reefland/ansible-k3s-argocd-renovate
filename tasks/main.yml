@@ -44,6 +44,7 @@
     - 04_install_longhorn.yml
     - 05_validate_k3s.yml
     - 05_validate_longhorn.yml
+    - 05_apply_labels.yml
     - 06_install_kube_vip.yml
     - 06_install_metallb.yml
     - 07_install_cert_manager.yml
