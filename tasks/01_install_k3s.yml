@@ -69,7 +69,7 @@
     set_fact:
       install_k3s_exec_options: "{{install_k3s_exec_options + ' ' + k3s.cli_disable_loadbalancer_options|join(' ')}}"
     when:
-      - inventory_hostname == groups['k3s_control'][0]
+      - inventory_hostname in groups['k3s_control']
       - install.metallb.enabled|default(false)|bool == true or 
         install.kube_vip.lb.enabled|default(false)|bool == true
 
@@ -83,7 +83,7 @@
     set_fact:
       install_k3s_exec_options: "{{install_k3s_exec_options}} --tls-san={{vip_endpoint_ip}}"
     when:
-      - inventory_hostname == groups['k3s_control'][0]
+      - inventory_hostname in groups['k3s_control']
       - install.kube_vip.enabled|default(false)|bool == true
 
 #  - debug:
