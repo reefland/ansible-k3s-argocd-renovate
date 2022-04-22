@@ -90,13 +90,18 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
   k3s_control:
     hosts:
       k3s01.example.com:                        # Master #1
-        vip_endpoint_ip: "192.168.10.220"
-        vip_lb_ip_range: "cidr-global: 192.168.10.221/30"   # 4 Addresses pool
         longhorn_zfs_pool: "tank"
         longhorn_vol_size: "10G"
       k3s02.example.com:                        # Master #2
-
+        longhorn_zfs_pool: "tank"
+        longhorn_vol_size: "10G"
       k3s03.example.com:                        # Master #3 (add more if needed)
+        longhorn_zfs_pool: "tank"
+        longhorn_vol_size: "10G"
+
+    vars:
+      vip_endpoint_ip: "192.168.10.220"
+      vip_lb_ip_range: "cidr-global: 192.168.10.221/30"   # 4 Addresses pool
 
   k3s_workers:
     hosts:
