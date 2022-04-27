@@ -86,7 +86,7 @@
       - inventory_hostname in groups['k3s_control']
       - install.kube_vip.enabled|default(false)|bool == true
 
-#  - debug:
+#  - fail:
 #      msg: "{{ install.k3s.cli_options|join(' ')}} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options}}\" "
 
   - name: Execute k3s_install.sh and create k3s_install.log

@@ -39,6 +39,10 @@ install:
       
       # Select installation channel to use (stable, latest, testing)
       # - "INSTALL_K3S_CHANNEL=latest"
+    
+    k3s_cli_var:
+      - "--kube-apiserver-arg=feature-gates=MixedProtocolLBService=true"  # Allow Load Balancer to use TCP & UDP Ports
+#      - "--disable traefik"
 
     # Define handy alias names for commands
     alias:

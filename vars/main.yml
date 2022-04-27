@@ -48,7 +48,8 @@ k3s:
 
   # This becomes the "INSTALL_K3S_EXEC=" CLI parameter
   k3s_exec_options:
-    - "{{k3s_cli_var|default('')}}"               # Options set in inventory or hosts vars
+    - "{{k3s_cli_var|default('')|join(' ')}}"               # Options set in inventory or hosts vars
+    - "{{install.k3s.k3s_cli_var|default('')|join(' ')}}"   # Options set in defaults/main.yml
 
   # When containerd for ZFS is enabled, this will be added to k3s_exec_options
   k3s_containerd_options:
