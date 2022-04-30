@@ -4,6 +4,10 @@
 # stores everything as secrets instead of as files (as native Traefik will)
 #
 
+###[ Uses Cloudflare DNS Challenge ]###############################################################
+# Based on: https://it-obey.com/index.php/wildcard-certificates-dns-challenges-and-traefik-in-kubernetes/
+
+
 ###[ Install Cert Manager ]########################################################################
 - name: Install Cert-manager to Kubernetes Block
   block:
@@ -12,7 +16,7 @@
 #    kubernetes.core.helm:
 #      name: cert-manager
 #      create_namespace: yes
-#      release_namespace: "{{cert_manager.namespace}}"
+#      release_namespace: "{{install.cert_manager.namespace}}"
 #      release_state: present
 #      chart_ref: "cert-manager"
 #      chart_repo_url: "{{cert_manager.helm_chart_url}}"
@@ -33,6 +37,17 @@
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
 
+  - name: Copy Cert-Manager Template Files
+    template:
+      src: "templates/cert-manager/{{item}}.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/cert-manager/{{item}}"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0660'
+    loop:
+      - cloudflare_api_token_secret.yaml
+      - letsencrypt_dns_cloudflare.yaml
+        
   - name: Fetch Static Manifest to Install Cert-Manager
     ansible.builtin.get_url:
       url: "{{cert_manager.install_url}}"
@@ -98,3 +113,17 @@
     
   tags:
     - install_cert_manager
+
+- name: Apply Cert-Manager Let's Encrypt Scripts
+  kubernetes.core.k8s:
+    state: present
+    src: "/home/{{install.os.non_root_user.name}}/cert-manager/{{item}}"
+    apply: yes
+    wait: yes
+    wait_timeout: 300
+  with_items:
+    - cloudflare_api_token_secret.yaml
+    - letsencrypt_dns_cloudflare.yaml
+  tags:
+    - install_cert_manager
+    - config_ls_certificates
