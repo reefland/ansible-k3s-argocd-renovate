@@ -48,7 +48,7 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: Host(`k3s.{{ansible_domain}}`) && PathPrefix(`/notls`)
+  - match: Host(`{{k3s_cluster_ingress_name}}`) && PathPrefix(`/notls`)
     kind: Rule
     services:
     - name: whoami
@@ -64,7 +64,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-  - match: Host(`k3s.{{ansible_domain}}`) && PathPrefix(`/tls`)
+  - match: Host(`{{k3s_cluster_ingress_name}}`) && PathPrefix(`/tls`)
     kind: Rule
     services:
     - name: whoami
