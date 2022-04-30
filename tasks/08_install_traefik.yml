@@ -1,0 +1,62 @@
+---
+#
+# Add Traefik Ingress Controller via Helm
+
+###[ Install Traefik v2.x via Helm Chart ]#########################################################
+- name: Install Traefik via Helm Block
+  block:
+  - name: Add Traefik Repository to Helm
+    kubernetes.core.helm_repository:
+      name: traefik
+      repo_url: "{{traefik.repo_url}}"
+
+  - name: Create directory for Traefik yaml files for non-root user
+    file:
+      path: "/home/{{install.os.non_root_user.name}}/traefik"
+      state: directory
+      mode: 0700
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+
+  - name: Copy Traefik Template Files
+    template:
+     src: "templates/traefik/{{item}}.j2"
+     dest: "/home/{{install.os.non_root_user.name}}/traefik/{{item}}"
+     owner: "{{install.os.non_root_user.name}}"
+     group: "{{install.os.non_root_user.name}}"
+     mode: '0660'
+    loop:
+      - chart-values.yaml
+
+  # Load Balancer IP from Kube-VIP or MetalLB not available yet
+  # Can only get a partial deployment at this point
+  - name: Install Traefik via Helm
+    kubernetes.core.helm:
+      update_repo_cache: yes
+      atomic: no
+      create_namespace: yes
+      chart_ref: "{{traefik.repo_chart_ref}}"
+      release_name: "{{install.traefik.release}}"
+      release_namespace: "{{install.traefik.namespace}}"
+      release_state: present
+      wait: no
+      values_files:
+        - "/home/{{install.os.non_root_user.name}}/traefik/chart-values.yaml"
+
+  - name: Check Traefik Pods are Running
+    k8s_info:
+      kind: Pod
+      namespace: "{{install.traefik.namespace}}"
+      label_selectors:
+        - "app.kubernetes.io/name=traefik"
+        - "app.kubernetes.io/instance=traefik"
+      wait: yes
+      wait_condition:
+        type: Ready
+      wait_sleep: 5
+      wait_timeout: 120
+
+  tags:
+    - install_traefik
+  when:
+    - inventory_hostname == groups['k3s_control'][0]  

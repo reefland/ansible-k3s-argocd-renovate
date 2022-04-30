@@ -1,20 +1,10 @@
 {% if install.traefik.dashboard.enable_basic_auth|default(false)|bool == true%}
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: dashboard-basic-auth
-  namespace: kube-system
-spec:
-  basicAuth:
-    secret: dashboard-authsecret
-
----
 apiVersion: v1
 kind: Secret
 metadata:
-  name: dashboard-authsecret
-  namespace: kube-system
+  name: traefik-authsecret
+  namespace: {{install.traefik.namespace}}
 data:
   users: |
 {% if install.traefik.dashboard.allowed_users is defined %}{% filter indent(width=4) %}
@@ -23,12 +13,23 @@ data:
   MUST_ENCODED_USERS_HERE or to "vars/secrets/k3s_traefik_api_secrets.yml" on Ansible Controller
 {% endif %}{{''}}
 {% endif %}
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: dashboard-basic-auth
+  namespace: {{install.traefik.namespace}}
+spec:
+  basicAuth:
+    secret: traefik-authsecret
+
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: traefik-dashboard
-  namespace: kube-system
+  namespace: {{install.traefik.namespace}}
 spec:
   entryPoints:
     - {% if install.traefik.dashboard.enable_https|default(false)|bool == false %}web{% else %}websecure{% endif %}{{''}}
@@ -38,7 +39,12 @@ spec:
 {% if install.traefik.dashboard.enable_basic_auth|default(false)|bool == true%}
       middlewares:
         - name: dashboard-basic-auth
+          namespace: {{install.traefik.namespace}}
 {% endif %}
       services:
         - name: api@internal
           kind: TraefikService
+{% if install.traefik.dashboard.enable_https|default(false)|bool == true %}
+  tls:
+    secretName: wildcard-cert
+{% endif %}

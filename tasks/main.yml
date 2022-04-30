@@ -41,16 +41,17 @@
     - 01_install_k3s.yml
     - 02_install_containerd.yml
     - 03_install_helm_client.yml
-    - 04_install_longhorn.yml
     - 05_validate_k3s.yml
-    - 05_validate_longhorn.yml
     - 05_apply_labels.yml
     - 06_install_kube_vip.yml
     - 06_install_metallb.yml
     - 07_install_cert_manager.yml
+    - 08_install_traefik.yml
     - 08_config_traefik.yml
+    - 09_install_longhorn.yml
     - 09_install_democratic_csi_iscsi.yml
     - 09_install_democratic_csi_nfs.yml
+    - 10_validate_longhorn.yml
     - 10_validate_csi_iscsi.yml
     - 10_validate_csi_nfs.yml
     - 13_install_prometheus_op.yml

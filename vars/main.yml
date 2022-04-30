@@ -66,7 +66,14 @@ k3s:
 
 ###[ Traefik Ingress Router Setting ]##############################################################
 traefik:
- 
+  # Location of Helm chart
+  repo_url: "https://helm.traefik.io/traefik"
+  repo_chart_ref: "traefik/traefik"
+
+###[ Cert-manager Installation Settings ]##########################################################
+cert_manager:
+  install_url: "https://github.com/jetstack/cert-manager/releases/download/{{install.cert_manager.install_version}}/cert-manager.yaml"
+
   # Define the name of the API token key stored in k3s_traefik_api_secrets.yml
   le_api_token_name: "{{CF_DNS_API_TOKEN}}"
 
@@ -133,11 +140,6 @@ metallb:
   install_manifests:
     - "namespace.yaml"
     - "metallb.yaml"
-
-###[ Cert-manager Installation Settings ]##########################################################
-cert_manager:
-
-  install_url: "https://github.com/jetstack/cert-manager/releases/download/{{install.cert_manager.install_version}}/cert-manager.yaml"
 
 ###[ Democratic-csi iSCSI & NFS Installation Settings ]############################################
 democratic_csi:

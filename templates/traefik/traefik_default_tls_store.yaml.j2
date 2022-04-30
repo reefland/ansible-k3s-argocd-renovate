@@ -2,7 +2,7 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: TLSStore
 metadata:
   name: default
-  namespace: kube-system
+  namespace: {{install.traefik.namespace}}
 spec:
   defaultCertificate:
     secretName: wildcard-secret
