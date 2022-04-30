@@ -1,6 +1,7 @@
 ---
 #
 # Add helm client repository and install the Helm client
+# Will also install Helm Diff plugin for better idempotency checks
 #
 
 ###[ Install Helm Package Manager Client ]#########################################################
@@ -27,6 +28,11 @@
     apt:
       name: helm
       state: present
+
+  - name: Install Helm Diff
+    kubernetes.core.helm_plugin:
+      state: present
+      plugin_path: https://github.com/databus23/helm-diff
 
   tags:
     - install_helm_client
