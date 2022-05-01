@@ -1,6 +1,6 @@
 ---
 #
-# Configure Kubernetes Traefik Ingress Controller
+# Configure Traefik Ingress Controller
 #
 
 - name: Configure Traefik Ingress Controller Block
@@ -22,7 +22,6 @@
     kubernetes.core.k8s:
      state: present
      src: "/home/{{install.os.non_root_user.name}}/traefik/{{item}}"
-     apply: yes
      wait: yes
      wait_timeout: 300
     with_items:

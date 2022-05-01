@@ -68,6 +68,7 @@
       state: present
       src: "/home/{{install.os.non_root_user.name}}/longhorn/longhorn_traefik_ingress_route.yaml"
       namespace: "{{install.longhorn.namespace}}"
+      apply: yes
       wait: yes
       wait_timeout: 300
     when:
