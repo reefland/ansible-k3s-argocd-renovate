@@ -6,7 +6,7 @@ metadata:
   namespace: {{install.traefik.namespace}}
 spec:
   # Secret names are always required.
-  secretName: wildcard-secret
+  secretName: wildcard-cert
   # At least one of a DNS Name, URI, or IP address is required.
   dnsNames: {{install.cert_manager.domains}}
   issuerRef:
