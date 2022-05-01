@@ -3,6 +3,11 @@ image:
   name: traefik
   tag: "{{install.traefik.install_version}}"
 
+deployment:
+  kind: DaemonSet
+  labels:
+    release: kube-stack-prometheus
+
 dashboard:
   enabled: true
 
@@ -14,6 +19,8 @@ nodeSelector: {"node-role.kubernetes.io/master": "true"}
 additionalArguments:
   - "--api.dashboard=true"
   - "--serversTransport.insecureSkipVerify=true"
+#  - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
+#  - "--entryPoints.web.http.redirections.entryPoint.scheme=https"
 
 log:
   level: "INFO"
