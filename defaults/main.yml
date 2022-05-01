@@ -41,8 +41,8 @@ install:
       # - "INSTALL_K3S_CHANNEL=latest"
     
     k3s_cli_var:
+      - "--disable traefik"                   # Install a stable Traefik via helm instead
       - "--kube-apiserver-arg=feature-gates=MixedProtocolLBService=true"  # Allow Load Balancer to use TCP & UDP Ports
-#      - "--disable traefik"
 
     # Define handy alias names for commands
     alias:
@@ -82,6 +82,7 @@ install:
     # Longhorn Dashboard
     dashboard:
       create_route: true           # Create Ingress Route to make accessible 
+      enable_https: true           # Require HTTPS to access dashboard
       enable_basic_auth: true      # Require Authentication to access dashboard
 
       # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
@@ -159,13 +160,20 @@ install:
 
     namespace: "cert-manager"
 
-  ###[ Traefik Installation Settings ]#############################################################
-  traefik:
+    # to create prod certificates --extra-vars "le_staging=false"
+    le_staging: "{{le_staging|default(true)}}"
+
     # List of Domain Names for LetsEncrypt Certificates stored in k3s_traefik_api_secrets.yml
     domains: "{{LE_DOMAINS}}"
 
-    # to create prod certificates --extra-vars "le_staging=false"
-    le_staging: "{{le_staging|default(true)}}"
+  ###[ Traefik Installation Settings ]#############################################################
+  traefik:
+
+    # Select release to use: https://github.com/traefik/traefik/releases
+    install_version: "{{traefik_install_version|default('v2.6.3')}}"
+
+    namespace: "traefik"                      # Add resources to this namespace
+    release: "traefik"                        # Release value passed to Helm
 
     # Traefik Dashboard
     dashboard:
