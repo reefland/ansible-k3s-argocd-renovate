@@ -6,29 +6,6 @@
 ###[ Validate Longhorn Kubernetes Installation ]#########################################
 - name: Validate Longhorn Kubernetes Installation Block
   block:
-  - name: Check if Longhorn Manager Pod
-    k8s_info:
-      kind: Pod
-      namespace: "{{install.longhorn.namespace}}"
-      field_selectors:
-        - "status.phase=Running"
-      label_selectors:
-        - "app=longhorn-manager"
-    register: longhorn_pods_details
-
- # There are many longhorn pod types, this only checked a single one.
- # Set Fact if we can detect the manager pod is running
-  - set_fact:
-      longhorn_manager_running: true
-    when: longhorn_pods_details|count|int > 0
-
-  - name: Fail if Longhorn Manager Pod not running
-    fail:
-      msg: |
-        Unable to detect Longhorn Manager pod is running, try:
-
-        kubectl get pods -n {{install.longhorn.namespace}} -o wide
-    when: longhorn_manager_running|bool == false
 
   - name: "Check if Longhorn storage class is created"
     k8s_info:
