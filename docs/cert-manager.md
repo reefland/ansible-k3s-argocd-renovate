@@ -44,11 +44,55 @@ install:
 
 * The `le_staging` defaults to `true`. This means generate Staging certificates to test the installation.
   * Don't change this value.
-  * Once the default staging certificates are verified to be working, the playbook can be run to switch to production certificates:
+
+#### Switch to Production Certificates
+
+Once the default staging certificates are verified to be working, the playbook can be run to switch to production certificates.
+
+* On Kubernetes delete the staging secret and certificates:
 
 ```shell
-ansible-playbook -i inventory kubernetes.yml --tags="config_ls_certificates" --extra-vars 'le_staging=false' 
+$ kubectl delete secret wildcard-cert -n traefik
+secret "wildcard-cert" deleted
+
+$ kubectl delete certificate wildcard-cert -n traefik
+certificate.cert-manager.io "wildcard-cert" deleted
 ```
+
+* Apply playbook to regenerate certificates:
+
+```shell
+ansible-playbook -i inventory kubernetes.yml --tags="config_ls_certificates,config_traefik" --extra-vars="le_staging=false"
+```
+
+#### Review Production Certificate Created
+
+```shell
+$ kubectl get certificate wildcard-cert -n traefik -o yaml
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+...
+spec:
+  dnsNames:
+  - example.com
+  - '*.example.com'
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  secretName: wildcard-cert
+status:
+  conditions:
+  - lastTransitionTime: "2022-05-02T16:21:34Z"
+    message: Certificate is up to date and has not expired
+    observedGeneration: 1
+    reason: Ready
+    status: "True"
+    type: Ready
+```
+
+* The `.spec.issuerRef.name` should reflect `letsencrypt-prod`
+* The status condition message should reflect `Certificate is up to date and has not expired`
 
 ### Certificate Domain Names
 
