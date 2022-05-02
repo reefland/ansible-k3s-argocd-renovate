@@ -163,7 +163,7 @@ install:
     # to create prod certificates --extra-vars "le_staging=false"
     le_staging: "{{le_staging|default(true)}}"
 
-    # List of Domain Names for LetsEncrypt Certificates stored in k3s_traefik_api_secrets.yml
+    # List of Domain Names for LetsEncrypt Certificates stored in letsencrypt_secrets.yml
     domains: "{{LE_DOMAINS}}"
 
   ###[ Traefik Installation Settings ]#############################################################

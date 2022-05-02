@@ -13,6 +13,7 @@
   include_vars: "{{ item }}"
   tags: ["always"]
   loop:
+    - secrets/letsencrypt_secrets.yml
     - secrets/k3s_traefik_api_secrets.yml
     - secrets/truenas_api_secrets.yml
     - secrets/longhorn_dashboard_secrets.yml
