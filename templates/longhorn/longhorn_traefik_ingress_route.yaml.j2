@@ -73,7 +73,3 @@ spec:
       - name: longhorn-dashboard-basic-auth
         namespace: {{install.longhorn.namespace}}
 {% endif %}
-{% if install.longhorn.dashboard.enable_https|default(false)|bool == true %}
-  tls:
-    secretName: wildcard-cert
-{% endif %}
