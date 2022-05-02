@@ -19,6 +19,7 @@ nodeSelector: {"node-role.kubernetes.io/master": "true"}
 additionalArguments:
   - "--api.dashboard=true"
   - "--serversTransport.insecureSkipVerify=true"
+  - "--providers.kubernetesingress.ingressendpoint.publishedservice={{install.traefik.namespace}}/traefik"
 #  - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
 #  - "--entryPoints.web.http.redirections.entryPoint.scheme=https"
 
