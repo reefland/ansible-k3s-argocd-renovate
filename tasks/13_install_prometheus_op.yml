@@ -29,10 +29,9 @@
       - chart_values.yaml
       - prometheus_op_ingress_route.yaml
       - grafana_ingress_route.yaml
-      - traefik_servicemonitor.yaml
-      - traefik_clusterip.yaml
-      - longhorn_servicemonitor.yaml
       - alertmanager_ingress_route.yaml
+      - traefik_podmonitor.yaml
+      - longhorn_servicemonitor.yaml
 
   - name: Copy K3S config.yaml if not exist
     copy:
@@ -114,18 +113,10 @@
       wait_sleep: 5
       wait_timeout: 120
 
-  - name: Add Traefik ClusterIP for Traefik ServiceMonitor to use
-    kubernetes.core.k8s:
-      state: present
-      src: "/home/{{install.os.non_root_user.name}}/prometheus-op/traefik_clusterip.yaml"
-      namespace: "kube-system"
-      wait: yes
-      wait_timeout: 300
-
   - name: Add Traefik Metrics ServiceMonitor for Prometheus
     kubernetes.core.k8s:
       state: present
-      src: "/home/{{install.os.non_root_user.name}}/prometheus-op/traefik_servicemonitor.yaml"
+      src: "/home/{{install.os.non_root_user.name}}/prometheus-op/traefik_podmonitor.yaml"
       namespace: "{{install.prometheus_operator.namespace}}"
       wait: yes
       wait_timeout: 300
