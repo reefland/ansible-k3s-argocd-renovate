@@ -37,17 +37,6 @@
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
 
-  - name: Copy Cert-Manager Template Files
-    template:
-      src: "templates/cert-manager/{{item}}.j2"
-      dest: "/home/{{install.os.non_root_user.name}}/cert-manager/{{item}}"
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-      mode: '0660'
-    loop:
-      - cloudflare_api_token_secret.yaml
-      - letsencrypt_dns_cloudflare.yaml
-        
   - name: Fetch Static Manifest to Install Cert-Manager
     ansible.builtin.get_url:
       url: "{{cert_manager.install_url}}"
@@ -114,16 +103,33 @@
   tags:
     - install_cert_manager
 
-- name: Apply Cert-Manager Let's Encrypt Scripts
-  kubernetes.core.k8s:
-    state: present
-    src: "/home/{{install.os.non_root_user.name}}/cert-manager/{{item}}"
-    apply: yes
-    wait: yes
-    wait_timeout: 300
-  with_items:
-    - cloudflare_api_token_secret.yaml
-    - letsencrypt_dns_cloudflare.yaml
+###[ Apply Cert-Manager Let's Encrypt Scripts ]####################################################
+- name: Install Cert-manager to Kubernetes Block
+  block:
+
+  - name: Copy Cert-Manager Template Files
+    template:
+      src: "templates/cert-manager/{{item}}.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/cert-manager/{{item}}"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0660'
+    loop:
+      - cloudflare_api_token_secret.yaml
+      - letsencrypt_dns_cloudflare.yaml
+
+  - name: Apply Cert-Manager Let's Encrypt Scripts
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/cert-manager/{{item}}"
+      apply: yes
+      wait: yes
+      wait_timeout: 300
+    with_items:
+      - cloudflare_api_token_secret.yaml
+      - letsencrypt_dns_cloudflare.yaml
+  when:
+    - inventory_hostname == groups['k3s_control'][0]
   tags:
     - install_cert_manager
     - config_ls_certificates
