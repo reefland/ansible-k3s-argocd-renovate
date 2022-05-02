@@ -1,3 +1,27 @@
+{% if install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool == true%}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: prometheus-authsecret
+  namespace: {{install.prometheus_operator.namespace}}
+data:
+  users: |
+{% if install.prometheus_operator.prometheus.dashboard.allowed_users is defined %}{% filter indent(width=4) %}
+    {{install.prometheus_operator.prometheus.dashboard.allowed_users}}{% endfilter %}
+{% else %}
+  MUST_ENCODED_USERS_HERE or to "vars/secrets/prometheus_dashboard_secrets.yml" on Ansible Controller
+{% endif %}{{''}}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: dashboard-basic-auth
+  namespace: {{install.prometheus_operator.namespace}}
+spec:
+  basicAuth:
+    secret: prometheus-authsecret
+{% endif %}
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
@@ -19,33 +43,6 @@ spec:
     prefixes:
       - {{install.prometheus_operator.prometheus.dashboard.path|default("/prometheus")}}
     forceSlash: true
-
-{% if install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool == true%}
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: dashboard-basic-auth
-  namespace: {{install.prometheus_operator.namespace}}
-spec:
-  basicAuth:
-    secret: prometheus-authsecret
-
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: prometheus-authsecret
-  namespace: {{install.prometheus_operator.namespace}}
-data:
-  users: |
-{% if install.prometheus_operator.prometheus.dashboard.allowed_users is defined %}{% filter indent(width=4) %}
-    {{install.prometheus_operator.prometheus.dashboard.allowed_users}}{% endfilter %}
-{% else %}
-  MUST_ENCODED_USERS_HERE or to "vars/secrets/prometheus_dashboard_secrets.yml" on Ansible Controller
-{% endif %}{{''}}
-{% endif %}
-
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
