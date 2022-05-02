@@ -73,10 +73,9 @@ service:
   type: LoadBalancer
   labels:
     release: kube-stack-prometheus
-
 {% if traefik_lb_ip is defined %}
-spec:
-  loadBalancerIP: "{{traefik_lb_ip}}"
+  spec:
+    loadBalancerIP: "{{traefik_lb_ip}}"
 {% endif %}
 
 resources:
