@@ -6,6 +6,7 @@
 
 * Longhorn Distributed storage is intended to be the default storage class, once installed the "local-path" StorageClass "default" flag will be removed.
 * By default a ZFS Zvol of a defined size will be created at `/var/lib/longhorn` this limits how much space Longhorn can consume.  A zvol can easily be made larger when needed.
+* Longhorn volumes can be configured for scheduled snapshots and scheduled backups of data to a NFS location after installation using the Longhorn Web Dashboard (User Interface).
 
 ## Longhorn Infrastructure Diagram
 
@@ -93,6 +94,7 @@ The intent of longhorn is to be used instead of "local-path" storage class. Once
       # Longhorn Dashboard
       dashboard:
         create_route: true           # Create Ingress Route to make accessible 
+        enable_https: true           # Require HTTPS to access dashboard
         enable_basic_auth: true      # Require Authentication to access dashboard
 
         # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
@@ -109,7 +111,7 @@ The intent of longhorn is to be used instead of "local-path" storage class. Once
 * The `ingress_name` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes. If a name is not provided it will default to hostname `k3s` and use the domain of the Kubernetes Linux host.
 * The `allowed_users` maps to which users are allowed to access the Longhorn Dashboard (see more below).
 
-The Longhorn Dashboard URL path will resemble: `https://k3s.example.com/longhorn/#/dashboard`
+The Longhorn Dashboard URL path will resemble: `https://k3s.example.com/longhorn/` (trailing slash is required.)
 
 ![Longhorn Storage Dashboard](../images/longhorn-dashboard.png)
 

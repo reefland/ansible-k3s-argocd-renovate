@@ -30,12 +30,22 @@ install:
       
       # Select installation channel to use (stable, latest, testing)
       #- "INSTALL_K3S_CHANNEL=stable"
+
+    k3s_cli_var:
+      - "--disable traefik"                   # Install a stable Traefik via helm instead
+      - "--kube-apiserver-arg=feature-gates=MixedProtocolLBService=true"  # Allow Load Balancer to use TCP & UDP Ports
 ```
 
-* The `INSTALL_K3S_VERSION=` lets you pin a specific version to use.  This will make sure a standardized version is used even with different installs over time.  Only you determine which version to use.
+* The `INSTALL_K3S_SKIP_START` prevents K3s from starting after installation. It can not be started until contrainerd configuration is completed.
 
-* The `INSTALL_K3S_CHANNEL=` sets the installation channel to use. It can be set to `stable`, `latest` or `testing`. You probably do not want this as it will result in different versions being installed over time.
+* The `INSTALL_K3S_VERSION` lets you pin a specific version to use.  This will make sure a standardized version is used even with different installs over time.  Only you determine which version to use.
 
+* The `INSTALL_K3S_CHANNEL` sets the installation channel to use. It can be set to `stable`, `latest` or `testing`. You probably do not want this as it will result in different versions being installed over time.
+
+* The `k3s_cli_var` allows additional configuration variables to be set.
+  * `--disable traefik` disabled the K3s embedded Traefik installation, as a dedicated Traefik is installed via Helm Chart as a DaemonSet.
+  * `--kube-apiserver-arg=feature-gates=MixedProtocolLBService=true` enabled a Kubernetes feature disabled by default to allow LoadBalancers to support TCP and UDP ports on the Service.
+  
 You can add to this CLI last as needed.  See [Installation Options for Scripts](https://rancher.com/docs/k3s/latest/en/installation/install-options/) in Rancher documentation for details.
 
 ---

@@ -4,36 +4,8 @@
 
 ## Important Notes
 
-* **Traefik's Letsencrypt** is configured for **Staging** certificates, but you can default it to **Prod** or use provided CLI parameter `--extra-vars 'le_staging=false'` to generate **Prod** certificates once you have a working configuration. 
 * **Traefik's Dashboard** is exposed by IngressRoute to URI `/dashboard/`, this can be disabled if needed.
 * Access to the dashboard can be restricted to defined users via basic authentication.
-
-## Review `vars/secrets/k3s_traefik_api_secrets.yml` for Traefik Let's Encrypt Settings
-
-### Configure CloudFlare DNS Challenge
-
-* `CF_DNS_API_TOKEN` - CloudFlare API token value
-* `CF_AUTH_EMAIL` - CloudFlare Email address associated with the API token
-* `LE_AUTH_EMAIL` - Letsencrypt Email Address for expiration Notifications
-* `LE_DOMAINS` - List of domain names for Wildcard Certificates
-
-```yml
-# Cloudflare API token used by Traefik
-# Requires Zone / Zone / Read
-# Requires Zone / DNS / Edit Permissions
-CF_DNS_API_TOKEN: abs123 ... 456xyz
-
-# Email address associated to DNS API key
-CF_AUTH_EMAIL: you@domain.com
-
-# Email address associated to Let's Encrypt
-LE_AUTH_EMAIL: you@domain.com
-
-# List of Domains to Create Certificates
-LE_DOMAINS:
-  - "example.com"
-  - "*.example.com"
-```
 
 ---
 
@@ -64,37 +36,28 @@ ansible-vault encrypt vars/k3s_traefik_api_secrets.yml
 
 The Traefik Settings are in variable namespace `install.traefik`.
 
-### Staging or Production Certificates
-
-```yaml
-install:
-  traefik:
-    # to create prod certificates --extra-vars "le_staging=false"
-    le_staging: "{{le_staging|default(true)}}"
-```
-
-Don't change this value. Once the default staging certificates are verified to be working, the playbook can be run to switch to production certificates:
-
-```shell
-ansible-playbook -i inventory kubernetes.yml --tags="config_traefik_dns_certs" --extra-vars 'le_staging=false' 
-```
-
----
-
 ### Review Traefik Dashboard Settings
 
-The `create_route` will create a Traefik Ingress route to expose the dashboard on the URI defined in `path`.
-
-* Set `create_route` to `false` to prevent the route from being created.  If you need to apply a change do the dashboard then run the playbook with tag `--tags="config_traefik_dashboard"` to apply changes.
-
-* By default basic authentication for the dashboard is enabled.  Individual users allowed to access the dashboard are defined in `vars/secrets/k3s_traefik_api_secrets.yml`.
+* Pin which version of Traefik to install.  This value should be defined in the inventory file or group_vars file or can be updated directly here.
 
 ```yml
   ###[ Traefik Installation Settings ]#############################################################
   install:
     traefik:
-      ...
 
+      # Select release to use: https://github.com/traefik/traefik/releases
+      install_version: "{{traefik_install_version|default('v2.6.3')}}"
+
+      namespace: "traefik"                      # Add resources to this namespace
+      release: "traefik"                        # Release value passed to Helm
+```
+
+* The `create_route` will create a Traefik Ingress route to expose the dashboard on the URI defined in `path`.
+  * Set `create_route` to `false` to prevent the route from being created.  If you need to apply a change do the dashboard then run the playbook with tag `--tags="config_traefik_dashboard"` to apply changes.
+* The `enable_https` will require HTTPS protocol for accessing the dashboard.
+* By default basic authentication for the dashboard is enabled.  
+
+```yml
       # Traefik Dashboard
       dashboard:
         create_route: true                      # Create Ingress Router to make accessible 
@@ -113,106 +76,11 @@ The `create_route` will create a Traefik Ingress route to expose the dashboard o
 ```
 
 * The `ingress_name` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes. If a name is not provided it will default to hostname `k3s` and use the domain of the Kubernetes Linux host.
+* The `"{{TRAEFIK_DASHBOARD_USERS}}"` specifies the individual users allowed to access the dashboard.
+  * This variable is defined in `vars/secrets/k3s_traefik_api_secrets.yml`.
 
 The Traefik Dashboard URL path will resemble: `https://k3s.example.com/dashboard/`
 
 ![Traefik Dark Mode Dashboard](../images/traefik_dark_dashboard.png)
-
----
-
-## Example App Deployment with Certificates
-
-To test generated certificates, a deployment using `whoami` is provided
-
-### Install Test Application
-
-```shell
-sudo su - kube
-cd ~/traefik
-
-# Deploy apps & create ingress rules
-kubectl apply -f traefik_test_apps.yaml
-
-```
-
-### Confirm Application Installation
-
-```shell
-# Confirm pods are running:
-kubectl get pods -n default
-
-  NAME                      READY   STATUS    RESTARTS      AGE
-  whoami-5b69cdcd49-2gfts   1/1     Running   2 (23m ago)   6h9m
-  whoami-5b69cdcd49-bg5j4   1/1     Running   2 (23m ago)   6h9m
-```
-
-### Test Certificates
-
-```shell
-# Simple test without certificates (notice URI of "/notls")
-curl http://$(hostname -f):80/notls
-
-Hostname: whoami-5b69cdcd49-2gfts
-IP: 127.0.0.1
-IP: ::1
-IP: 10.42.0.37
-IP: fe80::c43:7ff:fe31:3b61
-RemoteAddr: 10.42.0.34:52596
-GET /notls HTTP/1.1
-Host: testlinux.example.com
-User-Agent: curl/7.68.0
-Accept: */*
-Accept-Encoding: gzip
-X-Forwarded-For: 10.42.0.36
-X-Forwarded-Host: testlinux.example.com
-X-Forwarded-Port: 80
-X-Forwarded-Proto: http
-X-Forwarded-Server: traefik-6bb96f9bd8-72cj8
-X-Real-Ip: 10.42.0.36
-
-# This will work ONLY with a production cert, it will FAIL with a staging cert:
-curl https://$(hostname -f):/tls
-
-# This will work with EITHER staging OR production cert:
-curl -k https://$(hostname -f):/tls
-```
-
-### Show Certificate Information
-
-```shell
-kubectl describe certificates wildcard-cert -n kube-system
-
-Spec:
-  Dns Names:
-    example.com
-    *.example.com
-  Issuer Ref:
-    Kind:       ClusterIssuer
-    Name:       letsencrypt-prod
-  Secret Name:  wildcard-secret
-Status:
-  Conditions:
-    Last Transition Time:  2022-02-24T18:09:47Z
-    Message:               Certificate is up to date and has not expired
-    Observed Generation:   1
-    Reason:                Ready
-    Status:                True
-    Type:                  Ready
-  Not After:               2022-05-25T17:09:46Z
-  Not Before:              2022-02-24T17:09:47Z
-  Renewal Time:            2022-04-25T17:09:46Z
-```
-
-### Uninstall & Cleanup Test Application
-
-```shell
-# To delete the "whoami" deployment and ingress rules:
-kubectl delete -f traefik_test_apps.yaml
-
-deployment.apps "whoami" deleted
-service "whoami" deleted
-ingressroute.traefik.containo.us "simpleingressroute" deleted
-ingressroute.traefik.containo.us "ingressroutetls" deleted
-```
 
 [Back to README.md](../README.md)

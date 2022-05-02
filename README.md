@@ -6,10 +6,10 @@ An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubern
 * [condainerd](https://containerd.io/) to provide [ZFS snapshotter](https://github.com/containerd/zfs) support
 * **Centralized cluster system logging** via [rsyslog](https://www.rsyslog.com/) with real-time viewing with [lnav](https://lnav.org/) utility.
 * [Helm Client](https://helm.sh/docs/intro/using_helm/)
-* [Cert-manager](https://cert-manager.io/)
+* [Cert-manager](https://cert-manager.io/) with [Let's Encrypt](https://letsencrypt.org/) **wildcard certificates** for domains against Let's Encrypt staging or prod (Cloudflare DNS validator)
 * [kube-vip](https://kube-vip.chipzoller.dev/) for Kubernetes API Load Balancer (point kubectl to this instead of a specific host)
 * [MetalLB](https://metallb.universe.tf/) OR [kube-vip](https://kube-vip.chipzoller.dev/) Load Balancer to replace [K3s Klipper](https://github.com/k3s-io/klipper-lb) Load Balancer for ingress traffic.
-* [Traefik](https://traefik.io/) ingress with [Let's Encrypt](https://letsencrypt.org/) **wildcard certificates** for domains against Let's Encrypt staging or prod (Cloudflare DNS validator)
+* [Traefik](https://traefik.io/) Load Balanced ingress deployed as a DaemonSet.
 * [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) storage via **iSCSI** and **NFS** from [TrueNAS](https://www.truenas.com/)
 * [Longhorn](https://longhorn.io/) distributed [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) as default storage class
 * Optional [Kube Prometheus Stack](https://github.com/prometheus-operator/kube-prometheus) provides [Prometheus](https://prometheus.io/), [Alertmanager](https://github.com/prometheus/alertmanager), [node-exporter](https://github.com/prometheus/node_exporter), [Kubernetes API Adapter](https://github.com/DirectXMan12/k8s-prometheus-adapter), [Kube State Metrics](https://github.com/kubernetes/kube-state-metrics) and [Grafana](https://grafana.com/) Dashboards can be deployed with customized persistent storage claims.
@@ -21,7 +21,7 @@ An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubern
 * You should read it. :)
 * The **democratic-csi** section will require configuration steps on your TrueNAS installation in addition to setting values in Ansible.
 * **Kube-vip** and/or **MetalLB** Load Balancer section will require you to specify a range of IP addresses available for use
-* **Traefik** configuration for Lets Encrypt will require you to define your challenge credentials.
+* **Cert-manager** configuration for Lets Encrypt will require you to define your challenge credentials.
 * **Longhorn** Distributed storage is intended to be the default storage class, the `local-path` StorageClass is not installed.
 
 ---
@@ -40,8 +40,8 @@ An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubern
 * pip packages - [OpenShift](https://pypi.org/project/openshift/), [pyyaml](https://pypi.org/project/PyYAML/), [kubernetes](https://pypi.org/project/kubernetes/) (required for Ansible to execute K8s module)
 * k3s (Runs official script [https://get.k3s.io](https://get.k3s.io))
 * [containerd](https://containerd.io/), container networking-plugins, iptables
-* [helm](https://helm.sh/), [apt-transport-https](http://manpages.ubuntu.com/manpages/focal/man1/apt-transport-https.1.html) (required for helm client install)
-* [open-iscsi](https://github.com/open-iscsi/open-iscsi), [lsscsi](http://sg.danny.cz/scsi/lsscsi.html), [sg3-utils](https://sg.danny.cz/sg/sg3_utils.html), [multipath-tools](https://github.com/opensvc/multipath-tools), [scsitools](https://packages.ubuntu.com/focal/scsitools-gui) (required by democratic-csi [when iSCSI support is enabled] and by Longhorn)
+* [helm](https://helm.sh/), [helm diff](https://github.com/databus23/helm-diff), [apt-transport-https](http://manpages.ubuntu.com/manpages/focal/man1/apt-transport-https.1.html) (required for helm client install)
+* [open-iscsi](https://github.com/open-iscsi/open-iscsi), [lsscsi](http://sg.danny.cz/scsi/lsscsi.html), [sg3-utils](https://sg.danny.cz/sg/sg3_utils.html), [multipath-tools](https://github.com/opensvc/multipath-tools), [scsitools](https://packages.ubuntu.com/focal/scsitools-gui) (required by democratic-csi  and by Longhorn)
 * [libnfs-utils](https://packages.ubuntu.com/focal/libnfs-utils) (required by democratic-csi when NFS support is enabled)
 * [democratic-csi](https://github.com/democratic-csi/democratic-csi) implements the csi (container storage interface) spec providing storage from TrueNAS
 * [Longhorn](https://longhorn.io/) provides native distributed block storage for Kubernetes cluster
@@ -73,8 +73,8 @@ I provide a lot of documentation notes below for my own use.  If you find it ove
 * Review [Longhorn Distributed Storage Settings](docs/longhorn-settings.md)
 * Review [Kube-vip API Load Balancer Settings](docs/kube-vip-settings.md)
 * Review [MetalLB Load Balancer Settings](docs/metallb-settings.md)
-* Review [CertManager Configuration Settings](docs/cert-manager.md)
-* Review [Traefik LetsEncrypt and Dashboard Settings](docs/traefik-settings.md)
+* Review [CertManager Configuration and LetsEncrypt Settings](docs/cert-manager.md)
+* Review [Traefik and Dashboard Settings](docs/traefik-settings.md)
 * Review [democratic-csi for TrueNAS Settings](docs/democratic-csi-settings.md)
 * Review [Prometheus Operator with Grafana Settings](docs/prometheus-op-settings.md)
 
@@ -122,6 +122,7 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
       kube_vip_install_version: "v0.4.2"
       metallb_install_version: "v0.12.1"
       longhorn_install_version: "v1.2.4"
+      traefik_install_version: "v2.6.3"
       cert_manager_install_version: "v1.7.1"
       prometheus_op_install_version: "34.7.1"
       k3s_cluster_ingress_name: "k3s-test.{{ansible_domain}}"
@@ -202,6 +203,7 @@ The idea behind pinning specific versions of software is so that an installation
 * `kube_vip_install_version` pins the kube-vip [Release](https://github.com/kube-vip/kube-vip/releases) version.
 * `metallb_install_version` pins the Metallb [Release](https://github.com/metallb/metallb/releases) version.
 * `longhorn_install_version` pins the Longhorn [Release](https://github.com/longhorn/longhorn/releases) version.
+* `traefik_install_version` pings the Traefik [Release](https://github.com/traefik/traefik/releases) version.
 * `cert_manager_install_version` pins the Cert-manager [Release](https://github.com/cert-manager/cert-manager/releases) version.
 * `prometheus_op_install_version` pins the Prometheus Operator [Chart](https://github.com/prometheus-community/helm-charts/releases) version.
 
@@ -250,19 +252,20 @@ The following tags are supported and should be used in this order:
 * `install_k3s`
 * `install_containerd`
 * `install_helm_client`
-* `install_longhorn`
 * `validate_k3s`
-* `validate_longhorn`
 * `apply_labels`
 * `install_kube_vip`
 * `install_metallb`
 * `install_cert_manager`
-* `config_traefik_dns_certs`
-* `config_traefik_dashboard`
+* `config_ls_certificates`
+* `install_traefik`
+* `config_traefik`
 * `install_democratic_csi_iscsi`
 * `install_democratic_csi_nfs`
+* `install_longhorn`
 * `validate_csi_iscsi`
 * `validate_csi_nfs`
+* `validate_longhorn`
 * `install_prometheus_operator`
 
 ---
