@@ -16,6 +16,18 @@ rbac:
 
 nodeSelector: {"node-role.kubernetes.io/master": "true"}
 
+tolerations:
+  - key: "CriticalAddonsOnly"
+    operator: "Exists"
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/master"
+    operator: "Exists"
+    effect: "NoSchedule"
+
+priorityClassName: "system-cluster-critical"
+
 additionalArguments:
   - "--api.dashboard=true"
   - "--serversTransport.insecureSkipVerify=true"
@@ -27,8 +39,10 @@ log:
   level: "INFO"
 
 providers:
-  kubernetesingress:
-    ingressclass: "traefik-internal"
+  kubernetesIngress:
+    ingressClass: "traefik-internal"
+    publishedService:
+      enabled: true
 
 ports:
   traefik:
@@ -46,6 +60,8 @@ ports:
     expose: true
     exposedPort: 443
     protocol: TCP
+    tls:
+      enabled: true
   metrics:
     port: 9100
     expose: false
@@ -75,4 +91,3 @@ resources:
 ingressRoute:
   dashboard:
     enabled: false
-
