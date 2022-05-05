@@ -327,7 +327,7 @@ install:
       storage_claim:              # Define where and how data is stored
         access_mode: "ReadWriteOnce"
         class_name: "freenas-iscsi-csi"
-        claim_size: 20Gi
+        claim_size: 25Gi
 
       # Prometheus Web Interface
       dashboard:
