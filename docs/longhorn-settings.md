@@ -166,6 +166,18 @@ longhorn (default)   driver.longhorn.io     Delete          Immediate           
 
 ---
 
+## Change Storage Claim Policy
+
+For dynamically provisioned PersistentVolumes, the default reclaim policy is `Delete`. This means that a dynamically provisioned volume is automatically deleted when the corresponding PersistentVolumeClaim is deleted (Pod is deleted). This might be inappropriate if the volume contains precious data. You might want to switch to `Retain` policy. With the `Retain` policy, if the PersistentVolumeClaim is deleted (Pod deleted), the corresponding PersistentVolume will not be deleted --  it is moved to the `Released` phase, where all of its data can be manually recovered.
+
+Storage Claim can be patched to change Claim Policy:
+
+```shell
+kubectl patch pv <your-pv-name> -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+```
+
+---
+
 ## Increasing Zvol Size in the Future
 
 You can easily check the current `volsize` using standard ZFS commands:

@@ -550,6 +550,8 @@ Events:
   Normal  ProvisioningSucceeded  78s                org.democratic-csi.iscsi_truenas-iscsi-democratic-csi-controller-5fb94d4488-gglqt_282e5888-4faa-4b41-a386-3e90d6db2f51  Successfully provisioned volume pvc-a20ebfac-2bd7-4e56-a0bc-c093ecadb117
 ```
 
+## Increase Storage Claim Size
+
 Edit the Storage Claim to increase size.  Can apply a new claim file or it can be edited directly as shown below (loads in `vi`).
 
 ```yaml
@@ -575,6 +577,20 @@ persistentvolumeclaim/test-claim-iscsi edited
 ```
 
 If the storage claim is being used by a pod, then within seconds the storage claim with be adjusted as defined, expanded in this case.  If claim is not being used yet, then the expansion will be differed until it is.
+
+---
+
+## Change Storage Claim Policy
+
+For dynamically provisioned PersistentVolumes, the default reclaim policy is `Delete`. This means that a dynamically provisioned volume is automatically deleted when the corresponding PersistentVolumeClaim is deleted (Pod is deleted). This might be inappropriate if the volume contains precious data. You might want to switch to `Retain` policy. With the `Retain` policy, if the PersistentVolumeClaim is deleted (Pod deleted), the corresponding PersistentVolume will not be deleted --  it is moved to the `Released` phase, where all of its data can be manually recovered.
+
+Storage Claim can be patched to change Claim Policy:
+
+```shell
+kubectl patch pv <your-pv-name> -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+```
+
+---
 
 ### Delete Test Claim
 
