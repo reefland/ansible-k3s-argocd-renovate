@@ -251,9 +251,9 @@ The following tags are supported and should be used in this order:
 * `prep_os`
 * `install_k3s`
 * `install_containerd`
-* `install_helm_client`
-* `validate_k3s`
 * `apply_labels`
+* `validate_k3s`
+* `install_helm_client`
 * `install_kube_vip`
 * `install_metallb`
 * `install_cert_manager`

@@ -41,9 +41,9 @@
     - 00_prep_os.yml
     - 01_install_k3s.yml
     - 02_install_containerd.yml
-    - 03_install_helm_client.yml
-    - 05_validate_k3s.yml
-    - 05_apply_labels.yml
+    - 03_apply_labels.yml
+    - 04_validate_k3s.yml
+    - 05_install_helm_client.yml
     - 06_install_kube_vip.yml
     - 06_install_metallb.yml
     - 07_install_cert_manager.yml
