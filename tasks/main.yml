@@ -9,18 +9,18 @@
 # Based on: https://blog.nobugware.com/post/2019/k3s-containterd-zfs/
 
 ###[ Load up the secret files ]####################################################################
-- name: Include Secret Files
-  include_vars: "{{ item }}"
-  tags: ["always"]
-  loop:
-    - secrets/letsencrypt_secrets.yml
-    - secrets/k3s_traefik_api_secrets.yml
-    - secrets/truenas_api_secrets.yml
-    - secrets/longhorn_dashboard_secrets.yml
-    - secrets/prometheus_dashboard_secrets.yml
-    - secrets/alertmanager_dashboard_secrets.yml
-    - secrets/alertmanager_secrets.yml
-  no_log: "{{no_log_secrets|default(true)}}"
+#- name: Include Secret Files
+#  include_vars: "{{ item }}"
+#  tags: ["always"]
+#  loop:
+    #- secrets/letsencrypt_secrets.yml
+    #- secrets/k3s_traefik_api_secrets.yml
+    #- secrets/truenas_api_secrets.yml
+    #- secrets/longhorn_dashboard_secrets.yml
+    #- secrets/prometheus_dashboard_secrets.yml
+    #- secrets/alertmanager_dashboard_secrets.yml
+    #- secrets/alertmanager_secrets.yml
+#  no_log: "{{no_log_secrets|default(true)}}"
 
 ###[ Detect ZFS UUID from ZFS on Root installations ]##############################################
 - name: Detect ZFS Dataset UUID
@@ -44,19 +44,7 @@
     - 03_apply_labels.yml
     - 04_validate_k3s.yml
     - 05_install_helm_client.yml
-    - 06_install_kube_vip.yml
-    - 06_install_metallb.yml
-    - 07_install_cert_manager.yml
-    - 08_install_traefik.yml
-    - 08_config_traefik.yml
-    - 09_install_longhorn.yml
-    - 09_install_democratic_csi_iscsi.yml
-    - 09_install_democratic_csi_nfs.yml
-    - 10_validate_longhorn.yml
-    - 10_validate_csi_iscsi.yml
-    - 10_validate_csi_nfs.yml
-    - 13_install_prometheus_op.yml
-    
+
   loop_control:
     label: "{{task_names}}"
     loop_var: task_names
