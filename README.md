@@ -1,4 +1,4 @@
-# K3s Kubernetes with ContainerD for ZFS
+# K3s Kubernetes with ContainerD for ZFS & ArgoCD GitOps
 
 An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enhancements:
 
@@ -6,23 +6,12 @@ An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubern
 * [condainerd](https://containerd.io/) to provide [ZFS snapshotter](https://github.com/containerd/zfs) support
 * **Centralized cluster system logging** via [rsyslog](https://www.rsyslog.com/) with real-time viewing with [lnav](https://lnav.org/) utility.
 * [Helm Client](https://helm.sh/docs/intro/using_helm/)
-* [Cert-manager](https://cert-manager.io/) with [Let's Encrypt](https://letsencrypt.org/) **wildcard certificates** for domains against Let's Encrypt staging or prod (Cloudflare DNS validator)
-* [kube-vip](https://kube-vip.chipzoller.dev/) for Kubernetes API Load Balancer (point kubectl to this instead of a specific host)
-* [MetalLB](https://metallb.universe.tf/) OR [kube-vip](https://kube-vip.chipzoller.dev/) Load Balancer to replace [K3s Klipper](https://github.com/k3s-io/klipper-lb) Load Balancer for ingress traffic.
-* [Traefik](https://traefik.io/) Load Balanced ingress deployed as a DaemonSet.
-* [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) storage via **iSCSI** and **NFS** from [TrueNAS](https://www.truenas.com/)
-* [Longhorn](https://longhorn.io/) distributed [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) as default storage class
-* Optional [Kube Prometheus Stack](https://github.com/prometheus-operator/kube-prometheus) provides [Prometheus](https://prometheus.io/), [Alertmanager](https://github.com/prometheus/alertmanager), [node-exporter](https://github.com/prometheus/node_exporter), [Kubernetes API Adapter](https://github.com/DirectXMan12/k8s-prometheus-adapter), [Kube State Metrics](https://github.com/kubernetes/kube-state-metrics) and [Grafana](https://grafana.com/) Dashboards can be deployed with customized persistent storage claims.
 
 ---
 
 ## TL;DR
 
 * You should read it. :)
-* The **democratic-csi** section will require configuration steps on your TrueNAS installation in addition to setting values in Ansible.
-* **Kube-vip** and/or **MetalLB** Load Balancer section will require you to specify a range of IP addresses available for use
-* **Cert-manager** configuration for Lets Encrypt will require you to define your challenge credentials.
-* **Longhorn** Distributed storage is intended to be the default storage class, the `local-path` StorageClass is not installed.
 
 ---
 
@@ -36,16 +25,13 @@ An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubern
 
 ## Packages Installed
 
+* [lnav](https://lnav.org/) for view centralized cluster system logging
 * [python3-pip](https://pypi.org/project/pip/) (required for Ansible managed nodes)
 * pip packages - [OpenShift](https://pypi.org/project/openshift/), [pyyaml](https://pypi.org/project/PyYAML/), [kubernetes](https://pypi.org/project/kubernetes/) (required for Ansible to execute K8s module)
 * k3s (Runs official script [https://get.k3s.io](https://get.k3s.io))
 * [containerd](https://containerd.io/), container networking-plugins, iptables
 * [helm](https://helm.sh/), [helm diff](https://github.com/databus23/helm-diff), [apt-transport-https](http://manpages.ubuntu.com/manpages/focal/man1/apt-transport-https.1.html) (required for helm client install)
-* [open-iscsi](https://github.com/open-iscsi/open-iscsi), [lsscsi](http://sg.danny.cz/scsi/lsscsi.html), [sg3-utils](https://sg.danny.cz/sg/sg3_utils.html), [multipath-tools](https://github.com/opensvc/multipath-tools), [scsitools](https://packages.ubuntu.com/focal/scsitools-gui) (required by democratic-csi  and by Longhorn)
-* [libnfs-utils](https://packages.ubuntu.com/focal/libnfs-utils) (required by democratic-csi when NFS support is enabled)
-* [democratic-csi](https://github.com/democratic-csi/democratic-csi) implements the csi (container storage interface) spec providing storage from TrueNAS
-* [Longhorn](https://longhorn.io/) provides native distributed block storage for Kubernetes cluster
-* [lnav](https://lnav.org/) for view centralized cluster system logging
+
 
 ## Packages Uninstalled
 
@@ -70,13 +56,6 @@ I provide a lot of documentation notes below for my own use.  If you find it ove
 * Review [Centralized Cluster System Logs Settings](docs/rsyslog-settings.md)
 * Review [K3S Configuration Settings](docs/k3s-settings.md)
 * Review [Containerd Configuration Settings](docs/containerd-settings.md)
-* Review [Longhorn Distributed Storage Settings](docs/longhorn-settings.md)
-* Review [Kube-vip API Load Balancer Settings](docs/kube-vip-settings.md)
-* Review [MetalLB Load Balancer Settings](docs/metallb-settings.md)
-* Review [CertManager Configuration and LetsEncrypt Settings](docs/cert-manager.md)
-* Review [Traefik and Dashboard Settings](docs/traefik-settings.md)
-* Review [democratic-csi for TrueNAS Settings](docs/democratic-csi-settings.md)
-* Review [Prometheus Operator with Grafana Settings](docs/prometheus-op-settings.md)
 
 ---
 
@@ -200,12 +179,6 @@ For simplicity I show the variables within the inventory file.  You can place th
 The idea behind pinning specific versions of software is so that an installation done on Monday can be identical when installed on Tuesday or Friday, or sometime next month.  Without pinning specific versions you have no way of knowing what random combination of versions you will get.
 
 * `k3s_install_version` pins the K3s [Release](https://github.com/k3s-io/k3s/releases) version.
-* `kube_vip_install_version` pins the kube-vip [Release](https://github.com/kube-vip/kube-vip/releases) version.
-* `metallb_install_version` pins the Metallb [Release](https://github.com/metallb/metallb/releases) version.
-* `longhorn_install_version` pins the Longhorn [Release](https://github.com/longhorn/longhorn/releases) version.
-* `traefik_install_version` pings the Traefik [Release](https://github.com/traefik/traefik/releases) version.
-* `cert_manager_install_version` pins the Cert-manager [Release](https://github.com/cert-manager/cert-manager/releases) version.
-* `prometheus_op_install_version` pins the Prometheus Operator [Chart](https://github.com/prometheus-community/helm-charts/releases) version.
 
 ---
 
@@ -214,13 +187,13 @@ The idea behind pinning specific versions of software is so that an installation
 Simple playbook I'm using for testing, named `kubernetes.yml`:
 
 ```yml
-- name: k3s Kubernetes Installation & Configuration
+- name: k3s Kubernetes Installation with ZFS & ArgoCD GitOPS
   hosts: k3s
   become: true
   gather_facts: true
 
   roles:
-    - role: k3s-kubernetes
+    - role: k3s-argocd
 ```
 
 ### Fire-up the Ansible Playbook
@@ -228,13 +201,13 @@ Simple playbook I'm using for testing, named `kubernetes.yml`:
 The most basic way to deploy K3s Kubernetes with ContainerD:
 
 ```bash
-ansible-playbook -i inventory.yml kubernetes.yml
+ansible-playbook -i inventory.yml k3s-argocd.yml
 ```
 
 To limit execution to a single machine:
 
 ```bash
-ansible-playbook -i inventory.yml kubernetes.yml -l k3s01.example.com
+ansible-playbook -i inventory.yml k3s-argocd.yml -l k3s01.example.com
 ```
 
 ## Build in Stages
@@ -242,7 +215,7 @@ ansible-playbook -i inventory.yml kubernetes.yml -l k3s01.example.com
 Instead of running the entire playbook, you can run smaller logical steps using tags. Or use a tag to re-run a specific step you are troubleshooting.
 
 ```bash
-ansible-playbook -i inventory.yml kubernetes.yml -l k3s01.example.com --tags="<tag_goes_here>"
+ansible-playbook -i inventory.yml k3s-argocd.yml -l k3s01.example.com --tags="<tag_goes_here>"
 ```
 
 The following tags are supported and should be used in this order:
@@ -254,38 +227,3 @@ The following tags are supported and should be used in this order:
 * `apply_labels`
 * `validate_k3s`
 * `install_helm_client`
-* `install_kube_vip`
-* `install_metallb`
-* `install_cert_manager`
-* `config_ls_certificates`
-* `install_traefik`
-* `config_traefik`
-* `install_democratic_csi_iscsi`
-* `install_democratic_csi_nfs`
-* `install_longhorn`
-* `validate_csi_iscsi`
-* `validate_csi_nfs`
-* `validate_longhorn`
-* `install_prometheus_operator`
-
----
-
-## Prometheus Operator with Grafana
-
-These products are not installed by default, but can easily be deployed once everything above is functional.  This will install [Kube Prometheus Stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) project.
-
-* **Prometheus Operator** extends the Kubernetes API, so that when we create some of the yaml deployments it will looks as if we’re telling Kubernetes to deploy something, but it’s actually telling Prometheus Operator to do it for us.
-* **Prometheus** is the collector of metrics, it uses something called service monitors that provide information Prometheus can come and scrape. Prometheus will use persistent storage with a specified duration for how long it will keep the data. You can have more than one instance of Prometheus in your cluster collecting separate data.
-  * An ingress route can be created to expose the Prometheus Web Interface.
-* **Service Monitors** - are other containers/deployments. They can be considered middle steps between the data and Prometheus. This will deploy several service monitors needed to collect Kubernetes, Traefik ingress and underlying OS information per node.
-* **Grafana** takes data from one or more Prometheus instances to combine them into a single dashboard.  Dashboards can be customized as you wish.
-
-* Review [Prometheus Operator with Grafana Settings](docs/prometheus-op-settings.md)
-
-### Installation
-
-Prometheus Operator with Grafana cane be installed using the Ansible Tag:
-
-```text
---tags="install_prometheus_operator"
-```
