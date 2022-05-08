@@ -69,3 +69,17 @@ install:
       uuid: ""                                # "_"
       dataset_postfix: ""                     # "/var/lib/containerd"
 
+  ###[ ArgoCD Installation Settings ]##############################################################
+  argocd:
+    enabled: true
+
+    # https://artifacthub.io/packages/helm/argo/argo-cd
+    install_version: "{{argocd_install_version|default('4.5.10')}}"
+    
+    namespace: "argocd"
+    
+    repository:
+      url: "https://github.com/reefland/k3s-argocd"
+
+    dashboard:
+      path: "/argocd"                           # URI Path for Ingress Route

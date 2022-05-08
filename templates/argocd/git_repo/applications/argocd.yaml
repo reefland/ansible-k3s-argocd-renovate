@@ -1,0 +1,30 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: {{install.argocd.namespace}}
+  name: argocd
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: {{install.argocd.repository.url}}
+    targetRevision: HEAD
+    path: workloads/argocd/
+    helm:
+      releaseName: argocd
+      valueFiles:
+        - values.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{install.argocd.namespace}}
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    validate: true

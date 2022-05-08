@@ -44,7 +44,7 @@
     - 03_apply_labels.yml
     - 04_validate_k3s.yml
     - 05_install_helm_client.yml
-
+    - 06_install_argocd.yml
   loop_control:
     label: "{{task_names}}"
     loop_var: task_names

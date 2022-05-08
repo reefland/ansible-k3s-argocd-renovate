@@ -1,0 +1,68 @@
+---
+#
+# Install ArgoCD to get GitOPS methodology in place.
+#
+
+###[ Install ArgoCD ]##############################################################################
+- name: Install ArgoCD Block
+  block:
+  - name: Create directory for ArgoCD files for non-root user
+    file:
+      path: "/home/{{install.os.non_root_user.name}}/argocd"
+      state: directory
+      mode: 0700
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+
+  - name: Create Directory Structure for ArgoCD Initial Repository
+    file:
+      state: directory
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path }}"
+      mode: 0700
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+    with_filetree: "../templates/argocd/git_repo"
+    when: item.state == "directory"
+
+  - name: Process Template Files for ArgoCD Initial Repository
+    template:
+      src: "{{ item.src }}"
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path }}"
+      mode: 0660
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+    with_filetree: "../templates/argocd/git_repo"
+    when: item.state == "file"
+
+  # Ansible helm was unable to process chart dependencies, got this message:
+  # Error: An error occurred while checking for chart dependencies. You may need to run `helm dependency build` to fetch missing dependencies: found in Chart.yaml, but missing in charts/ directory: argo-cd
+  # Workaround - create name space manually and run dependency update directly.
+
+  - name: Create ArgoCD Namespace
+    kubernetes.core.k8s:
+      state: present
+      name: "{{install.argocd.namespace}}"
+      kind: Namespace
+    
+  - name: Run Helm Dependency Update Directly
+    ansible.builtin.command:
+      argv:
+        - /usr/sbin/helm
+        - dependency
+        - update
+        - "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd"
+      creates: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd/Chart.lock"
+
+  - name: Install ArgoCD Helm Using Local Files
+    kubernetes.core.helm:
+      name: argocd
+      atomic: yes
+      release_namespace: "{{install.argocd.namespace}}"
+      chart_ref: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd"
+      wait: yes
+      
+  when: 
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.argocd.enabled|default(false)|bool == true
+  tags:
+    - install_argocd

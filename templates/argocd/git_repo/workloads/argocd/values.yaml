@@ -1,0 +1,23 @@
+argo-cd:
+  enabled: true
+  configs:
+    secret:
+      # $ARGO_PWD=password
+      # htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'
+      argocdServerAdminPassword: "$2a$10$qsjuZNhoJR7UHv/v/CryaOe0wewDzzH.wP.j1YAVLqgBXWZImdQ/u"
+
+  controller:
+    clusterAdminAccess:
+      enabled: true
+
+  # used to delegate authentication to external identity provider
+  dex:
+    enabled: false
+
+  server:
+    extraArgs:
+      - --insecure
+      - --rootpath={{install.argocd.dashboard.path}}
+    config:
+      repositories: |
+        - url: {{install.argocd.repository.url}}
