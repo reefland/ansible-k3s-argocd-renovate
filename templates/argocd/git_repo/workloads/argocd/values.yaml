@@ -21,3 +21,10 @@ argo-cd:
     config:
       repositories: |
         - url: {{install.argocd.repository.url}}
+          name: {{install.argocd.repository.name}}
+          usernameSecret:
+            name: {{install.argocd.repository.name}}-secret
+            key: username
+          passwordSecret:
+            name: {{install.argocd.repository.name}}-secret
+            key: password
