@@ -103,8 +103,8 @@ The ArgoCD Settings are in variable namespace `install.argocd`.
   * The `ARGOCD_REPO_URL_SECRET`, `ARGOCD_REPO_USERNAME`, `ARGOCD_REPO_PASSWORD` values should be defined in `vars/secrets/main.yaml` file
     * Be sure to to use `ansible-vault` to encrypt your secrets.
 
-
 ---
+
 ## Troubleshooting ArgoCD
 
 ### Early Access to ArgoCD Dashboard
