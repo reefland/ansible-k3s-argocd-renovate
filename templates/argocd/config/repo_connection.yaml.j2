@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{install.argocd.repository.name}}-secret
+  namespace: {{install.argocd.namespace}}
+type: Opaque
+data:
+  username: {{install.argocd.repository.username|b64encode}}
+  password: {{install.argocd.repository.password|b64encode}}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: {{install.argocd.namespace}}
+  labels:
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  repositories: |
+    - url: {{install.argocd.repository.url}}
+      name: {{install.argocd.repository.name}}
+      usernameSecret:
+        name: {{install.argocd.repository.name}}-secret
+        key: username
+      passwordSecret:
+        name: {{install.argocd.repository.name}}-secret
+        key: password
