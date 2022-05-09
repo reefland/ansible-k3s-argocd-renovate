@@ -9,15 +9,41 @@ argo-cd:
   controller:
     clusterAdminAccess:
       enabled: true
+    
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 250Mi
 
   # used to delegate authentication to external identity provider
   dex:
     enabled: false
 
+  redis:
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 64Mi
+    
   server:
     extraArgs:
       - --insecure
       - --rootpath={{install.argocd.dashboard.path}}
+
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
     config:
       repositories: |
         - url: {{install.argocd.repository.url}}
@@ -28,3 +54,22 @@ argo-cd:
           passwordSecret:
             name: {{install.argocd.repository.name}}-secret
             key: password
+
+  repoServer:
+    resources:
+      limits:
+        cpu: 50m
+        memory: 128Mi
+      requests:
+        cpu: 10m
+        memory: 64Mi
+
+  notifications:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    
