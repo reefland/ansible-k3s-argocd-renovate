@@ -22,7 +22,7 @@
       group: "{{install.os.non_root_user.name}}"
       mode: '0660'
     loop:
-      - "repo_connection.yaml"
+      - "repo_secret.yaml"
 
   - name: Clone Remote ArgoCD Repository
     ansible.builtin.git:
@@ -98,10 +98,10 @@
       chart_ref: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd"
       wait: yes
 
-  - name: Create Repository Connection
+  - name: Add Repository Credentials
     kubernetes.core.k8s:
       state: present
-      src: "/home/{{install.os.non_root_user.name}}/argocd/repo_connection.yaml"
+      src: "/home/{{install.os.non_root_user.name}}/argocd/repo_secret.yaml"
 
   - name: Create root ArgoCD Application
     kubernetes.core.k8s:
