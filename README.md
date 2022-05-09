@@ -56,6 +56,7 @@ I provide a lot of documentation notes below for my own use.  If you find it ove
 * Review [Centralized Cluster System Logs Settings](docs/rsyslog-settings.md)
 * Review [K3S Configuration Settings](docs/k3s-settings.md)
 * Review [Containerd Configuration Settings](docs/containerd-settings.md)
+* Review [ArgoCD Configuration Settings](docs/argocd-settings.md)
 
 ---
 
@@ -227,3 +228,4 @@ The following tags are supported and should be used in this order:
 * `apply_labels`
 * `validate_k3s`
 * `install_helm_client`
+* `install_argocd`
