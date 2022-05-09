@@ -1,0 +1,14 @@
+renovate:
+  enabled: true
+  cronjob:
+    # At 01:00 every day
+    schedule: '0 1 * * *'
+
+  renovate:
+    # See https://docs.renovatebot.com/self-hosted-configuration
+    config: |
+      {
+        "platform": "{{install.renovate.platform}}",
+        "repositories": {{install.renovate.repositories}}
+      }
+  existingSecret: "renovate-secrets"

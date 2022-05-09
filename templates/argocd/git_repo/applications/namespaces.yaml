@@ -1,0 +1,28 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: {{install.argocd.namespace}}
+  name: namespaces
+  # run before the others to create namespaces
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: default
+
+  source:
+    repoURL: {{install.argocd.repository.url}}.git
+    targetRevision: HEAD
+    path: namespaces/
+    directory:
+      recurse: true
+
+  destination:
+    server: https://kubernetes.default.svc
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    -  Validate=true

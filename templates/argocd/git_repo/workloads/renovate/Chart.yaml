@@ -1,0 +1,11 @@
+---
+apiVersion: v2
+type: application
+name: renovate
+version: 0.0.0 # unused
+appVersion: 0.0.0 # unused
+dependencies:
+  - name: renovate
+    repository: https://docs.renovatebot.com/helm-charts
+    version: {{install.renovate.install_version}}
+    condition: renovate.enabled

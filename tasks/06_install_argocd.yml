@@ -22,7 +22,8 @@
       group: "{{install.os.non_root_user.name}}"
       mode: '0660'
     loop:
-      - "repo_secret.yaml"
+      - "argocd_secret.yaml"
+      - "renovate_secret.yaml"
 
   - name: Clone Remote ArgoCD Repository
     ansible.builtin.git:
@@ -75,11 +76,14 @@
   # Error: An error occurred while checking for chart dependencies. You may need to run `helm dependency build` to fetch missing dependencies: found in Chart.yaml, but missing in charts/ directory: argo-cd
   # Workaround - create name space manually and run dependency update directly.
 
-  - name: Create ArgoCD Namespace
+  - name: Create Namespaces
     kubernetes.core.k8s:
       state: present
-      name: "{{install.argocd.namespace}}"
+      name: "{{item}}"
       kind: Namespace
+    loop:
+      - "{{install.argocd.namespace}}"
+      - "{{install.renovate.namespace}}"
     
   - name: Run Helm Dependency Update Directly
     ansible.builtin.command:
@@ -101,7 +105,10 @@
   - name: Add Repository Credentials
     kubernetes.core.k8s:
       state: present
-      src: "/home/{{install.os.non_root_user.name}}/argocd/repo_secret.yaml"
+      src:  "/home/{{install.os.non_root_user.name}}/argocd/{{item}}"
+    loop:
+      - "argocd_secret.yaml"
+      - "renovate_secret.yaml"
 
   - name: Create root ArgoCD Application
     kubernetes.core.k8s:

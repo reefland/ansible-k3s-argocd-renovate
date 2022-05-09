@@ -81,9 +81,20 @@ install:
     # Define secrets in vars/secrets/main.yml
     repository:
       name: "k3s-argocd-renovate"
-      url: "{{ARGOCD_REPO_URL_SECRET|default('UNDEFINED_REPO_URL')}}"
-      username: "{{ARGOCD_REPO_USERNAME|default('oauth')}}"
-      password: "{{ARGOCD_REPO_PASSWORD|default('UNDEFINED_REPO_PASSWORD_TOKEN')}}"
+      url: "{{ARGOCD_REPO_URL_SECRET|default('UNDEFINED_REPO_URL')}}"                 # https://github.com/<user>/<repo-name>
+      username: "{{ARGOCD_REPO_USERNAME|default('oauth')}}"                           # oauth - not really used
+      password: "{{ARGOCD_REPO_PASSWORD|default('UNDEFINED_REPO_PASSWORD_TOKEN')}}"   # Github Personal Access Token
 
     dashboard:
       path: "/argocd"                           # URI Path for Ingress Route
+
+  ###[ Renovate Configuration Settings ]###########################################################
+  renovate:
+    # Select Release to install: https://github.com/renovatebot/helm-charts/releases
+    install_version: "{{renovate_install_version|default('32.45.5')}}"
+
+    namespace: "renovate"
+
+    platform: "github"
+    repositories:
+      - "{{ARGOCD_REPO_URL_SECRET|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}"    # Hopefully the <user>/<repo-name> part of URL
