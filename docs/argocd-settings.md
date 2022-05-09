@@ -29,6 +29,82 @@ If the repository is empty:
 
 ---
 
+## Create Personal Access Token
+
+Github does not use ID & Password for API access.  A [Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) needs to be created.
+
+* NOTE: Personal Access Token is not scoped to a repository, it is scoped to the entire account.
+
+Navigate: Profile > Settings > Developer Settings (bottom left) > Personal Access Tokens > click `[Generate new token]`.
+
+* Enter a useful and descriptive note to remind you why this was created.
+
+![Create Personal Access Token](../images/github_create_personal_access_token-1.png)
+
+* Select an expiration date.  The more frequently it expires the more frequently you will need to update the ArgoCD secret to allow connectivity
+
+### Set Personal Access Token Scope
+
+ArgoCD documentation does not specify the minimum requirements for the Person Access Token.  I had to enabled these in my testing:
+
+![Set Personal Access Token Scopes](../images/github_create_personal_access_token-2.png)
+
+_NOTE: The `repo` (Full control of private repositories) is required which forces all the boxes below it to be enabled. Attempting to remove `public_repo` and updating the token seems to work (no error), but upon looking at the token scopes again it is re-enabled._
+
+---
+
+## Create GitHub Repository for ArgoCD
+
+Create a new GitHub repository.  A private repository is recommended.
+
+* NOTE: The repository cannot be completely empty or the clone will fail; enable the option to `Add a README file`.
+
+![Create GitHub Repository](../images/github_create_empty_repository.png)
+
+---
+
+## Review `defaults/main.yml` for ArgoCD Settings
+
+The ArgoCD Settings are in variable namespace `install.argocd`.
+
+* Enable or disable installtion of ArgoCD. Disabled will prevent the installation of all applications beyond the reduced K3s installation.
+
+  ```yaml
+  install:
+    argocd:
+      enabled: true
+  ```
+
+* Pin which version of ArgoCD to install.  This is the Helm Chart version, not the application version.
+  * This is for initial installation only. Do not update this value to attempt to push an application upgrade.
+
+  ```yaml
+      # Select Release to install: https://artifacthub.io/packages/helm/argo/argo-cd
+      install_version: "{{argocd_install_version|default('4.5.10')}}"
+  ```
+
+* Define the namespace to install ArgoCD into.
+
+  ```yaml
+      namespace: "argocd"
+  ```
+
+* Define Repository Connection Settings
+
+  ```yaml
+      repository:
+        name: "k3s-argocd-renovate"
+        url: "{{ ARGOCD_REPO_URL_SECRET }}"       # https://github.com/<user>/<repo-name>
+        username: "{{ ARGOCD_REPO_USERNAME }}"    # oath
+        password: "{{ ARGOCD_REPO_PASSWORD }}"    # Github Personal Access Token
+  ```
+
+  * The `name` is used within ArgoCD, it can be changed if you like.
+  * The `ARGOCD_REPO_URL_SECRET`, `ARGOCD_REPO_USERNAME`, `ARGOCD_REPO_PASSWORD` values should be defined in `vars/secrets/main.yaml` file
+    * Be sure to to use `ansible-vault` to encrypt your secrets.
+
+
+---
 ## Troubleshooting ArgoCD
 
 ### Early Access to ArgoCD Dashboard
