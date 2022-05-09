@@ -16,3 +16,22 @@
     daemon_reload: yes
     state: restarted
     name: rsyslog
+
+- name: Commit Checked in Files to ArgoCD Repository
+  ansible.builtin.command:
+    chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+    argv:
+      - /usr/bin/git
+      - commit
+      - -a
+      - -m
+      - "Commit via Ansible"
+  notify:
+    - Git Push ArgoCD
+
+- name: Git Push ArgoCD
+  ansible.builtin.command:
+   chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+   argv:
+     - /usr/bin/git
+     - push

@@ -14,6 +14,21 @@
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
 
+  - name: Copy Repository Connection Template Files
+    template:
+      src: "templates/argocd/config/{{item}}.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/{{item}}"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0660'
+    loop:
+      - "repo_connection.yaml"
+
+  - name: Clone Remote ArgoCD Repository
+    ansible.builtin.git:
+      repo: "{{install.argocd.repository.url|urlsplit('scheme')}}://{{install.argocd.repository.username}}:{{install.argocd.repository.password}}@{{install.argocd.repository.url|urlsplit('hostname')}}{{install.argocd.repository.url|urlsplit('path')}}"
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+
   - name: Create Directory Structure for ArgoCD Initial Repository
     file:
       state: directory
@@ -31,8 +46,29 @@
       mode: 0660
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
+      force: no    
     with_filetree: "../templates/argocd/git_repo"
     when: item.state == "file"
+
+  - name: Check if any ArgoCD Repository Files were Updates
+    ansible.builtin.command:
+      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+      argv:
+        - /usr/bin/git
+        - status
+    register: git_status
+
+  - name: Add New Files Generated Files to ArgoCD Repository
+    ansible.builtin.command:
+      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+      argv:
+        - /usr/bin/git
+        - add
+        - --all
+    when:
+      - git_status.stdout.find("nothing to commit") == -1
+    notify:
+      - Commit Checked in Files to ArgoCD Repository
 
   # Ansible helm was unable to process chart dependencies, got this message:
   # Error: An error occurred while checking for chart dependencies. You may need to run `helm dependency build` to fetch missing dependencies: found in Chart.yaml, but missing in charts/ directory: argo-cd
@@ -60,7 +96,12 @@
       release_namespace: "{{install.argocd.namespace}}"
       chart_ref: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd"
       wait: yes
-      
+
+  - name: Create Repository Connection
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/argocd/repo_connection.yaml"
+
   when: 
     - inventory_hostname == groups['k3s_control'][0]
     - install.argocd.enabled|default(false)|bool == true
