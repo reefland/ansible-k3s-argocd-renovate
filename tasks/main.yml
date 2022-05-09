@@ -9,18 +9,12 @@
 # Based on: https://blog.nobugware.com/post/2019/k3s-containterd-zfs/
 
 ###[ Load up the secret files ]####################################################################
-#- name: Include Secret Files
-#  include_vars: "{{ item }}"
-#  tags: ["always"]
-#  loop:
-    #- secrets/letsencrypt_secrets.yml
-    #- secrets/k3s_traefik_api_secrets.yml
-    #- secrets/truenas_api_secrets.yml
-    #- secrets/longhorn_dashboard_secrets.yml
-    #- secrets/prometheus_dashboard_secrets.yml
-    #- secrets/alertmanager_dashboard_secrets.yml
-    #- secrets/alertmanager_secrets.yml
-#  no_log: "{{no_log_secrets|default(true)}}"
+- name: Include Secret Files
+  include_vars: "{{ item }}"
+  tags: ["always"]
+  loop:
+    - secrets/main.yml
+  no_log: "{{no_log_secrets|default(true)}}"
 
 ###[ Detect ZFS UUID from ZFS on Root installations ]##############################################
 - name: Detect ZFS Dataset UUID
