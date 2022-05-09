@@ -73,13 +73,17 @@ install:
   argocd:
     enabled: true
 
-    # https://artifacthub.io/packages/helm/argo/argo-cd
+    # Select Release to install: https://artifacthub.io/packages/helm/argo/argo-cd
     install_version: "{{argocd_install_version|default('4.5.10')}}"
     
     namespace: "argocd"
-    
+
+    # Define secrets in vars/secrets/main.yml
     repository:
-      url: "https://github.com/reefland/k3s-argocd"
+      name: "k3s-argocd-renovate"
+      url: "{{ARGOCD_REPO_URL_SECRET|default('UNDEFINED_REPO_URL')}}"
+      username: "{{ARGOCD_REPO_USERNAME|default('oauth')}}"
+      password: "{{ARGOCD_REPO_PASSWORD|default('UNDEFINED_REPO_PASSWORD_TOKEN')}}"
 
     dashboard:
       path: "/argocd"                           # URI Path for Ingress Route
