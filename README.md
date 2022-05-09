@@ -1,17 +1,30 @@
-# K3s Kubernetes with ContainerD for ZFS & ArgoCD GitOps
+# K3s Kubernetes with ContainerD for ZFS & ArgoCD with Renovate for GitOps via Ansible
 
 An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enhancements:
 
 * **non-root** user account for Kubernetes, passwordless access to `kubectl` by default.
-* [condainerd](https://containerd.io/) to provide [ZFS snapshotter](https://github.com/containerd/zfs) support
+* [condainerd](https://containerd.io/) to provide [ZFS snapshotter](https://github.com/containerd/zfs) support.
 * **Centralized cluster system logging** via [rsyslog](https://www.rsyslog.com/) with real-time viewing with [lnav](https://lnav.org/) utility.
-* [Helm Client](https://helm.sh/docs/intro/using_helm/)
+* [Helm Client](https://helm.sh/docs/intro/using_helm/) for installing applications in Kubernetes.
+* [ArgoCD](https://argoproj.github.io/cd/) will deploy all applications added to Git repository and every few minutes confirm that applications are deployed as configured.
+  * Non-compliant changes are automatically detected and optionally rolled back automatically.
+* [Renovate](https://docs.renovatebot.com/) runs as nightly (or on demand) job scanning the Git repository to detect if application upgrades are available.
+  * If an upgrade is detected, Renovate will generate a Pull Request (PR) in the Git repository where you can review and approve the upgrade.
+  * This process updates the deployment manifest files which ArgoCD detects and will deploy the upgraded application for you.
+  * ArgoCD and Renovate work together to help keep your application versions current and prevent configuration drift.
 
 ---
 
 ## TL;DR
 
 * You should read it. :)
+* A tweaked multi-node Kubernetes cluster based on K3s (no docker used) is created
+* You will need to setup an Ansible inventory file in a defined way
+* You will need to create a dedicated repository for ArgoCD, ideally a private Github repository (free)
+* ArgoCD will require Ansible secrets set for repository URL, Access Token, etc.
+* Ansible will render all initial application manifest files and commit them to Git repository
+* ArgoCD will see remaining missing applications and deploy them as defined
+* Renovate will monitor deployed application manifests and provide update notifications via Pull Request process
 
 ---
 
@@ -57,6 +70,7 @@ I provide a lot of documentation notes below for my own use.  If you find it ove
 * Review [K3S Configuration Settings](docs/k3s-settings.md)
 * Review [Containerd Configuration Settings](docs/containerd-settings.md)
 * Review [ArgoCD Configuration Settings](docs/argocd-settings.md)
+* Review [Renovate Configuration Settings](docs/renovate-settings.md)
 
 ---
 
@@ -98,16 +112,19 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
       k3s_workers:
 
     vars:
+      # Install versions are optional, lets you pin newer versions than defaults
       k3s_install_version: "v1.23.5+k3s1"
+      argocd_install_version: "4.5.10"
+      renovate_install_version: "32.45.5"
       kube_vip_install_version: "v0.4.2"
       metallb_install_version: "v0.12.1"
       longhorn_install_version: "v1.2.4"
       traefik_install_version: "v2.6.3"
       cert_manager_install_version: "v1.7.1"
       prometheus_op_install_version: "34.7.1"
-      k3s_cluster_ingress_name: "k3s-test.{{ansible_domain}}"
 
-      K3S_TOKEN: 'secret_here'                  # Set to any value you like
+      k3s_cluster_ingress_name: "k3s-test.{{ansible_domain}}"
+      K3S_TOKEN: 'secret_here'                # Set to any value you like
 ```
 
 * This inventory file divides hosts into Control nodes and Worker nodes:
@@ -180,6 +197,8 @@ For simplicity I show the variables within the inventory file.  You can place th
 The idea behind pinning specific versions of software is so that an installation done on Monday can be identical when installed on Tuesday or Friday, or sometime next month.  Without pinning specific versions you have no way of knowing what random combination of versions you will get.
 
 * `k3s_install_version` pins the K3s [Release](https://github.com/k3s-io/k3s/releases) version.
+* `argocd_install_version` pings the ArgoCD Helm [Release](https://artifacthub.io/packages/helm/argo/argo-cd) (not application version)
+* `renovate_install_version` pins the Renovate Helm [Release](https://github.com/renovatebot/helm-charts/releases) (not application version)
 
 ---
 
