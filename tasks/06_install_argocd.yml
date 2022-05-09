@@ -10,7 +10,7 @@
     file:
       path: "/home/{{install.os.non_root_user.name}}/argocd"
       state: directory
-      mode: 0700
+      mode: 0770
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
 
@@ -28,6 +28,7 @@
     ansible.builtin.git:
       repo: "{{install.argocd.repository.url|urlsplit('scheme')}}://{{install.argocd.repository.username}}:{{install.argocd.repository.password}}@{{install.argocd.repository.url|urlsplit('hostname')}}{{install.argocd.repository.url|urlsplit('path')}}"
       dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+      force: yes
 
   - name: Create Directory Structure for ArgoCD Initial Repository
     file:
@@ -46,7 +47,7 @@
       mode: 0660
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
-      force: no    
+#      force: no    
     with_filetree: "../templates/argocd/git_repo"
     when: item.state == "file"
 
@@ -101,6 +102,11 @@
     kubernetes.core.k8s:
       state: present
       src: "/home/{{install.os.non_root_user.name}}/argocd/repo_connection.yaml"
+
+  - name: Create root ArgoCD Application
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/applications.yaml"
 
   when: 
     - inventory_hostname == groups['k3s_control'][0]
