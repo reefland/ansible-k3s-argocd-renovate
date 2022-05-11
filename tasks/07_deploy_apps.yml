@@ -1,0 +1,121 @@
+---
+#
+# Deploy additional applications based on if enabled.
+#
+
+###[ Deploy Additional Applications ]##############################################################
+- name: Clone Remote ArgoCD Repository
+  ansible.builtin.git:
+    repo: "{{install.argocd.repository.url|urlsplit('scheme')}}://{{install.argocd.repository.username}}:{{install.argocd.repository.password}}@{{install.argocd.repository.url|urlsplit('hostname')}}{{install.argocd.repository.url|urlsplit('path')}}"
+    dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+    force: yes
+  when: 
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.argocd.enabled|default(false)|bool == true
+  tags:
+    - deploy_apps
+
+###[ Process kube-vip ]############################################################################
+- name: Process kube-vip Block
+  block:
+  - name: Create Directory Structure for kube-vip in ArgoCD Repository
+    file:
+      state: directory
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path }}"
+      mode: 0700
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+    with_filetree: "../templates/kube-vip"
+    when: item.state == "directory"
+
+  - name: Process Template Files for kube-vip in ArgoCD Repository
+    template:
+      src: "{{ item.src }}"
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path | regex_replace('\\.j2$', '') }}"
+      mode: 0660
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      force: no                                       # Do not overwrite existing files in repo (which might force old versions)
+    with_filetree: "../templates/kube-vip"
+    when: item.state == "file"
+  when: 
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.argocd.enabled|default(false)|bool == true
+    - install.kube_vip.enabled|default(false)|bool == true
+  tags:
+    - deploy_apps
+
+###[ Process kube-vip-cloud-provider ]#############################################################
+- name: Process kube-vip-cloud-provider Block
+  block:
+  - name: Create Directory Structure for kube-vip-cloud-provider in ArgoCD Repository
+    file:
+      state: directory
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path }}"
+      mode: 0700
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+    with_filetree: "../templates/kube-vip-cloud-provider"
+    when: item.state == "directory"
+
+  - name: Process Template Files for kube-vip-cloud-provider in ArgoCD Repository
+    template:
+      src: "{{ item.src }}"
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path | regex_replace('\\.j2$', '') }}"
+      mode: 0660
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      force: no                                       # Do not overwrite existing files in repo (which might force old versions)
+    with_filetree: "../templates/kube-vip-cloud-provider"
+    when: item.state == "file"
+  when: 
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.argocd.enabled|default(false)|bool == true
+    - install.kube_vip.lb.enabled|default(false)|bool == true
+  tags:
+    - deploy_apps
+
+###[ Check in Files to ArgoCD ]####################################################################
+- name: Check in ArgoCD Repository Block
+  block:
+  - name: Check if any ArgoCD Repository Files were Updates
+    ansible.builtin.command:
+      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+      argv:
+        - /usr/bin/git
+        - status
+    register: git_status
+
+  - name: Add New Files Generated Files to ArgoCD Repository
+    ansible.builtin.command:
+      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+      argv:
+        - /usr/bin/git
+        - add
+        - --all
+    when:
+      - git_status.stdout.find("nothing to commit") == -1
+    notify:
+      - Commit Checked in Files to ArgoCD Repository
+  when: 
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.argocd.enabled|default(false)|bool == true
+  tags:
+    - deploy_apps
+
+# Make sure all changes are checked in before removing repository
+- name: Flush Handlers
+  meta: flush_handlers
+  tags:
+    - deploy_apps
+
+# Probably not safe to leave these on the K3s instance
+- name: Delete Local ArgoCD Secrets and Git Repo
+  ansible.builtin.file:
+    path: "/home/{{install.os.non_root_user.name}}/argocd"
+    state: absent
+  when: 
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.argocd.enabled|default(false)|bool == true
+  tags:
+    - deploy_apps

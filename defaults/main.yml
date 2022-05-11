@@ -70,6 +70,8 @@ install:
       dataset_postfix: ""                     # "/var/lib/containerd"
 
   ###[ ArgoCD Installation Settings ]##############################################################
+  # ArgoCD will be used to deploy applications to K3s cluster based on manifests checked into 
+  # Git repository.
   argocd:
     enabled: true
 
@@ -89,6 +91,8 @@ install:
       path: "/argocd"                           # URI Path for Ingress Route
 
   ###[ Renovate Configuration Settings ]###########################################################
+  # Renovate will monitor manifests deployed to ArgoCD repositories for updates and open a PR
+  # request to start the process of upgrading applications.
   renovate:
     # Select Release to install: https://github.com/renovatebot/helm-charts/releases
     install_version: "{{renovate_install_version|default('32.45.5')}}"
@@ -98,3 +102,30 @@ install:
     platform: "github"
     repositories:
       - "{{ARGOCD_REPO_URL_SECRET|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}"    # Hopefully the <user>/<repo-name> part of URL
+
+    # Cron style schedule when renovate should look for updates
+    schedule: "0 1 * * *"                       # At 01:00 every day
+
+  ###[ Kube-VIP Configuration Settings ]###########################################################
+  # Kube-VIP provides HA Load Balancer for the API service and optionally LoadBalancer services
+  # It can optionally also provide Load Balancer services a pool of address to use instead of
+  # using MetalLB.  When enabled this will disable k3s built-in Klipper Load Balancer.
+  kube_vip:
+    # When enabled, you must define variable "vip_endpoint_ip" at host or group level within 
+    # inventory, host_var or group_var file. This must be set to an IP address. This IP address will
+    # be a Load Balanced VIP cluster wide for the API service.  You can point kubectl to this IP 
+    # address.
+    enabled: true
+
+    # Select release to use: https://github.com/kube-vip/kube-vip/releases
+    install_version: "{{kube_vip_install_version|default('v0.4.2')}}"
+
+    # To use Kube-VIP Cloud Provider as LoadBalancer instead of MetalLB
+    lb:
+      # When enabled, this will disable k3s built-in Klipper Load Balancer and enable kube-vip LB
+      # instead.
+
+      # When enabled, you must define variable "vip_lb_ip_range" at host or group level within 
+      # inventory, host_var or group_var file. This must be set to an IP range or CIDR range.
+      # This will define the pool of IP addresses to hand out to serviced of type LoadBalancer.
+      enabled: true

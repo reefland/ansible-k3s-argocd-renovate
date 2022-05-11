@@ -1,0 +1,37 @@
+---
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+config:
+  address: "{{ vip_endpoint_ip }}"
+
+env:
+  vip_arp: "true"
+  lb_port: "6443"
+  lb_enable: "true"
+  vip_cidr: "32"
+  cp_enable: "true"
+  svc_enable: "true"
+  vip_leaderelection: "true"
+  vip_address: "{{ vip_endpoint_ip }}"
+
+affinity:
+  requiredDuringSchedulingIgnoredDuringExecution:
+    nodeSelectorTerms:
+    - matchExpressions:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+    - matchExpressions:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+
+tolerations:
+  - effect: NoSchedule
+    operator: Exists
+  - effect: NoExecute
+    operator: Exists

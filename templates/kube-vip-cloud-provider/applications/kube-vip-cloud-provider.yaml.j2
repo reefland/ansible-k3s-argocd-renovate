@@ -1,0 +1,27 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: {{install.argocd.namespace}}
+  name: kube-vip-cloud-provider
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: {{install.argocd.repository.url}}.git
+    targetRevision: HEAD
+    path: workloads/kube-vip-cloud-provider/
+        
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    -  Validate=true

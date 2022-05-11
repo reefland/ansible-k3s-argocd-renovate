@@ -1,0 +1,12 @@
+apiVersion: v2
+name: kube-vip
+description: A Helm chart for kube-vip
+type: application
+version: 0.0.0 # unused
+appVersion: 0.0.0 # unused
+icon: https://github.com/kube-vip/kube-vip/raw/main/kube-vip.png
+dependencies:
+  - name: kube-vip
+    repository: https://kube-vip.io/helm-charts
+    version: {{install.kube_vip.install_version}}
+    condition: kube-vip.enabled
