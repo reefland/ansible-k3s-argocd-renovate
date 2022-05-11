@@ -31,26 +31,13 @@
       dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
       force: yes
 
-  - name: Create Directory Structure for ArgoCD Initial Repository
-    file:
-      state: directory
-      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path }}"
-      mode: 0700
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-    with_filetree: "../templates/argocd/git_repo"
-    when: item.state == "directory"
-
-  - name: Process Template Files for ArgoCD Initial Repository
-    template:
-      src: "{{ item.src }}"
-      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path | regex_replace('\\.j2$', '') }}"
-      mode: 0660
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-      force: no                                       # Do not overwrite existing files in repo (which might force old versions)
-    with_filetree: "../templates/argocd/git_repo"
-    when: item.state == "file"
+  - name: Process Initial ArgoCD Repository
+    include_tasks: "process_app_to_deploy.yml"
+    loop:
+      - { name: "argocd/git_repo" }
+    loop_control:
+      loop_var: deploy_app
+      label: "{{deploy_app}}"
 
   - name: Check if any ArgoCD Repository Files were Updates
     ansible.builtin.command:

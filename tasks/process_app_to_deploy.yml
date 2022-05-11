@@ -1,0 +1,31 @@
+---
+- name: Process App to Deploy Block
+  block:
+  - name: "Create Directory Structure for {{deploy_app}} in ArgoCD Repository"
+    file:
+      state: directory
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path }}"
+      mode: 0700
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+    with_filetree: "../templates/{{deploy_app.name}}"
+    when: item.state == "directory"
+
+  - name: Process Template Files for {{deploy_app}} in ArgoCD Repository
+    template:
+      src: "{{ item.src }}"
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path | regex_replace('\\.j2$', '') }}"
+      mode: 0660
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      force: no                                       # Do not overwrite existing files in repo (which might force old versions)
+    with_filetree: "../templates/{{deploy_app.name}}"
+    when: item.state == "file"
+  when: 
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.kube_vip.lb.enabled|default(false)|bool == true
+
+  tags:
+    - install_argocd
+    - deploy_apps
+
