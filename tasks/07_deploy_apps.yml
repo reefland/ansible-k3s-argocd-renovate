@@ -25,25 +25,9 @@
       loop_var: deploy_app
       label: "{{deploy_app}}"
 
-  - name: Check if any ArgoCD Repository Files were Updated
-    ansible.builtin.command:
-      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
-      argv:
-        - /usr/bin/git
-        - status
-    register: git_status
+  - name: Check-in Any New or Modified Files
+    include_tasks: "checkin_argocd_repo_files.yml"
 
-  - name: Add New Files Generated Files to ArgoCD Repository
-    ansible.builtin.command:
-      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
-      argv:
-        - /usr/bin/git
-        - add
-        - --all
-    when:
-      - git_status.stdout.find("nothing to commit") == -1
-    notify:
-      - Commit Checked in Files to ArgoCD Repository
   when: 
     - inventory_hostname == groups['k3s_control'][0]
     - install.argocd.enabled|default(false)|bool == true

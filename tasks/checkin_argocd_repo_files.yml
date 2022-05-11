@@ -1,0 +1,21 @@
+---
+
+- name: Check if any ArgoCD Repository Files were Updated
+  ansible.builtin.command:
+    chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+    argv:
+      - /usr/bin/git
+      - status
+  register: git_status
+
+- name: Add New Files Generated Files to ArgoCD Repository
+  ansible.builtin.command:
+    chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+    argv:
+      - /usr/bin/git
+      - add
+      - --all
+  when:
+    - git_status.stdout.find("nothing to commit") == -1
+  notify:
+    - Commit Checked in Files to ArgoCD Repository

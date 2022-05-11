@@ -39,25 +39,6 @@
       loop_var: deploy_app
       label: "{{deploy_app}}"
 
-  - name: Check if any ArgoCD Repository Files were Updates
-    ansible.builtin.command:
-      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
-      argv:
-        - /usr/bin/git
-        - status
-    register: git_status
-
-  - name: Add New Files Generated Files to ArgoCD Repository
-    ansible.builtin.command:
-      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
-      argv:
-        - /usr/bin/git
-        - add
-        - --all
-    when:
-      - git_status.stdout.find("nothing to commit") == -1
-    notify:
-      - Commit Checked in Files to ArgoCD Repository
 
   # Ansible helm was unable to process chart dependencies, got this message:
   # Error: An error occurred while checking for chart dependencies. You may need to run `helm dependency build` to fetch missing dependencies: found in Chart.yaml, but missing in charts/ directory: argo-cd
@@ -127,6 +108,9 @@
       namespace: "{{install.renovate.namespace}}"
       label_selectors:
         - "app.kubernetes.io/instance=renovate"
+
+  - name: Check-in Any New or Modified Files
+    include_tasks: "checkin_argocd_repo_files.yml"
 
   when: 
     - inventory_hostname == groups['k3s_control'][0]
