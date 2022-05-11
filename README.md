@@ -12,6 +12,12 @@ An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubern
   * If an upgrade is detected, Renovate will generate a Pull Request (PR) in the Git repository where you can review and approve the upgrade.
   * This process updates the deployment manifest files which ArgoCD detects and will deploy the upgraded application for you.
   * ArgoCD and Renovate work together to help keep your application versions current and prevent configuration drift.
+* [Cert-manager](https://cert-manager.io/) with [Let's Encrypt](https://letsencrypt.org/) **wildcard certificates** for domains against Let's Encrypt staging or prod (Cloudflare DNS validator).
+
+Optionally Installed:
+
+* [kube-vip](https://kube-vip.chipzoller.dev/) for Kubernetes API Load Balancer
+* [kube-vip-cloud-provider](https://kube-vip.chipzoller.dev/) Load Balancer to replace [K3s Klipper](https://github.com/k3s-io/klipper-lb) Load Balancer for ingress traffic.
 
 ---
 
@@ -21,10 +27,11 @@ An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubern
 * A tweaked multi-node Kubernetes cluster based on K3s (no docker used) is created
 * You will need to setup an Ansible inventory file in a defined way
 * You will need to create a dedicated repository for ArgoCD, ideally a private Github repository (free)
-* ArgoCD will require Ansible secrets set for repository URL, Access Token, etc.
+* **ArgoCD** will require Ansible secrets set for repository URL, Access Token, etc.
 * Ansible will render all initial application manifest files and commit them to Git repository
-* ArgoCD will see remaining missing applications and deploy them as defined
-* Renovate will monitor deployed application manifests and provide update notifications via Pull Request process
+* **ArgoCD** will see remaining missing applications and deploy them as defined
+* **Renovate** will monitor deployed application manifests and provide update notifications via Pull Request process
+* **Kube-vip** Load Balancer section will require you to specify a range of IP addresses available for use and a VIP address for the API Load Balancer
 
 ---
 
@@ -44,7 +51,6 @@ An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubern
 * k3s (Runs official script [https://get.k3s.io](https://get.k3s.io))
 * [containerd](https://containerd.io/), container networking-plugins, iptables
 * [helm](https://helm.sh/), [helm diff](https://github.com/databus23/helm-diff), [apt-transport-https](http://manpages.ubuntu.com/manpages/focal/man1/apt-transport-https.1.html) (required for helm client install)
-
 
 ## Packages Uninstalled
 
@@ -71,6 +77,9 @@ I provide a lot of documentation notes below for my own use.  If you find it ove
 * Review [Containerd Configuration Settings](docs/containerd-settings.md)
 * Review [ArgoCD Configuration Settings](docs/argocd-settings.md)
 * Review [Renovate Configuration Settings](docs/renovate-settings.md)
+* Review [CertManager Configuration and LetsEncrypt Settings](docs/cert-manager.md)
+
+* Review [Kube-vip API Load Balancer Settings](docs/kube-vip-settings.md)
 
 ---
 
@@ -116,11 +125,11 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
       k3s_install_version: "v1.23.5+k3s1"
       argocd_install_version: "4.5.10"
       renovate_install_version: "32.45.5"
+      cert_manager_install_version: "v1.7.1"
       kube_vip_install_version: "v0.4.2"
-      metallb_install_version: "v0.12.1"
+
       longhorn_install_version: "v1.2.4"
       traefik_install_version: "v2.6.3"
-      cert_manager_install_version: "v1.7.1"
       prometheus_op_install_version: "34.7.1"
 
       k3s_cluster_ingress_name: "k3s-test.{{ansible_domain}}"
@@ -152,7 +161,6 @@ For simplicity I show the variables within the inventory file.  You can place th
 
 * `vip_endpoint_ip` specifies the IP address to be used for the Kubernetes API Load Balancer provided by Kube-vip
 * `vip_lb_ip_range` defines the IP address range kube-vip can use to provide IP addresses for LoadBalancer services.
-* `metallb_ip_range` does the equivalent of `vip_lb_ip_range` but for Metallb Load Balancer if you choose to use that instead.
 
 ---
 
@@ -199,6 +207,9 @@ The idea behind pinning specific versions of software is so that an installation
 * `k3s_install_version` pins the K3s [Release](https://github.com/k3s-io/k3s/releases) version.
 * `argocd_install_version` pings the ArgoCD Helm [Release](https://artifacthub.io/packages/helm/argo/argo-cd) (not application version)
 * `renovate_install_version` pins the Renovate Helm [Release](https://github.com/renovatebot/helm-charts/releases) (not application version)
+* `cert_manager_install_version` pins the Cert-manager Helm [Release](https://github.com/cert-manager/cert-manager/releases)
+* `kube_vip_install_version` pins the Application Container Tag [Release](https://github.com/kube-vip/kube-vip/releases)
+* `kube_vip_cloud_provider_install_version` pins the Application Container Tag [Release](https://github.com/kube-vip/kube-vip-cloud-provider/releases)
 
 ---
 
@@ -248,3 +259,4 @@ The following tags are supported and should be used in this order:
 * `validate_k3s`
 * `install_helm_client`
 * `install_argocd`
+* `deploy_apps`
