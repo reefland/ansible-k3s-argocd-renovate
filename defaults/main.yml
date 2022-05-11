@@ -122,14 +122,17 @@ install:
 
     # To use Kube-VIP Cloud Provider as LoadBalancer instead of MetalLB
     lb:
-      # When enabled, this will disable k3s built-in Klipper Load Balancer and enable kube-vip LB
-      # instead.
+      # When enabled, this will disable k3s built-in Klipper Load Balancer and enable kube-vip
+      # Cloud Provider Load Balancer instead.
 
       # When enabled, you must define variable "vip_lb_ip_range" at host or group level within 
       # inventory, host_var or group_var file. This must be set to an IP range or CIDR range.
       # This will define the pool of IP addresses to hand out to serviced of type LoadBalancer.
       enabled: true
- 
+
+      # Select release to use: https://github.com/kube-vip/kube-vip-cloud-provider/releases
+      install_version: "{{kube_vip_cloud_provider_install_version|default('v0.0.2')}}
+
   ###[ Cert Manager Installation Settings ]########################################################
   cert_manager:
     # Select release to use:  https://github.com/cert-manager/cert-manager/releases
