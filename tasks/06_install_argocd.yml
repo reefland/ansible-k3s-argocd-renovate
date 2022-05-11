@@ -133,6 +133,14 @@
       - "app.kubernetes.io/name=argocd-applicationset-controller"
     loop_control:
       label: "{{task_names}}"
+
+  - name: Check Renovate Kubernetes CronJob is Scheduled
+    k8s_info:
+      kind: CronJob
+      namespace: "{{install.renovate.namespace}}"
+      label_selectors:
+        - "app.kubernetes.io/instance=renovate"
+
   when: 
     - inventory_hostname == groups['k3s_control'][0]
     - install.argocd.enabled|default(false)|bool == true
@@ -142,6 +150,8 @@
 # Make sure all changes are checked in before removing repository
 - name: Flush Handlers
   meta: flush_handlers
+  tags:
+    - install_argocd
 
 # Probably not safe to leave these on the K3s instance
 - name: Delete Local ArgoCD Secrets and Git Repo
