@@ -44,7 +44,7 @@
   - name: Process Template Files for ArgoCD Initial Repository
     template:
       src: "{{ item.src }}"
-      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path }}"
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path | regex_replace('\\.j2$', '') }}"
       mode: 0660
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
