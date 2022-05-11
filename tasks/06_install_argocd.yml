@@ -48,7 +48,7 @@
       mode: 0660
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
-      force: no                                       # Do not overwrite exisitng files in repo (might force old versions)
+      force: no                                       # Do not overwrite existing files in repo (which might force old versions)
     with_filetree: "../templates/argocd/git_repo"
     when: item.state == "file"
 
