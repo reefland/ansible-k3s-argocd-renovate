@@ -90,4 +90,9 @@ containerd:
     zfs_mount_point: "/var/lib/containerd/io.containerd.snapshotter.v1.zfs"
 
     zfs_uuid_detect_cmd: "zfs list -o name | grep -E -o '{{install.containerd.zfs.pool}}/{{install.containerd.zfs.dataset_prefix}}{{install.containerd.zfs.uuid}}[^/]*{6}$' | rev | cut -c 1-6 | rev"
- 
+
+###[ Cert-manager Installation Settings ]##########################################################
+cert_manager:
+
+  le_staging_server: "https://acme-staging-v02.api.letsencrypt.org/directory"
+  le_production_server: "https://acme-v02.api.letsencrypt.org/directory" 

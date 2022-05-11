@@ -1,0 +1,10 @@
+apiVersion: v2
+type: application
+name: cert-manager
+version: 0.0.0
+appVersion: 0.0.0
+dependencies:
+  - name: cert-manager
+    repository: https://charts.jetstack.io
+    version: {{install.cert_manager.install_version}}
+    condition: cert-manager.enabled
