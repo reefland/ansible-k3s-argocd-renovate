@@ -115,6 +115,39 @@
       state: present
       src: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/applications.yaml"
 
+  - name: Check Argo Pods are Running
+    k8s_info:
+      kind: Pod
+      namespace: "{{install.argocd.namespace}}"
+      label_selectors:
+        - "{{item}}"
+      wait: yes
+      wait_condition:
+        type: Ready
+      wait_sleep: 5
+      wait_timeout: 120
+    loop:
+      - "app.kubernetes.io/name=argocd-server"
+      - "app.kubernetes.io/name=argocd-repo-server"
+      - "app.kubernetes.io/name=argocd-application-controller"
+      - "app.kubernetes.io/name=argocd-applicationset-controller"
+    loop_control:
+      label: "{{task_names}}"
+  when: 
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.argocd.enabled|default(false)|bool == true
+  tags:
+    - install_argocd
+
+# Make sure all changes are checked in before removing repository
+- name: Flush Handlers
+  meta: flush_handlers
+
+# Probably not safe to leave these on the K3s instance
+- name: Delete Local ArgoCD Secrets and Git Repo
+  ansible.builtin.file:
+    path: "/home/{{install.os.non_root_user.name}}/argocd"
+    state: absent
   when: 
     - inventory_hostname == groups['k3s_control'][0]
     - install.argocd.enabled|default(false)|bool == true
