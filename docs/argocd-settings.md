@@ -105,6 +105,14 @@ The ArgoCD Settings are in variable namespace `install.argocd`.
 
 ---
 
+## ArgoCD Initial Dashboard
+
+The following shows the contents of the ArgoCD dashboard when only ArgoCD and Renovate are installed.
+
+![ArgoCD Initial Dashboard](../images/argocd_initial_install.png)
+
+---
+
 ## Troubleshooting ArgoCD
 
 ### Early Access to ArgoCD Dashboard
