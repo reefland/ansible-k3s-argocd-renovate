@@ -63,6 +63,33 @@ Create a new GitHub repository.  A private repository is recommended.
 
 ---
 
+## Review `vars/secrets/main.yml` for ArgoCD Secrets
+
+You need to define which repository ArgoCD will use and how to connect to it.
+
+```yaml
+###[ ArgoCD Secrets: Repository Connections ]######################################################
+ARGOCD_REPO_URL_SECRET: "https://github.com/<user-name>/<repo-name>"
+
+# Github can use any non-empty value, its essentially ignored
+ARGOCD_REPO_USERNAME_SECRET: "oauth"
+
+# Github Personal Access Token
+ARGOCD_REPO_PASSWORD_SECRET: "<token-value>"
+```
+
+* `ARGOCD_REPO_URL_SECRET` points to the dedicated ArgoCD repository to use. Do NOT include ".git" at the end of it.
+* `ARGOCD_REPO_USERNAME_SECRET` typically is just any non-empty value and is not actually used in authentication.
+* `ARGOCD_REPO_PASSWORD_SECRET` is the value of the Personal Access Token.
+
+**Be sure to encrypt all the secrets above when completed:**
+
+```shell
+ansible-vault encrypt vars/secrets/main.yml
+```
+
+---
+
 ## Review `defaults/main.yml` for ArgoCD Settings
 
 The ArgoCD Settings are in variable namespace `install.argocd`.
