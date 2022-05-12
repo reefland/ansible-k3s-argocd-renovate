@@ -1,0 +1,27 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: {{install.argocd.namespace}}
+  name: lets-encrypt
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: {{install.argocd.repository.url}}.git
+    targetRevision: HEAD
+    path: workloads/lets-encrypt/
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{install.cert_manager.namespace}}
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    -  Validate=true

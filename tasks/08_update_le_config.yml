@@ -1,0 +1,55 @@
+---
+#
+# Update Let's Encrypt Certificates.  This is only needed to:
+# 1) Change between Let's Encrypt Staging and Production
+# 2) Change ACME Credentials (update token, emails, etc)
+# 3) Add / Remove domain names
+
+# This is NOT used for certificate renewal. Cert-manager will process the certificate renewals.
+
+###[ Update Let's Encrypt Provider ]###############################################################
+- name: Update Lets Encrypt Provider Block
+  block:
+  - name: Clone Remote ArgoCD Repository
+    ansible.builtin.git:
+      repo: "{{install.argocd.repository.url|urlsplit('scheme')}}://{{install.argocd.repository.username}}:{{install.argocd.repository.password}}@{{install.argocd.repository.url|urlsplit('hostname')}}{{install.argocd.repository.url|urlsplit('path')}}"
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+      force: yes
+
+  # Applications templates to render and then check into Git repository are defined below
+  # Only process templates if application is enabled.
+  - name: Process Deployable Enabled Applications
+    include_tasks: "process_app_to_deploy.yml"
+    loop:
+      - { enabled: true,  name: "lets-encrypt" }
+    when:
+      - deploy_app.enabled == true
+    loop_control:
+      loop_var: deploy_app
+      label: "{{deploy_app}}"
+
+  - name: Check-in Any New or Modified Files
+    include_tasks: "checkin_argocd_repo_files.yml"
+
+  when: 
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.argocd.enabled|default(false)|bool == true
+  tags:
+    - config_ls_certificates
+
+# Make sure all changes are checked in before removing repository
+- name: Flush Handlers
+  meta: flush_handlers
+  tags:
+    - config_ls_certificates
+
+# Probably not safe to leave these on the K3s instance
+- name: Delete Local ArgoCD Secrets and Git Repo
+  ansible.builtin.file:
+    path: "/home/{{install.os.non_root_user.name}}/argocd"
+    state: absent
+  when: 
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.argocd.enabled|default(false)|bool == true
+  tags:
+    - config_ls_certificates

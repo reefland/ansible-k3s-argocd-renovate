@@ -1,0 +1,17 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {% if install.lets_encrypt.le_staging|default(true)|bool == true %}letsencrypt-staging{% else %}letsencrypt-prod{% endif %}{{''}}
+spec:
+  acme:
+    email: {{install.lets_encrypt.le_email_auth}}
+    server: {% if install.lets_encrypt.le_staging|default(true)|bool == true %}{{lets_encrypt.le_staging_server}}{% else %}{{lets_encrypt.le_production_server}}{% endif %}{{''}}
+    privateKeySecretRef:
+      name: issuer-{% if install.lets_encrypt.le_staging|default(true)|bool == true %}letsencrypt-staging{% else %}letsencrypt-prod{% endif %}{{''}}
+    solvers:
+    - dns01:
+        cloudflare:
+          apiTokenSecretRef:
+            key: api-token
+            name: cloudflare-api-token-secret

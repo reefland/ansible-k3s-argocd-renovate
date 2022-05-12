@@ -40,6 +40,7 @@
     - 05_install_helm_client.yml
     - 06_install_argocd.yml
     - 07_deploy_apps.yml
+    - 08_update_le_config.yml
   loop_control:
     label: "{{task_names}}"
     loop_var: task_names
