@@ -23,9 +23,9 @@
     when: item.state == "file"
   when: 
     - inventory_hostname == groups['k3s_control'][0]
-    - install.kube_vip.lb.enabled|default(false)|bool == true
 
   tags:
     - install_argocd
     - deploy_apps
+    - config_ls_certificates
 
