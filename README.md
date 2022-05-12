@@ -31,6 +31,7 @@ Optionally Installed:
 * Ansible will render all initial application manifest files and commit them to Git repository
 * **ArgoCD** will see remaining missing applications and deploy them as defined
 * **Renovate** will monitor deployed application manifests and provide update notifications via Pull Request process
+* **Let's Encrypt** configuration requires you to define your challenge credentials and list domains for certificate generation.
 * **Kube-vip** Load Balancer section will require you to specify a range of IP addresses available for use and a VIP address for the API Load Balancer
 
 ---
@@ -77,7 +78,8 @@ I provide a lot of documentation notes below for my own use.  If you find it ove
 * Review [Containerd Configuration Settings](docs/containerd-settings.md)
 * Review [ArgoCD Configuration Settings](docs/argocd-settings.md)
 * Review [Renovate Configuration Settings](docs/renovate-settings.md)
-* Review [CertManager Configuration and LetsEncrypt Settings](docs/cert-manager.md)
+* Review [CertManager Configuration](docs/cert-manager.md)
+* Review [Let's Encrypt Configuration](docs/lets-encrypt-settings.md)
 
 * Review [Kube-vip API Load Balancer Settings](docs/kube-vip-settings.md)
 
@@ -260,3 +262,4 @@ The following tags are supported and should be used in this order:
 * `install_helm_client`
 * `install_argocd`
 * `deploy_apps`
+* `config_ls_certificates`
