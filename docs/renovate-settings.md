@@ -44,6 +44,15 @@ The Renovate Settings are in variable namespace `install.renovate`.
     * Hopefully something like `<user>/<repo-name>` is detected, you can set manually if you like
   * Multiple repositories for the platform can be defined
 
+* Define Schedule for Renovate Job.
+
+  ```yaml
+      # Cron style schedule when renovate should look for updates
+      schedule: "0 1 * * *"                     # At 01:00 every day
+  ```
+  
+  * Define when the Renovate job should run.  This is a Cron style schedule.
+
 ---
 
 ## Troubleshooting Renovate
