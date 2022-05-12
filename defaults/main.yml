@@ -144,11 +144,9 @@ install:
   lets_encrypt:
     # Define secrets in vars/secrets/main.yml
     le_api_token_name: "{{DNS_API_TOKEN_SECRET}}"  # Define the name of the API token key                                           #
-
     le_api_token_email: "{{AUTH_EMAIL_SECRET}}"    # Define the name of the email authorization key
 
     le_email_auth: "{{LE_AUTH_EMAIL_SECRET}}"      # Define the name of the Let's Encrypt Email Address
-
     domains: "{{LE_DOMAINS_SECRET}}"               # List of Domain Names for LetsEncrypt Certificates
 
     # to create prod certificates --extra-vars="le_staging=false"
