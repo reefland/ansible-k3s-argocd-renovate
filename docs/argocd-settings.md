@@ -95,12 +95,12 @@ The ArgoCD Settings are in variable namespace `install.argocd`.
       repository:
         name: "k3s-argocd-renovate"
         url: "{{ ARGOCD_REPO_URL_SECRET }}"       # https://github.com/<user>/<repo-name>
-        username: "{{ ARGOCD_REPO_USERNAME }}"    # oath
-        password: "{{ ARGOCD_REPO_PASSWORD }}"    # Github Personal Access Token
+        username: "{{ ARGOCD_REPO_USERNAME_SECRET }}"    # oath
+        password: "{{ ARGOCD_REPO_PASSWORD_SECRET }}"    # Github Personal Access Token
   ```
 
   * The `name` is used within ArgoCD, it can be changed if you like.
-  * The `ARGOCD_REPO_URL_SECRET`, `ARGOCD_REPO_USERNAME`, `ARGOCD_REPO_PASSWORD` values should be defined in `vars/secrets/main.yaml` file
+  * The `ARGOCD_REPO_URL_SECRET`, `ARGOCD_REPO_USERNAME_SECRET`, `ARGOCD_REPO_PASSWORD_SECRET` values should be defined in `vars/secrets/main.yaml` file
     * Be sure to to use `ansible-vault` to encrypt your secrets.
 
 ---

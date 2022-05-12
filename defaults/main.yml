@@ -84,11 +84,11 @@ install:
     repository:
       name: "k3s-argocd-renovate"
       url: "{{ARGOCD_REPO_URL_SECRET|default('UNDEFINED_REPO_URL')}}"                 # https://github.com/<user>/<repo-name>
-      username: "{{ARGOCD_REPO_USERNAME|default('oauth')}}"                           # oauth - not really used
-      password: "{{ARGOCD_REPO_PASSWORD|default('UNDEFINED_REPO_PASSWORD_TOKEN')}}"   # Github Personal Access Token
+      username: "{{ARGOCD_REPO_USERNAME_SECRET|default('oauth')}}"                           # oauth - not really used
+      password: "{{ARGOCD_REPO_PASSWORD_SECRET|default('UNDEFINED_REPO_PASSWORD_TOKEN')}}"   # Github Personal Access Token
 
     dashboard:
-      path: "/argocd"                           # URI Path for Ingress Route
+      path: "/argocd"                         # URI Path for Ingress Route
 
   ###[ Renovate Configuration Settings ]###########################################################
   # Renovate will monitor manifests deployed to ArgoCD repositories for updates and open a PR
@@ -104,7 +104,7 @@ install:
       - "{{ARGOCD_REPO_URL_SECRET|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}"    # Hopefully the <user>/<repo-name> part of URL
 
     # Cron style schedule when renovate should look for updates
-    schedule: "0 1 * * *"                       # At 01:00 every day
+    schedule: "0 1 * * *"                     # At 01:00 every day
 
   ###[ Kube-VIP Configuration Settings ]###########################################################
   # Kube-VIP provides HA Load Balancer for the API service and optionally LoadBalancer services
@@ -139,3 +139,17 @@ install:
     install_version: "{{cert_manager_install_version|default('v1.7.1')}}"
 
     namespace: "cert-manager"
+
+  ###[ Let's Encrypt Certificate Configuration ]###################################################
+  lets_encrypt:
+    # Define secrets in vars/secrets/main.yml
+    le_api_token_name: "{{DNS_API_TOKEN_SECRET}}"  # Define the name of the API token key                                           #
+
+    le_api_token_email: "{{AUTH_EMAIL_SECRET}}"    # Define the name of the email authorization key
+
+    le_email_auth: "{{LE_AUTH_EMAIL_SECRET}}"      # Define the name of the Let's Encrypt Email Address
+
+    domains: "{{LE_DOMAINS_SECRET}}"               # List of Domain Names for LetsEncrypt Certificates
+
+    # to create prod certificates --extra-vars="le_staging=false"
+    le_staging: "{{le_staging|default(true)}}"
