@@ -13,10 +13,10 @@ argo-cd:
     resources:
       limits:
         cpu: 500m
-        memory: 512Mi
+        memory: 640Mi
       requests:
         cpu: 250m
-        memory: 250Mi
+        memory: 384Mi
 
   # used to delegate authentication to external identity provider
   dex:
@@ -59,10 +59,10 @@ argo-cd:
     resources:
       limits:
         cpu: 50m
-        memory: 128Mi
+        memory: 192Mi
       requests:
         cpu: 10m
-        memory: 64Mi
+        memory: 128Mi
 
   notifications:
     resources:
