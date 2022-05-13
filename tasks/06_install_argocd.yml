@@ -113,17 +113,6 @@
     include_tasks: "checkin_argocd_repo_files.yml"
 
   # Let Helm know not to manage ArgoCD anymore
-#  - name: Remove ArgoCD secrets from Helm
-#    kubernetes.core.k8s:
-#      state: absent
-#      definition:
-#        api_version: v1
-#        kind: Secrets
-#        namespace: "{{install.argocd.namespace}}"
-#        metadata:
-#          labels:
-#            owner: helm
-#            name: argocd
   - name: Remove ArgoCD secrets from Helm
     ansible.builtin.command:
       argv:
