@@ -9,15 +9,40 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-
   source:
-    repoURL: {{install.argocd.repository.url}}.git
-    targetRevision: HEAD
-    path: workloads/traefik/
+    chart: traefik
+    repoURL: https://helm.traefik.io/traefik
+    targetRevision: {{install.traefik.install_version}}
     helm:
-      releaseName: {{install.traefik.release}}
-      valueFiles:
-        - values.yaml
+      values: |
+        deployment:
+          kind: DaemonSet
+        # We will define our own Ingress Route
+        ingressRoute:
+          dashboard:
+            enabled: false
+        globalArguments: []
+        additionalArguments:
+          - "--api.dashboard=true"
+          - "--serversTransport.insecureSkipVerify=true"
+          - "--providers.kubernetesingress.ingressendpoint.publishedservice={{install.traefik.namespace}}/traefik"
+        #  - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
+        #  - "--entryPoints.web.http.redirections.entryPoint.scheme=https"
+        service:
+          enabled: true
+          type: LoadBalancer
+{% if traefik_lb_ip is defined %}
+          spec:
+            loadBalancerIP: "{{traefik_lb_ip}}"
+{% endif %}
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "50Mi"
+          limits:
+            cpu: "300m"
+            memory: "150Mi"
+        nodeSelector: {"node-role.kubernetes.io/master": "true"}
 
   destination:
     server: https://kubernetes.default.svc
@@ -26,6 +51,6 @@ spec:
   syncPolicy:
     automated:
       prune: true
-      selfHeal: true
+      selfHeal: false
     syncOptions:
     -  Validate=true
