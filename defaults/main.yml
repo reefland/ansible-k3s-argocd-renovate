@@ -106,6 +106,27 @@ install:
     # Cron style schedule when renovate should look for updates
     schedule: "0 1 * * *"                     # At 01:00 every day
 
+  ###[ Cert Manager Installation Settings ]########################################################
+  cert_manager:
+    # Select release to use:  https://github.com/cert-manager/cert-manager/releases
+    install_version: "{{cert_manager_install_version|default('v1.7.1')}}"
+
+    namespace: "cert-manager"
+
+  ###[ Let's Encrypt Certificate Configuration ]###################################################
+  lets_encrypt:
+    # Define secrets in vars/secrets/main.yml
+    le_api_token_name: "{{DNS_API_TOKEN_SECRET}}"  # Define the name of the API token key                                           #
+    le_api_token_email: "{{AUTH_EMAIL_SECRET}}"    # Define the name of the email authorization key
+
+    le_email_auth: "{{LE_AUTH_EMAIL_SECRET}}"      # Define the name of the Let's Encrypt Email Address
+    domains: "{{LE_DOMAINS_SECRET}}"               # List of Domain Names for LetsEncrypt Certificates
+
+    # to create prod certificates --extra-vars="le_staging=false"
+    le_staging: "{{le_staging|default(true)}}"
+
+###[ Optional Software Listed Below - Can be DISABLED ]############################################
+
   ###[ Kube-VIP Configuration Settings ]###########################################################
   # Kube-VIP provides HA Load Balancer for the API service and optionally LoadBalancer services
   # It can optionally also provide Load Balancer services a pool of address to use instead of
@@ -133,21 +154,35 @@ install:
       # Select release to use: https://github.com/kube-vip/kube-vip-cloud-provider/releases
       install_version: "{{kube_vip_cloud_provider_install_version|default('v0.0.2')}}"
 
-  ###[ Cert Manager Installation Settings ]########################################################
-  cert_manager:
-    # Select release to use:  https://github.com/cert-manager/cert-manager/releases
-    install_version: "{{cert_manager_install_version|default('v1.7.1')}}"
+  ###[ Traefik Installation Settings ]#############################################################
+  traefik:
+    # When enabled Traefik will be used as an Ingress Controller and be used to handle IngressRoutes
+    # for various dashboards offered by installed software.  Traefik will be deployed as a DaemonSet
+    # for High Availability.
 
-    namespace: "cert-manager"
+    # When enabled, you must define variable "traefik_lb_ip" at host or group level within
+    # inventory, host_var or group_var file. This must be set to an IP address WITHIN the 
+    # Kube-VIP CIDR range defined in "vip_lb_ip_range" variable (above).
+    enabled: true
 
-  ###[ Let's Encrypt Certificate Configuration ]###################################################
-  lets_encrypt:
-    # Define secrets in vars/secrets/main.yml
-    le_api_token_name: "{{DNS_API_TOKEN_SECRET}}"  # Define the name of the API token key                                           #
-    le_api_token_email: "{{AUTH_EMAIL_SECRET}}"    # Define the name of the email authorization key
+    # Select release to use: https://github.com/traefik/traefik-helm-chart/tags
+    install_version: "{{traefik_install_version|default('v10.19.4')}}"
 
-    le_email_auth: "{{LE_AUTH_EMAIL_SECRET}}"      # Define the name of the Let's Encrypt Email Address
-    domains: "{{LE_DOMAINS_SECRET}}"               # List of Domain Names for LetsEncrypt Certificates
+    namespace: "traefik"                      # Add resources to this namespace
+    release: "traefik"                        # Release value passed to Helm
 
-    # to create prod certificates --extra-vars="le_staging=false"
-    le_staging: "{{le_staging|default(true)}}"
+    # Traefik Dashboard
+    dashboard:
+      create_route: true                      # Create Ingress Router to make accessible 
+      enable_https: true                      # Require HTTPS to access dashboard
+      enable_basic_auth: true                 # Require Authentication to access dashboard
+
+      # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+      # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+      ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
+      
+      # Default Dashboard URL:  https://k3s.{{ansible_domain}}/dashboard/
+      path: "/dashboard"                      # PathPrefix for dashboard
+
+      # Define secrets in vars/secrets/main.yml
+      allowed_users: "{{TRAEFIK_DASHBOARD_USERS_SECRET}}"    # Encoded users and passwords for basic authentication

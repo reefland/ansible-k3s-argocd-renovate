@@ -1,0 +1,176 @@
+---
+image:
+  name: traefik
+  tag: "{{install.traefik.install_version}}"
+  pullPolicy: IfNotPresent
+
+deployment:
+  enabled: true
+  kind: DaemonSet
+  # Amount of time (in seconds) before Kubernetes will send the SIGKILL signal if Traefik does not shut down
+  terminationGracePeriodSeconds: 60
+  # The minimum number of seconds Traefik needs to be up and running before the DaemonSet/Deployment controller considers it available
+  minReadySeconds: 0
+  labels:
+    release: kube-stack-prometheus
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: false
+
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+  # Use to force a networking.k8s.io API Version for certain CI/CD applications. E.g. "v1beta1"
+  fallbackApiVersion: ""
+
+# Activate Pilot integration
+pilot:
+  enabled: false
+
+# Enable experimental features
+experimental:
+  http3:
+    enabled: false
+  plugins:
+    enabled: false
+  kubernetesGateway:
+    enabled: false
+
+# We will define our own Ingress Route
+ingressRoute:
+  dashboard:
+    enabled: false
+
+rollingUpdate:
+  maxUnavailable: 1
+  maxSurge: 1
+
+# Customize liveness and readiness probe values.
+readinessProbe:
+  failureThreshold: 1
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 2
+
+livenessProbe:
+  failureThreshold: 3
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 2
+
+providers:
+  kubernetesCRD:
+    enabled: true
+    allowCrossNamespace: false
+    allowExternalNameServices: false
+    ingressClass: traefik-internal
+
+  kubernetesIngress:
+    enabled: true
+    allowExternalNameServices: false
+    allowEmptyServices: false
+    ingressClass: "traefik-internal"
+    publishedService:
+      enabled: true
+
+log:
+  general:
+    level: ERROR
+  access:
+    enabled: false
+
+metrics:
+  prometheus:
+    entryPoint: metrics
+
+globalArguments: []
+#  - "--global.checknewversion"
+#  - "--global.sendanonymoususage"
+
+additionalArguments:
+  - "--api.dashboard=true"
+  - "--serversTransport.insecureSkipVerify=true"
+  - "--providers.kubernetesingress.ingressendpoint.publishedservice={{install.traefik.namespace}}/traefik"
+#  - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
+#  - "--entryPoints.web.http.redirections.entryPoint.scheme=https"
+
+ports:
+  traefik:
+    port: 9000
+    expose: false
+    exposedPort: 9000
+    protocol: TCP 
+  web:
+    port: 8000
+    expose: true
+    exposedPort: 80
+    protocol: TCP
+  websecure:
+    port: 8443
+    expose: true
+    exposedPort: 443
+    protocol: TCP
+    tls:
+      enabled: true
+  metrics:
+    port: 9100
+    expose: false
+    exposedPort: 9100
+    protocol: TCP
+
+service:
+  enabled: true
+  type: LoadBalancer
+{% if traefik_lb_ip is defined %}
+  spec:
+    loadBalancerIP: "{{traefik_lb_ip}}"
+{% endif %}
+
+autoscaling:
+  enabled: false
+
+persistence:
+  enabled: false
+
+rbac:
+  enabled: true
+  namespaced: false
+
+resources:
+   requests:
+     cpu: "100m"
+     memory: "50Mi"
+   limits:
+     cpu: "300m"
+     memory: "150Mi"
+
+nodeSelector: {"node-role.kubernetes.io/master": "true"}
+
+tolerations:
+  - key: "CriticalAddonsOnly"
+    operator: "Exists"
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/master"
+    operator: "Exists"
+    effect: "NoSchedule"
+
+priorityClassName: "system-cluster-critical"
+
+securityContext:
+  capabilities:
+    drop: [ALL]
+  readOnlyRootFilesystem: true
+  runAsGroup: 65532
+  runAsNonRoot: true
+  runAsUser: 65532
+
+podSecurityContext:
+  fsGroup: 65532
+  
+dashboard:
+  enabled: true

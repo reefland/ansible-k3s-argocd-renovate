@@ -19,6 +19,7 @@
     loop:
       - { enabled: "{{install.kube_vip.enabled|default(false)|bool}}",    name: "kube-vip" }
       - { enabled: "{{install.kube_vip.lb.enabled|default(false)|bool}}", name: "kube-vip-cloud-provider" }
+      - { enabled: "{{install.traefik.enabled|default(false)|bool}}",     name: "traefik"}
     when:
       - deploy_app.enabled == true
     loop_control:
