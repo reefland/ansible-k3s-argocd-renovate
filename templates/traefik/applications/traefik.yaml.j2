@@ -28,6 +28,31 @@ spec:
           - "--providers.kubernetesingress.ingressendpoint.publishedservice={{install.traefik.namespace}}/traefik"
         #  - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
         #  - "--entryPoints.web.http.redirections.entryPoint.scheme=https"
+
+        ports:
+          traefik:
+            port: 9000
+            expose: false
+            exposedPort: 9000
+            protocol: TCP 
+          web:
+            port: 8000
+            expose: true
+            exposedPort: 80
+            protocol: TCP
+          websecure:
+            port: 8443
+            expose: true
+            exposedPort: 443
+            protocol: TCP
+            tls:
+              enabled: true
+          metrics:
+            port: 9100
+            expose: false
+            exposedPort: 9100
+            protocol: TCP
+
         service:
           enabled: true
           type: LoadBalancer
