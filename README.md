@@ -3,7 +3,7 @@
 An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubernetes' deployment with many enhancements:
 
 * **non-root** user account for Kubernetes, passwordless access to `kubectl` by default.
-* [condainerd](https://containerd.io/) to provide [ZFS snapshotter](https://github.com/containerd/zfs) support.
+* [containerd](https://containerd.io/) to provide [ZFS snapshotter](https://github.com/containerd/zfs) support.
 * **Centralized cluster system logging** via [rsyslog](https://www.rsyslog.com/) with real-time viewing with [lnav](https://lnav.org/) utility.
 * [Helm Client](https://helm.sh/docs/intro/using_helm/) for installing applications in Kubernetes.
 * [ArgoCD](https://argoproj.github.io/cd/) will deploy all applications used here. They are added to Git repository for ArgoCD and every few minutes it confirms that applications are deployed as configured.
@@ -19,7 +19,7 @@ Optionally Installed:
 * [kube-vip](https://kube-vip.chipzoller.dev/) for Kubernetes API Load Balancer
 * [kube-vip-cloud-provider](https://kube-vip.chipzoller.dev/) Load Balancer to replace [K3s Klipper](https://github.com/k3s-io/klipper-lb) Load Balancer for ingress traffic.
 * [Traefik](https://traefik.io/) Load Balanced ingress deployed as a DaemonSet.
-  * IngressRoutes for the folloing will be generated and deployed:
+  * IngressRoutes for the following will be generated and deployed:
     * Traefik Dashboard
     * ArgoCD Dashboard
 
