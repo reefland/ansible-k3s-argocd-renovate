@@ -22,10 +22,10 @@ If the repository is empty:
 ### Populated Repository
 
 * The repository is cloned as-is.
-* This ansible script will render missing files into the repository.
-  * Might mess up existing files if they are different!
+* This ansible script will render new or missing (deleted) files into the repository.
+  * Ansible will not update or overwrite existing files in the repository.
 * Any updated files are checked into the repository.
-* ArgoCD is configured to monitor this repository and deploy whatever applications are not yet deployed.
+* ArgoCD is configured to monitor this repository and deploy whatever applications are not yet deployed or sync changes to existing application.
 
 ---
 
