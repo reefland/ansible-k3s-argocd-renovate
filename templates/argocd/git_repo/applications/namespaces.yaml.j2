@@ -6,7 +6,7 @@ metadata:
   name: namespaces
   # run before the others to create namespaces
   annotations:
-    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/sync-wave: "-5"  # Lower the number the sooner to deploy
 spec:
   project: default
 

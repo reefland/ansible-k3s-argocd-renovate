@@ -7,6 +7,9 @@ metadata:
   # cascade deletes
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"  # Lower the number the sooner to deploy
+    
 spec:
   project: default
 
