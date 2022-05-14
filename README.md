@@ -6,7 +6,7 @@ An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubern
 * [condainerd](https://containerd.io/) to provide [ZFS snapshotter](https://github.com/containerd/zfs) support.
 * **Centralized cluster system logging** via [rsyslog](https://www.rsyslog.com/) with real-time viewing with [lnav](https://lnav.org/) utility.
 * [Helm Client](https://helm.sh/docs/intro/using_helm/) for installing applications in Kubernetes.
-* [ArgoCD](https://argoproj.github.io/cd/) will deploy all applications added to Git repository and every few minutes confirm that applications are deployed as configured.
+* [ArgoCD](https://argoproj.github.io/cd/) will deploy all applications used here. They are added to Git repository for ArgoCD and every few minutes it confirms that applications are deployed as configured.
   * Non-compliant changes are automatically detected and optionally rolled back automatically.
 * [Renovate](https://docs.renovatebot.com/) runs as nightly (or on demand) job scanning the Git repository to detect if application upgrades are available.
   * If an upgrade is detected, Renovate will generate a Pull Request (PR) in the Git repository where you can review and approve the upgrade.
@@ -18,6 +18,10 @@ Optionally Installed:
 
 * [kube-vip](https://kube-vip.chipzoller.dev/) for Kubernetes API Load Balancer
 * [kube-vip-cloud-provider](https://kube-vip.chipzoller.dev/) Load Balancer to replace [K3s Klipper](https://github.com/k3s-io/klipper-lb) Load Balancer for ingress traffic.
+* [Traefik](https://traefik.io/) Load Balanced ingress deployed as a DaemonSet.
+  * IngressRoutes for the folloing will be generated and deployed:
+    * Traefik Dashboard
+    * ArgoCD Dashboard
 
 ---
 
@@ -82,6 +86,7 @@ I provide a lot of documentation notes below for my own use.  If you find it ove
 * Review [Let's Encrypt Configuration](docs/lets-encrypt-settings.md)
 
 * Review [Kube-vip API Load Balancer Settings](docs/kube-vip-settings.md)
+* Review [Traefik and Dashboard Settings](docs/traefik-settings.md)
 
 ---
 
@@ -107,6 +112,7 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
     vars:
       vip_endpoint_ip: "192.168.10.220"
       vip_lb_ip_range: "cidr-global: 192.168.10.221/30"   # 4 Addresses pool
+      traefik_lb_ip: "192.168.10.221"           # must be within cidr ip_range
 
   k3s_workers:
     hosts:
@@ -129,9 +135,9 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
       renovate_install_version: "32.45.5"
       cert_manager_install_version: "v1.7.1"
       kube_vip_install_version: "v0.4.2"
+      traefik_install_version: "v10.19.4"
 
       longhorn_install_version: "v1.2.4"
-      traefik_install_version: "v2.6.3"
       prometheus_op_install_version: "34.7.1"
 
       k3s_cluster_ingress_name: "k3s-test.{{ansible_domain}}"
@@ -162,7 +168,8 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
 For simplicity I show the variables within the inventory file.  You can place these in respective group vars and host vars files.  
 
 * `vip_endpoint_ip` specifies the IP address to be used for the Kubernetes API Load Balancer provided by Kube-vip
-* `vip_lb_ip_range` defines the IP address range kube-vip can use to provide IP addresses for LoadBalancer services.
+* `vip_lb_ip_range` a CIDR expression which defines the IP address range kube-vip can use to provide IP addresses for LoadBalancer services.
+* `traefik_lb_ip` defines the IP address to be used for the Traefik ingress controller Load Balancer.  It must be within the range defined by `vip_lb_ip_range` CIDR.
 
 ---
 
@@ -212,6 +219,7 @@ The idea behind pinning specific versions of software is so that an installation
 * `cert_manager_install_version` pins the Cert-manager Helm [Release](https://github.com/cert-manager/cert-manager/releases)
 * `kube_vip_install_version` pins the Application Container Tag [Release](https://github.com/kube-vip/kube-vip/releases)
 * `kube_vip_cloud_provider_install_version` pins the Application Container Tag [Release](https://github.com/kube-vip/kube-vip-cloud-provider/releases)
+* `traefik_install_version` pings the Traefik Helm [Release](https://github.com/traefik/traefik-helm-chart/tags) version.
 
 ---
 

@@ -170,7 +170,6 @@ install:
     install_version: "{{traefik_install_version|default('v10.19.4')}}"
 
     namespace: "traefik"                      # Add resources to this namespace
-    release: "traefik"                        # Release value passed to Helm
 
     # Traefik Dashboard
     dashboard:
