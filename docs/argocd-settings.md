@@ -94,7 +94,7 @@ ansible-vault encrypt vars/secrets/main.yml
 
 The ArgoCD Settings are in variable namespace `install.argocd`.
 
-* Enable or disable installtion of ArgoCD. Disabled will prevent the installation of all applications beyond the reduced K3s installation.
+* Enable or disable installation of ArgoCD. Disabled will prevent the installation of all applications beyond the reduced K3s installation.
 
   ```yaml
   install:
@@ -133,6 +133,8 @@ The ArgoCD Settings are in variable namespace `install.argocd`.
 ---
 
 ## ArgoCD Initial Dashboard
+
+Once Traefik has been deployed the ArgoCD Dashboard URL path will resemble: `https://k3s.example.com/dashboard/`.  (If you need earlier access the ArgoCD Dashboard via Port Forwarding, see instructions below.)
 
 The following shows the contents of the ArgoCD dashboard when only ArgoCD and Renovate are installed.
 
