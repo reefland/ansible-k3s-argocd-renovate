@@ -16,7 +16,10 @@
     apt:
       name: "{{k3s.packages}}"
       state: present
-      lock_timeout: 120
+    register: result
+    retries: 10             # Sometimes unattended upgrades is running
+    delay: 10
+    until: result is success
 
   - name: Install Kubernetes pip3 packages for Ansible
     pip:
