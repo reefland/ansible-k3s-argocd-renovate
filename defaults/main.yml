@@ -140,7 +140,7 @@ install:
     enabled: true
 
     # Select release to use: https://github.com/kube-vip/kube-vip/releases
-    install_version: "{{kube_vip_install_version|default('v0.4.2')}}"
+    install_version: "{{kube_vip_install_version|default('v0.4.4')}}"
 
     # To use Kube-VIP Cloud Provider as LoadBalancer instead of MetalLB
     lb:
