@@ -62,18 +62,26 @@ Within a few seconds the code merge has completed.
 
 Within a few minutes ArgoCD will perform its routine scanning of the repository and detect the application is no longer in sync with what is deployed in Kubernetes.
 
-![argocd kube-vip of of sync](../images/argocd_pr_out_of_sync.png)
+![argocd kube-vip out of sync](../images/argocd_pr_out_of_sync.png)
 
 * If the application is configured for self healing, it will automatically deploy the changes made by Renovate.  Otherwise it will be remain in "OutOfSync" waiting for you to manually process Sync changes.
 
 Once the sync has been processed, the sync message will reflect that PR has been applied.
 
-![argocd](../images/argocd_pr_synced.png)
+![argocd kube-vip synced](../images/argocd_pr_synced.png)
 
 * Sync comment shows that pull request #2 as applied, everything is Synced and application is healthy.
 
 ---
 
 The upgrade has completed.  The process starts over with Renovate monitoring the project for an update release, and then this cycle will restart itself again.
+
+---
+
+Looking at the ArgoCD Repository workloads directory will show comments about the updates applied.
+
+![argoCD](../images/argocd_repo_updates.png)
+
+You will see fewer references to the initial Ansible commit as Renovate and Argo CD upgrade applications.
 
 [Back to README.md](../README.md)
