@@ -10,7 +10,7 @@ Once **ArgoCD** & **Renovate** applications are deployed, the first job Renovate
 
 ## Initial Pull Request
 
-Your introduction to Renovate beings with PR (Pull Request) #1, which can be found under the "Pull Request" tab of your ArgoCD repository:
+Your introduction to Renovate begins with PR (Pull Request) #1, which can be found under the `Pull request` tab of your ArgoCD repository:
 ![Renovate Initial Pull Request](../images/renovate_initial_configure_renovate_pr.png)
 
 * Click `Configure Renovate` link to review the PR which was generated.
@@ -58,5 +58,9 @@ Within a few seconds the code merge has completed.
 ![Delete](../images/renovate_initial_configure_renovate_pr_merge_closed_and_deleted.png)
 
 * You can can safely click button `[ Delete branch ]` as it is no longer needed.
+
+---
+
+See [Example of 4 Application Upgrade PR requests from above](renovate-workflow-multi.md) opened by Renovate.
 
 [Back to README.md](../README.md)

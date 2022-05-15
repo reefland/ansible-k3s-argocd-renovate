@@ -8,6 +8,8 @@
 * Renovate configuration via Ansible will attempt parse the Git URL and Access Token defined for ArgoCD to the formats required by Renovate. Seems to work, might not be fool-proof. You can override values if needed
 * Renovate will open a Pull Request when an application upgrade is detected
   * After the 1st run it will open a Pull Request as an introduction to the process so you have an idea what to expect
+  * See [Example of Initial PR (Pull Request)](renovate-workflow-example.md)
+  * See [Example of Application Upgrade PR (Pull Requests)](renovate-workflow-multi.md)
 
 ---
 
