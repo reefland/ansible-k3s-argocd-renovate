@@ -15,7 +15,6 @@ NOTE: Don't change which member is the centralized logging server name once depl
 
 The Containerd Settings are in variable namespace `install.os.central_logging`.
 
-
 ### Define Centralized Logging Directory
 
 The directory where all system logs will be stored on the centralized logging server:
