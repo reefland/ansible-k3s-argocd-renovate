@@ -12,7 +12,7 @@ An Ansible playbook to provide automated 'K3s Lightweight Distribution of Kubern
   * If an upgrade is detected, Renovate will generate a Pull Request (PR) in the Git repository where you can review and approve the upgrade.
   * This process updates the deployment manifest files which ArgoCD detects and will deploy the upgraded application for you.
   * ArgoCD and Renovate work together to help keep your application versions current and prevent configuration drift.
-* [Cert-manager](https://cert-manager.io/) with [Let's Encrypt](https://letsencrypt.org/) **wildcard certificates** for domains against Let's Encrypt staging or prod (Cloudflare DNS validator).
+* [Cert-manager](https://cert-manager.io/) with [Let's Encrypt](https://letsencrypt.org/) **wildcard certificates** for your domains generated against Let's Encrypt staging or prod (Cloudflare DNS validator).
 
 Optionally Installed:
 
@@ -35,7 +35,7 @@ Optionally Installed:
 * Ansible will render all initial application manifest files and commit them to Git repository
 * **ArgoCD** will see remaining missing applications and deploy them as defined
 * **Renovate** will monitor deployed application manifests and provide update notifications via Pull Request process
-* **Let's Encrypt** configuration requires you to define your challenge credentials and list domains for certificate generation.
+* **Let's Encrypt** configuration requires you to define your challenge credentials and list domains for certificate generation
 * **Kube-vip** Load Balancer section will require you to specify a range of IP addresses available for use and a VIP address for the API Load Balancer
 
 ---
@@ -75,6 +75,8 @@ I provide a lot of documentation notes below for my own use.  If you find it ove
 ---
 
 ## Review `defaults/main.yml` for initial settings
+
+Each of these links provide useful documentation details:
 
 * Review [Linux OS Settings](docs/os-settings.md)
 * Review [Centralized Cluster System Logs Settings](docs/rsyslog-settings.md)

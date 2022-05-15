@@ -7,25 +7,26 @@
 * ArgoCD will be used to deploy & monitor changes to deployed applications.
 * ArgoCD requires a Git repository (GitHub) to store its configuration.
   * A Private repository is recommended and supported by default.
-  * This should be a empty repository dedicated to ArgoCD's usage.
+  * This should be a empty repository dedicated for ArgoCD's usage.
 
-### Empty Repository
+### Initial Empty Repository
 
-If the repository is empty:
+When the repository is empty:
 
 * The empty repository is cloned to establish a git directory structure.
-* This Ansible script renders a set of default application manifests files to built the cluster services.
-* The rendered ArgoCD manifest is used to install ArgoCD via rendered Helm Chart.
-* The rendered manifest files are checked into the repository, thus no longer empty.
-* ArgoCD is configured to monitor this repository and deploy whatever applications are not yet deployed.
+* This Ansible process renders an initial set of all application manifests files to built the cluster services used by this Ansible install method.
+* The rendered ArgoCD manifest and values files are used to install ArgoCD via Helm.
+* The rendered manifest files are checked into the Git repository. It will no longer be empty.
+* ArgoCD will now start to monitor the repository and deploy any application and configuration which are not yet deployed.
 
 ### Populated Repository
 
 * The repository is cloned as-is.
 * This ansible script will render new or missing (deleted) files into the repository.
   * Ansible will not update or overwrite existing files in the repository.
+  * If you want Ansible to render a new version of an existing file, delete that file from the repository.
 * Any updated files are checked into the repository.
-* ArgoCD is configured to monitor this repository and deploy whatever applications are not yet deployed or sync changes to existing application.
+* ArgoCD will monitor the repository and process whatever new applications or configuration changes that were added
 
 ---
 
@@ -127,14 +128,14 @@ The ArgoCD Settings are in variable namespace `install.argocd`.
   ```
 
   * The `name` is used within ArgoCD, it can be changed if you like.
-  * The `ARGOCD_REPO_URL_SECRET`, `ARGOCD_REPO_USERNAME_SECRET`, `ARGOCD_REPO_PASSWORD_SECRET` values should be defined in `vars/secrets/main.yaml` file
+  * The `ARGOCD_REPO_URL_SECRET`, `ARGOCD_REPO_USERNAME_SECRET`, `ARGOCD_REPO_PASSWORD_SECRET` values should be defined in `vars/secrets/main.yaml` file.
     * Be sure to to use `ansible-vault` to encrypt your secrets.
 
 ---
 
 ## ArgoCD Initial Dashboard
 
-Once Traefik has been deployed the ArgoCD Dashboard URL path will resemble: `https://k3s.example.com/dashboard/`.  (If you need earlier access the ArgoCD Dashboard via Port Forwarding, see instructions below.)
+Once Traefik has been deployed the ArgoCD Dashboard URL path will resemble: `https://k3s.example.com/argocd/`.  (If you need earlier access the ArgoCD Dashboard via Port Forwarding, see instructions below.)
 
 The following shows the contents of the ArgoCD dashboard when only ArgoCD and Renovate are installed.
 
