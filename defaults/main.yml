@@ -76,7 +76,7 @@ install:
     enabled: true
 
     # Select Release to install: https://artifacthub.io/packages/helm/argo/argo-cd
-    install_version: "{{argocd_install_version|default('4.5.10')}}"
+    install_version: "{{argocd_install_version|default('4.6.0')}}"
     
     namespace: "argocd"
 
@@ -96,7 +96,7 @@ install:
   # request to start the process of upgrading applications.
   renovate:
     # Select Release to install: https://github.com/renovatebot/helm-charts/releases
-    install_version: "{{renovate_install_version|default('32.45.5')}}"
+    install_version: "{{renovate_install_version|default('32.52.2')}}"
 
     namespace: "renovate"
 
@@ -110,7 +110,7 @@ install:
   ###[ Cert Manager Installation Settings ]########################################################
   cert_manager:
     # Select release to use:  https://github.com/cert-manager/cert-manager/releases
-    install_version: "{{cert_manager_install_version|default('v1.7.1')}}"
+    install_version: "{{cert_manager_install_version|default('v1.8.0')}}"
 
     namespace: "cert-manager"
 
