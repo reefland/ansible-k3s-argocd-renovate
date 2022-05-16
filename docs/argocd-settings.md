@@ -215,7 +215,8 @@ The application / objects deployed via this Ansible process are assigned the fol
 |  0              | Kube-vip API Load Balancer  |
 |  0              | Kube-vip Cloud Provider Service Load Balancer |
 |  1              | Traefik Ingress Controller Application        |
-|  3              | Traefik Configuration (certs, ingress routes) |
+|  1              | Let's Encrypt Wildcard Certificate Generation |
+|  3              | Traefik Configuration (IngressRoutes, Authentication Secrets, etc) |
 |  5              | Longhorn Distributed Cluster Storage          |
 
 [Back to README.md](../README.md)

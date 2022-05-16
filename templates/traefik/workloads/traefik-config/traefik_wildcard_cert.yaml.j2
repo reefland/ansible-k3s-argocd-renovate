@@ -4,6 +4,8 @@ kind: Certificate
 metadata:
   name: wildcard-cert
   namespace: {{install.traefik.namespace}}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"  # Lower the number the sooner to deploy 
 spec:
   # Secret names are always required.
   secretName: wildcard-cert
