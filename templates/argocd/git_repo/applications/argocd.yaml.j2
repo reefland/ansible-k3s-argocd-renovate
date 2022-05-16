@@ -27,7 +27,8 @@ spec:
     namespace: {{install.argocd.namespace}}
 
   ignoreDifferences:
-  - kind: Secret                              # Secert updates overtime
+  - group: apps
+    kind: Secret                              # Secert updates overtime
     name: argocd-secret
     namespace: {{install.argocd.namespace}}
     jsonPointers:
