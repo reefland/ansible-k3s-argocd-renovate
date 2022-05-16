@@ -1,6 +1,7 @@
 ---
 - name: Process App to Deploy Block
   block:
+  ###[ Process the ArgoCD repository files for application ]#######################################
   - name: "Create Directory Structure for {{deploy_app}} in ArgoCD Repository"
     file:
       state: directory
@@ -9,9 +10,11 @@
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
     with_filetree: "../templates/{{deploy_app.name}}"
+    loop_control:
+      label: "{{ item.path }}"
     when: item.state == "directory"
 
-  - name: Process Template Files for {{deploy_app}} in ArgoCD Repository
+  - name: "Process Template Files for {{deploy_app}} in ArgoCD Repository"
     template:
       src: "{{ item.src }}"
       dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path | regex_replace('\\.j2$', '') }}"
@@ -20,10 +23,38 @@
       group: "{{install.os.non_root_user.name}}"
       force: no                                       # Do not overwrite existing files in repo (which might force old versions)
     with_filetree: "../templates/{{deploy_app.name}}"
+    loop_control:
+      label: "{{ item.path }}"
     when: item.state == "file"
+
+  ###[ Process non-root user home directory files for application ]################################
+  - name: "Create Directory Structure for {{deploy_app}} in {{install.os.non_root_user.name}} user's home"
+    file:
+      state: directory
+      dest: "/home/{{install.os.non_root_user.name}}/{{ item.path }}"
+      mode: 0700
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+    with_filetree: "../templates/user-files/{{deploy_app.name}}"
+    loop_control:
+      label: "{{ item.path }}"
+    when: item.state == "directory"
+
+  - name: "Process Template Files for {{deploy_app}} in {{install.os.non_root_user.name}} user's home"
+    template:
+      src: "{{ item.src }}"
+      dest: "/home/{{install.os.non_root_user.name}}/{{ item.path | regex_replace('\\.j2$', '') }}"
+      mode: 0660
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      force: yes
+    with_filetree: "../templates/user-files/{{deploy_app.name}}"
+    loop_control:
+      label: "{{ item.path }}"
+    when: item.state == "file"
+
   when: 
     - inventory_hostname == groups['k3s_control'][0]
-
   tags:
     - install_argocd
     - deploy_apps
