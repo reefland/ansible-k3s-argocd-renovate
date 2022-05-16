@@ -26,6 +26,13 @@ spec:
     server: https://kubernetes.default.svc
     namespace: {{install.argocd.namespace}}
 
+  ignoreDifferences:
+  - kind: Secret                              # Secert updates overtime
+    name: argocd-secret
+    namespace: {{install.argocd.namespace}}
+    jsonPointers:
+    - /spec/data
+
   syncPolicy:
     automated:
       prune: true
