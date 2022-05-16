@@ -20,6 +20,7 @@
       - { enabled: "{{install.kube_vip.enabled|default(false)|bool}}",    name: "kube-vip" }
       - { enabled: "{{install.kube_vip.lb.enabled|default(false)|bool}}", name: "kube-vip-cloud-provider" }
       - { enabled: "{{install.traefik.enabled|default(false)|bool}}",     name: "traefik"}
+      - { enabled: "{{install.longhorn.enabled|default(false)|bool}}",    name: "longhorn"}
     when:
       - deploy_app.enabled == true
     loop_control:
@@ -49,5 +50,27 @@
   when: 
     - inventory_hostname == groups['k3s_control'][0]
     - install.argocd.enabled|default(false)|bool == true
+  tags:
+    - deploy_apps
+
+###[Application Specific Steps ]###################################################################
+
+###[ Longhorn Specific Tasks ]#####################################################################
+- name: Longhorn Specific Tasks Block
+  block:
+  - name: StorageClass Patch to Disable "local-path" as default class
+    kubernetes.core.k8s:
+      state: patched
+      kind: StorageClass
+      name: "local-path"
+      definition:
+        metadata:
+          annotations:
+            storageclass.kubernetes.io/is-default-class: "false"
+    when:
+      - install.longhorn.disable_local_path_as_default_storage_class|default(false)|bool == true
+  when:
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.longhorn.enabled|default(false)|bool == true
   tags:
     - deploy_apps

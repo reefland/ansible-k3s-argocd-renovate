@@ -186,3 +186,59 @@ install:
 
       # Define secrets in vars/secrets/main.yml
       allowed_users: "{{TRAEFIK_DASHBOARD_USERS_SECRET}}"    # Encoded users and passwords for basic authentication
+
+  ###[ Longhorn Installation Settings ]############################################################
+  longhorn:
+    # Longhorn distributed storage will be enabled on all nodes.  
+
+    # When enabled that node will have a portion of its local disk space made available to the
+    # cluster to provide replicated storage. By default the ZFS "rpool" storage pool will be used.
+    # The local and amount of space to dedicate to Longhorn can be specified per node or group of
+    # nodes based on the inventory file using variables "longhorn_zfs_pool" and "longhorn_vol_size".
+
+    enabled: "{{longhorn_enabled|default(true)}}"  # Install longhorn distributed cluster storage
+
+    # Select Release to use: https://github.com/longhorn/longhorn/releases 
+    install_version: "{{longhorn_install_version|default('v1.2.4')}}"
+
+    namespace: "longhorn-system"   # Add resources to this namespace
+
+    # Longhorn Dashboard
+    dashboard:
+      create_route: true           # Create Ingress Route to make accessible 
+      enable_https: true           # Require HTTPS to access dashboard
+      enable_basic_auth: true      # Require Authentication to access dashboard
+
+      # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+      # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+      ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
+
+      # Default Dashboard URL:  https://k3s.{{ansible_domain}}/longhorn/
+      path: "/longhorn"            # URI Path for Ingress Route
+
+      # Define secrets in vars/secrets/main.yml
+      allowed_users: "{{LONGHORN_DASHBOARD_USERS_SECRET}}"
+
+    # Define where ZFS Zvol should be created for Longhorn storage
+    zfs:                           # Combined "rpool/longhorn"
+      pool: "{{longhorn_zfs_pool|default('rpool')}}"
+      volume_name: "longhorn"              
+
+      zvol:
+        options:
+          volsize: "{{longhorn_vol_size|default('10G')}}"
+          compression: "lz4"       # "" (inherit), lz4, gzip-9, etc
+          volblocksize: "16k"
+
+        mountpoint: "/var/lib/longhorn"
+        
+    # The intent of longhorn is to be used instead of "local-path" storage class
+    # once Longhorn is installed "local-path" will be disabled as the default storage class
+    disable_local_path_as_default_storage_class: true
+
+    # Once installed and validated, a test claim can be processed.
+    test_claim:
+      enabled: true               # true = attempt longhorn storage claim
+      mode: "ReadWriteOnce"       # storage claim access mode
+      size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
+      remove: true                # true = remove claim when test is completed (false leaves it alone)

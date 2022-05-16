@@ -95,4 +95,15 @@ containerd:
 lets_encrypt:
 
   le_staging_server: "https://acme-staging-v02.api.letsencrypt.org/directory"
-  le_production_server: "https://acme-v02.api.letsencrypt.org/directory" 
+  le_production_server: "https://acme-v02.api.letsencrypt.org/directory"
+
+###[ Longhorn Configuration Setting ]##############################################################
+longhorn:
+
+  packages:
+    - open-iscsi
+
+  zfs:
+    # Format of the filesystem used for Longhorn storage
+    zvol:
+      format: "xfs" 

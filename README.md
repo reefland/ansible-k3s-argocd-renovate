@@ -18,10 +18,12 @@ Optionally Installed:
 
 * [kube-vip](https://kube-vip.chipzoller.dev/) for Kubernetes API Load Balancer
 * [kube-vip-cloud-provider](https://kube-vip.chipzoller.dev/) Load Balancer to replace [K3s Klipper](https://github.com/k3s-io/klipper-lb) Load Balancer for ingress traffic.
+* [Longhorn](https://longhorn.io/) distributed [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) as default storage class
 * [Traefik](https://traefik.io/) Load Balanced ingress deployed as a DaemonSet.
   * IngressRoutes for the following will be generated and deployed:
     * Traefik Dashboard
     * ArgoCD Dashboard
+    * Longhorn Dashboard
 
 ---
 
@@ -37,6 +39,7 @@ Optionally Installed:
 * **Renovate** will monitor deployed application manifests and provide update notifications via Pull Request process
 * **Let's Encrypt** configuration requires you to define your challenge credentials and list domains for certificate generation
 * **Kube-vip** Load Balancer section will require you to specify a range of IP addresses available for use and a VIP address for the API Load Balancer
+* **Longhorn** Distributed storage is intended to be the default storage class, the `local-path` StorageClass is not installed
 
 ---
 
@@ -56,6 +59,7 @@ Optionally Installed:
 * k3s (Runs official script [https://get.k3s.io](https://get.k3s.io))
 * [containerd](https://containerd.io/), container networking-plugins, iptables
 * [helm](https://helm.sh/), [helm diff](https://github.com/databus23/helm-diff), [apt-transport-https](http://manpages.ubuntu.com/manpages/focal/man1/apt-transport-https.1.html) (required for helm client install)
+* [open-iscsi](https://github.com/open-iscsi/open-iscsi), [lsscsi](http://sg.danny.cz/scsi/lsscsi.html), [sg3-utils](https://sg.danny.cz/sg/sg3_utils.html), [multipath-tools](https://github.com/opensvc/multipath-tools), [scsitools](https://packages.ubuntu.com/focal/scsitools-gui) (required by democratic-csi  and by Longhorn)
 
 ## Packages Uninstalled
 
@@ -89,6 +93,7 @@ Each of these links provide useful documentation details:
 
 * Review [Kube-vip API Load Balancer Settings](docs/kube-vip-settings.md)
 * Review [Traefik and Dashboard Settings](docs/traefik-settings.md)
+* Review [Longhorn Distributed Storage Settings](docs/longhorn-settings.md)
 
 ---
 

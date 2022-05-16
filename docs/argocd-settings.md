@@ -135,7 +135,9 @@ The ArgoCD Settings are in variable namespace `install.argocd`.
 
 ## ArgoCD Initial Dashboard
 
-Once Traefik has been deployed the ArgoCD Dashboard URL path will resemble: `https://k3s.example.com/argocd/`.  (If you need earlier access the ArgoCD Dashboard via Port Forwarding, see instructions below.)
+Once Traefik has been deployed the ArgoCD Dashboard URL path will resemble: `https://k3s.example.com/argocd/`.  
+
+* If you need earlier access to the ArgoCD Dashboard via Port Forwarding, see section `Early Access to ArgoCD Dashboard` below.
 
 The following shows the contents of the ArgoCD dashboard when only ArgoCD and Renovate are installed.
 
@@ -181,5 +183,39 @@ kubectl logs pod/argocd-repo-server-b884f4bc5-nsr8q -n argocd
 ```
 
 * Adjust the pod name to match whatever your instance shows.
+
+---
+
+## ArgoCD Initial Cluster Full Deployment - Sync Waves
+
+When all (or most) of the default applications in this Ansible playbook are added to the ArgoCD repository, upon ArgoCD first repository sync process it can be a chaotic race condition of deployments and service creation.  Usually Kubernetes deployment progressions can handle this by stalling a deployment until required items are available.  However after much testing, it seemed I had repeated issues with Cluster Load Balancers not giving out IP addresses and Let's Encrypt certificates not being fully created. To help with this ArgoCD Sync waves are implemented.
+
+Sync waves are an integer number (negative or positive) assigned via Kubernetes annotations to application deployments and objects. The lower the number the earlier ArgoCD will process it. For the Initial Cluster Sync ArgoCD will:
+
+* Scan every application being deployed looking for Sync Wave annotations.
+* Arrange applications/objects to process via Sync Wave number (lowest to highest) to determine order of processing.
+  * Applications without a defined Sync Wave number are assigned `0` (zero)
+* Applications with the same Sync Wave number are installed at the same time.
+* Once all applications with the same Sync Wave number are synced and healthy:
+  * ArgoCD pauses for a few seconds for the cluster to catch up.
+  * ArgoCD moves to the next highest Sync Wave number.
+* This process progresses until all applications have been Synced.
+
+### Sync Wave Values Assigned to Applications
+
+The application / objects deployed via this Ansible process are assigned the following:
+
+| Sync Wave Value | Description                 |
+|     :----:      | :---                        |
+| -5              | All namespaces              |
+| -3              | ArgoCD Application          |
+| -1              | Cert-manager                |
+| -1              | Let's Encrypt Configuration |
+| -1              | Renovate                    |
+|  0              | Kube-vip API Load Balancer  |
+|  0              | Kube-vip Cloud Provider Service Load Balancer |
+|  1              | Traefik Ingress Controller Application        |
+|  3              | Traefik Configuration (certs, ingress routes) |
+|  5              | Longhorn Distributed Cluster Storage          |
 
 [Back to README.md](../README.md)

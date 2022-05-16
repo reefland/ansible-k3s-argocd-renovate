@@ -29,6 +29,15 @@
 - name: Setup Longhorn Storage Location
   block:
 
+  - name: Install Longhorn iSCSI Support packages
+    apt:
+      name: "{{longhorn.packages}}"
+      state: present
+    register: result
+    retries: 10             # Sometimes unattended upgrades is running
+    delay: 10
+    until: result is success
+
   - name: Enable and Start open-iscsi Service
     ansible.builtin.systemd:
       enabled: yes
@@ -77,6 +86,6 @@
       - longhorn_zvol.stdout.find("TARGET") == -1
 
   when:
-    - install.longhorn.install_this|default(false)|bool == true
+    - install.longhorn.enabled|default(false)|bool == true
   tags:
     - prep_os

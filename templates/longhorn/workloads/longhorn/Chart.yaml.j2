@@ -1,0 +1,10 @@
+apiVersion: v2
+type: application
+name: longhorn
+version: 0.0.0 # unused
+appVersion: 0.0.0 # unused
+dependencies:
+  - name: longhorn
+    repository: https://charts.longhorn.io
+    version: {{install.longhorn.install_version}}
+    condition: longhorn.enabled

@@ -1,0 +1,7 @@
+# Reference: https://github.com/longhorn/charts/blob/master/charts/longhorn/values.yaml
+
+persistence:
+  reclaimPolicy: Delete
+
+defaultSettings:
+  defaultDataPath: {{install.longhorn.zfs.zvol.mountpoint}}
