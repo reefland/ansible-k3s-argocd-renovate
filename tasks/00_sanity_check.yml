@@ -3,7 +3,7 @@
 
 - name: Sanity Check Variable Block
   block:
-    - name: Variable vip_endpoint_ip is undefined
+    - name: Variable vip_endpoint_ip is undefined check
       fail:
         msg: |
           Since install.kube_vip.enabled is True
@@ -17,7 +17,7 @@
         - vip_endpoint_ip is undefined
         - install.kube_vip.enabled|default(false)|bool == true
 
-    - name: Variable vip_lb_ip_range is undefined
+    - name: Variable vip_lb_ip_range is undefined check
       fail:
         msg: |
           Since install.kube_vip.lb.enabled is True
@@ -34,16 +34,6 @@
       when:
         - vip_lb_ip_range is undefined
         - install.kube_vip.lb.enabled|default(false)|bool == true
-
-    - name: Do not enable Kube-VIP LB and MetalLB at the same time
-      fail:
-        msg: |
-          Both install.kube_vip.lb.enabled and install.metallb.enabled is true
-
-          Do not enable both Load Balancer providers. You must disable one of them.
-      when:
-        - install.kube_vip.lb.enabled|default(false)|bool == true
-        - install.metallb.enabled|default(false)|bool == true
 
   when:
     - inventory_hostname == groups['k3s_control'][0]
