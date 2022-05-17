@@ -143,11 +143,13 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
       cert_manager_install_version: "v1.7.1"
       kube_vip_install_version: "v0.4.2"
       traefik_install_version: "v10.19.4"
-
       longhorn_install_version: "v1.2.4"
+
       prometheus_op_install_version: "34.7.1"
 
       k3s_cluster_ingress_name: "k3s-test.{{ansible_domain}}"
+      argocd_repo_url: "https://github.com/<USERNAME>/<REPO-NAME>"
+
       K3S_TOKEN: 'secret_here'                # Set to any value you like
 ```
 
@@ -216,6 +218,12 @@ For simplicity I show the variables within the inventory file.  You can place th
 
 ---
 
+#### Other Inventory Variables Used
+
+* `argocd_repo_url` is a URL which points the the Git repository (private recommended) that ArgoCD will monitor.  Do NOT put `.git` at the end.
+
+---
+
 #### Inventory Variables for Installed Versions
 
 The idea behind pinning specific versions of software is so that an installation done on Monday can be identical when installed on Tuesday or Friday, or sometime next month.  Without pinning specific versions you have no way of knowing what random combination of versions you will get.
@@ -227,6 +235,7 @@ The idea behind pinning specific versions of software is so that an installation
 * `kube_vip_install_version` pins the Application Container Tag [Release](https://github.com/kube-vip/kube-vip/releases)
 * `kube_vip_cloud_provider_install_version` pins the Application Container Tag [Release](https://github.com/kube-vip/kube-vip-cloud-provider/releases)
 * `traefik_install_version` pings the Traefik Helm [Release](https://github.com/traefik/traefik-helm-chart/tags) version.
+* `longhorn_install_version` pins the Longhorn Helm [Release](https://github.com/longhorn/longhorn/releases) version.
 
 ---
 
@@ -277,4 +286,4 @@ The following tags are supported and should be used in this order:
 * `install_helm_client`
 * `install_argocd`
 * `deploy_apps`
-* `config_ls_certificates`
+* `config_le_certificates`

@@ -39,10 +39,10 @@ The Renovate Settings are in variable namespace `install.renovate`.
   ```yaml
       platform: "github"
       repositories:
-        - "{{ARGOCD_REPO_URL_SECRET|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}"    # Hopefully the <user>/<repo-name> part of URL
+        - "{{argocd_repo_url|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}"    # Hopefully the <user>/<repo-name> part of URL
   ```
   
-  * The URL for the ArgoCD Git URL secret parsed determine repo name
+  * The URL for the ArgoCD Git URL is parsed determine repo name
     * Hopefully something like `<user>/<repo-name>` is detected, you can set manually if you like
   * Multiple repositories for the platform can be defined
 

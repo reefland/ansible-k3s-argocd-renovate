@@ -70,8 +70,6 @@ You need to define which repository ArgoCD will use and how to connect to it.
 
 ```yaml
 ###[ ArgoCD Secrets: Repository Connections ]######################################################
-ARGOCD_REPO_URL_SECRET: "https://github.com/<user-name>/<repo-name>"
-
 # Github can use any non-empty value, its essentially ignored
 ARGOCD_REPO_USERNAME_SECRET: "oauth"
 
@@ -79,7 +77,6 @@ ARGOCD_REPO_USERNAME_SECRET: "oauth"
 ARGOCD_REPO_PASSWORD_SECRET: "<token-value>"
 ```
 
-* `ARGOCD_REPO_URL_SECRET` points to the dedicated ArgoCD repository to use. Do NOT include ".git" at the end of it.
 * `ARGOCD_REPO_USERNAME_SECRET` typically is just any non-empty value and is not actually used in authentication.
 * `ARGOCD_REPO_PASSWORD_SECRET` is the value of the Personal Access Token.
 
@@ -122,13 +119,15 @@ The ArgoCD Settings are in variable namespace `install.argocd`.
   ```yaml
       repository:
         name: "k3s-argocd-renovate"
-        url: "{{ ARGOCD_REPO_URL_SECRET }}"       # https://github.com/<user>/<repo-name>
+        url: "{{ argocd_repo_url }}"                     # https://github.com/<user>/<repo-name>
         username: "{{ ARGOCD_REPO_USERNAME_SECRET }}"    # oath
         password: "{{ ARGOCD_REPO_PASSWORD_SECRET }}"    # Github Personal Access Token
   ```
 
-  * The `name` is used within ArgoCD, it can be changed if you like.
-  * The `ARGOCD_REPO_URL_SECRET`, `ARGOCD_REPO_USERNAME_SECRET`, `ARGOCD_REPO_PASSWORD_SECRET` values should be defined in `vars/secrets/main.yaml` file.
+  * The `name` is used within ArgoCD when you view the repository connection, it can be changed if you like.
+  * `argocd_repo_url` points to the dedicated ArgoCD repository to use.
+    * Do NOT include ".git" at the end of it.
+  * The `ARGOCD_REPO_USERNAME_SECRET` and `ARGOCD_REPO_PASSWORD_SECRET` values should be defined in `vars/secrets/main.yaml` file.
     * Be sure to to use `ansible-vault` to encrypt your secrets.
 
 ---

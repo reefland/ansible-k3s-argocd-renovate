@@ -80,10 +80,10 @@ install:
     
     namespace: "argocd"
 
-    # Define secrets in vars/secrets/main.yml
     repository:
       name: "k3s-argocd-renovate"
-      url: "{{ARGOCD_REPO_URL_SECRET|default('UNDEFINED_REPO_URL')}}"                 # https://github.com/<user>/<repo-name>
+      url: "{{argocd_repo_url|default('UNDEFINED_REPO_URL')}}"                              # https://github.com/<user>/<repo-name>
+      # Define secrets in vars/secrets/main.yml
       username: "{{ARGOCD_REPO_USERNAME_SECRET|default('oauth')}}"                           # oauth - not really used
       password: "{{ARGOCD_REPO_PASSWORD_SECRET|default('UNDEFINED_REPO_PASSWORD_TOKEN')}}"   # Github Personal Access Token
 
@@ -102,7 +102,7 @@ install:
 
     platform: "github"
     repositories:
-      - "{{ARGOCD_REPO_URL_SECRET|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}"    # Hopefully the <user>/<repo-name> part of URL
+      - "{{argocd_repo_url|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}"    # Hopefully the <user>/<repo-name> part of URL
 
     # Cron style schedule when renovate should look for updates
     schedule: "0 1 * * *"                     # At 01:00 every day
