@@ -58,5 +58,5 @@
   tags:
     - install_argocd
     - deploy_apps
-    - config_ls_certificates
+    - config_le_certificates
 

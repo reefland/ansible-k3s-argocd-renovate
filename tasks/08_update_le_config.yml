@@ -35,13 +35,13 @@
     - inventory_hostname == groups['k3s_control'][0]
     - install.argocd.enabled|default(false)|bool == true
   tags:
-    - config_ls_certificates
+    - config_le_certificates
 
 # Make sure all changes are checked in before removing repository
 - name: Flush Handlers
   meta: flush_handlers
   tags:
-    - config_ls_certificates
+    - config_le_certificates
 
 # Probably not safe to leave these on the K3s instance
 - name: Delete Local ArgoCD Secrets and Git Repo
@@ -52,4 +52,4 @@
     - inventory_hostname == groups['k3s_control'][0]
     - install.argocd.enabled|default(false)|bool == true
   tags:
-    - config_ls_certificates
+    - config_le_certificates

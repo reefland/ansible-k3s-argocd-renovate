@@ -137,7 +137,7 @@ Once the default staging certificates are verified to be working, the playbook c
 * Apply playbook to create Production ClusterIssuer:
 
 ```shell
-ansible-playbook -i inventory kubernetes.yml --tags="config_ls_certificates,config_traefik" --extra-vars="le_staging=false"
+ansible-playbook -i inventory kubernetes.yml --tags="config_le_certificates,config_traefik" --extra-vars="le_staging=false"
 ```
 
 ### Review Production Certificate Created
