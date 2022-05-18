@@ -241,7 +241,7 @@ The idea behind pinning specific versions of software is so that an installation
 
 ### Create a Playbook
 
-Simple playbook I'm using for testing, named `kubernetes.yml`:
+Simple playbook I'm using for testing, named `k3s-argocd.yml`:
 
 ```yml
 - name: k3s Kubernetes Installation with ZFS & ArgoCD GitOPS
