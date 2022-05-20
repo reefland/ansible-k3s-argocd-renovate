@@ -20,6 +20,10 @@ argo-cd:
         cpu: 250m
         memory: 384Mi
 
+    ## Application controller metrics configuration
+    metrics:
+      enabled: true
+
   # used to delegate authentication to external identity provider
   dex:
     enabled: false
@@ -32,7 +36,20 @@ argo-cd:
       requests:
         cpu: 100m
         memory: 64Mi
-    
+
+    ## redis-exporter metrics configuration
+    metrics:
+      enabled: true
+ 
+      # -- Resource limits and requests for redis-exporter sidecar
+      resources:
+         limits:
+           cpu: 50m
+           memory: 64Mi
+         requests:
+           cpu: 10m
+           memory: 32Mi
+
   server:
     extraArgs:
       - --insecure
@@ -57,6 +74,10 @@ argo-cd:
             name: {{install.argocd.repository.name}}-secret
             key: password
 
+    ## Server metrics service configuration
+    metrics:
+      enabled: true
+
   repoServer:
     resources:
       limits:
@@ -66,6 +87,10 @@ argo-cd:
         cpu: 10m
         memory: 192Mi
 
+    ## Repo server metrics service configuration
+    metrics:
+      enabled: true
+
   notifications:
     resources:
       limits:
@@ -74,4 +99,3 @@ argo-cd:
       requests:
         cpu: 100m
         memory: 128Mi
-    
