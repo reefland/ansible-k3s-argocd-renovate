@@ -1,12 +1,16 @@
-# Kube-vip Settings & Important Notes
+# Kube-VIP Settings & Important Notes
 
 [Back to README.md](../README.md)
 
 ## Important Notes
 
-* **kube-vip** provides Load Balancer service for at least two critical Kubernetes services:
+* **Kube-VIP** provides Load Balancer service for at least two critical Kubernetes services:
   1. The Kubernetes API service will be a shared virtual IP (vip) across all members of the control-plane.  You can then point an external `kubectl` or any product needing access to the API to this IP address instead of the IP address of a specific host.
-  2. Maintains a pool of IP address which can be assigned to any services of type LoadBalancer upon request. The Traefik ingress controller will be the first service to request a Load Balancer IP address.  Once this has been completed, you can create a generic DNS cluster name pointing to this IP address to provide an ingress route hostname that is not specific to any individual Kubernetes host.
+  2. Can provide a LoadBalancer for services with a specified `loadBalancerIP: xxx.yyy.zzz.aaa`, if you want a pool of IP addresses to be available then Kube-VIP Cloud Provider service is used.
+
+* **Kube-VIP cloud provider** Maintains a pool of IP address which can be assigned to any services of type LoadBalancer upon request.
+
+The Traefik ingress controller will be the first service to request a Load Balancer IP address.  Once this has been completed, you can create a generic DNS cluster name pointing to this IP address to provide an ingress route hostname that is not specific to any individual Kubernetes host.
 
 ## Review `defaults/main.yml` for Kube-vip Settings
 
@@ -33,7 +37,7 @@ The Kube-vip Settings are in variable namespace `install.kube_vip`.
 
 ---
 
-## Review `defaults/main.yml` for Kube-vip Cloud Provider LB Settings
+## Review `defaults/main.yml` for Kube-VIP Cloud Provider LB Settings
 
 * Enable or disable the Kube-vip Cloud Provider as LoadBalancer.  By default this is enabled (set to `true`).
   * When enabled this will flag K3s to disable its own internal load balancer called Klipper and use Kube-VIP Cloud Provider Load Balancer instead.
@@ -45,16 +49,12 @@ The Kube-vip Settings are in variable namespace `install.kube_vip`.
 
     ...
 
-      # To use Kube-VIP Cloud Provider as LoadBalancer
+      # To use Kube-VIP Cloud Provider to enable using an address pool with Kube-VIP
       lb:
-        # When enabled, this will disable k3s built-in Klipper Load Balancer and enable kube-vip LB
-        # instead.
-
         # When enabled, you must define variable "vip_lb_ip_range" at host or group level within 
         # inventory, host_var or group_var file. This must be set to an IP range or CIDR range.
         # This will define the pool of IP addresses to hand out to serviced of type LoadBalancer.
         enabled: true
-
   ```
 
 * Pin which version of Kube-vip Cloud Provider Load Balancer to install. This value should be defined in the inventory file or group_vars file or can be updated directly here.
