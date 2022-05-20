@@ -142,6 +142,7 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
       renovate_install_version: "32.45.5"
       cert_manager_install_version: "v1.7.1"
       kube_vip_install_version: "v0.4.2"
+      kube_vip_cloud_provider_install_version: "v0.0.2"
       traefik_install_version: "v10.19.4"
       longhorn_install_version: "v1.2.4"
 
