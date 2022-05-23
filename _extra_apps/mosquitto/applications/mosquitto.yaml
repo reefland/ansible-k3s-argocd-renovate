@@ -24,6 +24,6 @@ spec:
     syncOptions:
     automated:
       prune: true
-      selfHeal: false
+      selfHeal: true
     syncOptions:
     -  Validate=true
