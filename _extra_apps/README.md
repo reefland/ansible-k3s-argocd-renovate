@@ -29,4 +29,4 @@ Each Application uses this directory structure:
 
 ## Application List
 
-* [Mosquitto](./mosquitto/README.md) - Eclipse Mosquitto is a lightweight MQTT Message Broker
+* [Mosquitto](./mosquitto/) - Eclipse Mosquitto is a lightweight MQTT Message Broker

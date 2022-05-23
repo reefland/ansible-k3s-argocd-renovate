@@ -31,4 +31,4 @@ patches:
       kind: Service
 ```
 
-[Return to Application List](../README.md)
+[Return to Application List](../)
