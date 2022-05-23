@@ -2,7 +2,7 @@
 
 Mosquitto-Exporter exposes Mosquitto MQTT Broker Metrics as Prometheus Service Monitor.
 
-[Return to Application List](../README.md)
+[Return to Application List](../)
 
 * Kustomize based ArgoCD application deployment
 * Deployed as a Deployment with configMapGenerator and secretGenerator
@@ -64,4 +64,4 @@ Grafana Dashboard for Mosquitto MQTT: `11542`
 
 ![Grafana Dashboard using exporter](grafana_dashboard_11542.png)
 
-[Return to Application List](../README.md)
+[Return to Application List](../)

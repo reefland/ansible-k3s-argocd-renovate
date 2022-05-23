@@ -2,7 +2,7 @@
 
 * Be sure to export a backup from your existing installation.  You will be able to import that backup into this installation.
 
-[Return to Application List](../README.md)
+[Return to Application List](../)
 
 * Kustomize based ArgoCD application deployment
 * Deployed as a Statefulset with a 2Gi Longhorn Persistent Storage Volume for data
@@ -71,4 +71,4 @@ Review `unifi-controller/applications/unifi-controller.yaml`
 
 ![Unifi Controller Console Screen Shot](unifi-controller-screenshot.png)
 
-[Return to Application List](../README.md)
+[Return to Application List](../)

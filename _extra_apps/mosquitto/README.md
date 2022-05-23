@@ -1,6 +1,6 @@
 # Eclipse Mosquitto lightweight MQTT Message Broker
 
-[Return to Application List](../README.md)
+[Return to Application List](../)
 
 * Kustomize based ArgoCD application deployment
 * Deployed as a Statefulset with a small 10mi Longhorn Persistent Storage Volume for data
