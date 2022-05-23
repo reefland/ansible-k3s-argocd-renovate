@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto-exporter
+  labels: 
+    app: mosquitto-exporter-metrics
+    app.kubernetes.io/name: mosquitto-exporter-metrics
+
+spec:
+  selector:
+    app: mosquitto-exporter
+    app.kubernetes.io/instance: mosquitto-exporter
+    app.kubernetes.io/name: mosquitto-exporter
+
+  ports:
+  -  port:  9234
+     targetPort:  9234
+     protocol:  TCP
+     name:  metrics

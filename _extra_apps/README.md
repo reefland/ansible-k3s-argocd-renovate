@@ -30,3 +30,4 @@ Each Application uses this directory structure:
 ## Application List
 
 * [Mosquitto](./mosquitto/) - Eclipse Mosquitto is a lightweight MQTT Message Broker
+* [Mosquitto-Exporter](./mosquitto-exporter/) - Exposes Mosquitto MQTT Broker Metrics as Prometheus Service Monitor

@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mosquitto-exporter-metrics
+  namespace: monitoring
+  labels:
+    app: mosquitto-exporter-metrics
+    name: mosquitto-exporter-metrics
+    release: kube-stack-prometheus
+
+spec:
+  endpoints:
+  - honorLabels: true
+    interval: 10s
+    path: /metrics
+    port: metrics
+    targetPort: 9234
+  jobLabel: mosquitto-exporter-metrics
+  namespaceSelector:
+    matchNames:
+    - mosquitto
+  selector:
+    matchLabels:
+      app: mosquitto-exporter-metrics
+      app.kubernetes.io/name: mosquitto-exporter-metrics

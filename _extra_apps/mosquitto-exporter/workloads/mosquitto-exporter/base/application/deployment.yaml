@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto-exporter
+  labels:
+    app: mosquitto-exporter
+    app.kubernetes.io/instance: mosquitto-exporter
+    app.kubernetes.io/name: mosquitto-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mosquitto-exporter
+  template:
+    metadata:
+      labels:
+        app: mosquitto-exporter
+        app.kubernetes.io/instance: mosquitto-exporter
+        app.kubernetes.io/name: mosquitto-exporter
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - mosquitto
+            topologyKey: "kubernetes.io/hostname"
+
+      containers:
+      - name: mosquitto-exporter
+        image: sapcc/mosquitto-exporter:0.8.0
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "32Mi"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
+        ports:
+        - containerPort: 9234
+        env:
+          - name: MQTT_USER
+            valueFrom:
+              secretKeyRef:
+                name: node-exporter-secret
+                key: mqtt-user
+          - name: MQTT_PASS
+            valueFrom:
+              secretKeyRef:
+                name: node-exporter-secret
+                key: mqtt-pass
+          - name: BROKER_ENDPOINT
+            valueFrom:
+              configMapKeyRef:
+                name: node-exporter-configmap
+                key: broker-endpoint
