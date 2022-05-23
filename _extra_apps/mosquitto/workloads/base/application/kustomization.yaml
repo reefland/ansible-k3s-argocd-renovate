@@ -1,0 +1,6 @@
+resources:
+  - configmap-config.yaml
+  - configmap-passwd.yaml
+  - longhorn-pvc.yaml
+  - statefulset.yaml
+  - service.yaml

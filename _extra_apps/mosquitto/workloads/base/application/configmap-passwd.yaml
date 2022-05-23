@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mosquitto-password
+  namespace: mosquitto
+  labels:
+    app: mosquitto
+data:
+  passwd.txt: |
+    <user-name>:<encoded-password-here>

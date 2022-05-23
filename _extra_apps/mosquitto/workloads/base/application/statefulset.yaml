@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mosquitto
+spec:
+  serviceName: mosquitto
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: mosquitto
+        image: eclipse-mosquitto:2.0.14
+        resources:
+          requests:
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+          - name: default
+            containerPort: 1883
+            protocol: TCP
+          - name: websocket
+            containerPort: 9001
+            protocol: TCP
+            
+        volumeMounts:
+            - name: mosquitto-config
+              mountPath: /mosquitto/config/mosquitto.conf
+              subPath: mosquitto.conf
+            - name: mosquitto-password
+              mountPath: /mosquitto/config/passwd.txt
+              subPath: passwd.txt
+            - name: mosquitto-data
+              mountPath: /mosquitto/data/
+
+      volumes:
+        - name: mosquitto-config
+          configMap:
+            name: mosquitto-config
+        - name: mosquitto-password
+          configMap:
+            name: mosquitto-password
+        - name: mosquitto-data
+          persistentVolumeClaim:
+            claimName: mosquitto-longhorn-pvc
