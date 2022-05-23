@@ -1,0 +1,29 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argocd
+  name: unifi-unpoller
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"  # Lower the number the sooner to deploy
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/<USER_NAME>/<REPO_NAME>.git
+    targetRevision: HEAD
+    path: workloads/unpoller/
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: unifi
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: false
+    syncOptions:
+    -  Validate=true

@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unpoller
+spec:
+  replicas: 1
+  template:
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - unifi-controller
+            topologyKey: "kubernetes.io/hostname"
+
+      containers:
+      - name: unpoller
+        image: golift/unifi-poller:2.1.3
+        ports:
+        - name: metrics
+          containerPort: 9130
+          protocol: TCP
+        env:
+        - name: UP_UNIFI_DEFAULT_USER
+          valueFrom:
+            secretKeyRef:
+              name: unpoller-secret
+              key: unifi-user
+        - name: UP_UNIFI_DEFAULT_PASS
+          valueFrom:
+            secretKeyRef:
+              name: unpoller-secret
+              key: unifi-pass
+        volumeMounts:
+        - mountPath: /etc/unifi-poller
+          name: unpoller-config
+      volumes:
+      - configMap:
+          name: unpoller-config-file
+        name: unpoller-config
