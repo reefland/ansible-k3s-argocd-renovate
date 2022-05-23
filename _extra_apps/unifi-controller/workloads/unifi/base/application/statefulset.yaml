@@ -1,0 +1,59 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: unifi-controller
+spec:
+  serviceName: unifi-controller
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: unifi-controller
+        image: linuxserver/unifi-controller
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: device-comm
+            containerPort: 8080
+            protocol: TCP
+          - name: stun
+            containerPort: 3478
+            protocol: UDP
+          - name: default-console
+            containerPort: 8443
+            protocol: TCP
+          - name: secure-redirect
+            containerPort: 8843
+            protocol: TCP
+          - name: http-redirect
+            containerPort: 8880
+            protocol: TCP
+          - name: speedtest
+            containerPort: 6789
+            protocol: TCP
+          - name: unifi-disc
+            containerPort: 10001
+            protocol: UDP
+          - name: unifi-disc-l2
+            containerPort: 1900
+            protocol: UDP
+
+        resources:
+          requests:
+            cpu: "150m"
+            memory: "1024Mi"
+          limits:
+            cpu: "512m"
+            memory: "2048Mi"
+        env:
+        - name: PUID
+          value: "1002"
+        - name: PGID
+          value: "998"
+        volumeMounts:
+          - name: unifi-data
+            mountPath: /config
+      volumes:
+        - name: unifi-data
+          persistentVolumeClaim:
+            claimName: unifi-longhorn-pvc

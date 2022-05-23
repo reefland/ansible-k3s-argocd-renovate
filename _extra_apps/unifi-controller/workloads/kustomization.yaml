@@ -1,0 +1,43 @@
+---
+kind: Kustomization
+
+bases:
+  - ./base/application/
+
+images:
+  - name: linuxserver/unifi-controller
+    newTag: 7.1.65
+
+patches:
+  # Set Service to LoadBalancer and Specify IP Address to use
+  - patch: |-
+      - op: add
+        path: /spec/type
+        value: LoadBalancer
+      - op: add
+        path: /spec/loadBalancerIP
+        value: 192.168.10.242
+    target:
+      kind: Service
+  
+  # Set IngressRoute Match Value for Traefik
+  # Remember to use ` (backtick) not ' (single quote) around Host
+  - patch: |-
+      - op: replace
+        path: /spec/routes/0/match
+        value: Host(`unifi.example.com`)
+    target:
+      kind: IngressRoute
+
+  # Set Longhorn Persistent Volume Claim Size
+  - patch: |-
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 2Gi
+    target:
+      kind: PersistentVolumeClaim
+
+commonLabels:
+  app: unifi-controller
+  app.kubernetes.io/instance: unifi-controller
+  app.kubernetes.io/name: unifi-controller

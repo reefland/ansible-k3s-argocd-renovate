@@ -5,7 +5,7 @@ Applications listed here are NOT deployed via Ansible.  These are extra applicat
 ## To deploy with ArgoCD
 
 1. Simply copy the directory structure of the application into your ArgoCD repository
-2. Update the `.spec.source.repoURL` to use your ArgoCD repository
+2. Update the `.spec.source.repoURL` in `applications` directory to use your ArgoCD repository
 3. Review `README.md` for the specific application for specific changes to me (secrets, config, etc)
 4. Commit the change
 
@@ -31,3 +31,4 @@ Each Application uses this directory structure:
 
 * [Mosquitto](./mosquitto/) - Eclipse Mosquitto is a lightweight MQTT Message Broker
 * [Mosquitto-Exporter](./mosquitto-exporter/) - Exposes Mosquitto MQTT Broker Metrics as Prometheus Service Monitor
+* [Unifi Controller](./unifi-controller/) - Wireless Network Management Software from Ubiquiti

@@ -1,0 +1,24 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: unifi-ingress-route
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - match: Host(`unifi.example.com`)
+    kind: Rule
+    services:
+    - name: unifi-controller
+      port: 8443
+      scheme: https
+      serversTransport: unifi-ingress-transport
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: ServersTransport
+metadata:
+  name: unifi-ingress-transport
+spec:
+  insecureSkipVerify: true
