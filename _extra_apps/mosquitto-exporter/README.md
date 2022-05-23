@@ -47,6 +47,17 @@ patches:
     kind: ServiceMonitor
 ```
 
+Review `mosquitto-exporter/applications/mosquitto-exporter.yaml`
+
+* Set `repoURL` source to the path of your dedicated ArgoCD repository
+
+```yaml
+  source:
+    repoURL:  https://github.com/<USER_NAME>/<REPO_NAME>.git
+    targetRevision: HEAD
+    path: workloads/mosquitto-exporter
+```
+
 ---
 
 Grafana Dashboard for Mosquitto MQTT: `11542`

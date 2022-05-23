@@ -4,9 +4,10 @@
 
 * Kustomize based ArgoCD application deployment
 * Deployed as a Statefulset with a small 10mi Longhorn Persistent Storage Volume for data
-* Review files in `mosquitto/workloads/mosquitto/base/application` to populate the two ConfigMaps:
-  * `configmap-config.yaml` creates the `mosquitto.conf` configuration file
-  * `configmap-passwd.yaml` creates the encoded User & Password authentication file
+
+Review files in `mosquitto/workloads/mosquitto/base/application` to populate the two ConfigMaps:
+* `configmap-config.yaml` creates the `mosquitto.conf` configuration file
+* `configmap-passwd.yaml` creates the encoded User & Password authentication file
 
 Review `mosquitto/kustomization.yaml`
 
@@ -29,6 +30,17 @@ patches:
         value: 192.168.10.241
     target:
       kind: Service
+```
+
+Review `mosquitto/applications/mosquitto.yaml`
+
+* Set `repoURL` source to the path of your dedicated ArgoCD repository
+
+```yaml
+  source:
+    repoURL:  https://github.com/<USER_NAME>/<REPO_NAME>.git
+    targetRevision: HEAD
+    path: workloads/mosquitto
 ```
 
 [Return to Application List](../)
