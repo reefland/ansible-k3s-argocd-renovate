@@ -20,6 +20,13 @@ spec:
     server:  https://kubernetes.default.svc
     namespace: mosquitto
 
+  # Allow changes to number of replicas
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jsonPointers:
+      - /spec/replicas
+
   syncPolicy:
     syncOptions:
     automated:
