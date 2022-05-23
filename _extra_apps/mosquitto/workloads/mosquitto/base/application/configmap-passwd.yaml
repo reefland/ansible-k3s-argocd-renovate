@@ -8,4 +8,6 @@ metadata:
     app: mosquitto
 data:
   passwd.txt: |
-    <user-name>:<encoded-password-here>
+    <username1>:<encoded-password-here>
+    <username2>:<encoded-password-here>
+    <username3>:<encoded-password-here>
