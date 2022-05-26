@@ -30,6 +30,7 @@ k3s:
   # Packages required for Ansible to issue Kubernetes and commands
   packages:
     - python3-pip
+    - lm-sensors                                            # For Hardware temperature monitoring
   packages_pip:
     - openshift
     - pyyaml
