@@ -69,6 +69,10 @@ Review `unifi-controller/applications/unifi-controller.yaml`
 
 ---
 
+Note the Unifi Controller application can take several minutes to become ready.  Getting a `Bad Gateway` message after installation or upgrade is normal.  Monitor the container logs to see when it is ready, or just try again in a few minutes.
+
+---
+
 ![Unifi Controller Console Screen Shot](unifi-controller-screenshot.png)
 
 [Return to Application List](../)
