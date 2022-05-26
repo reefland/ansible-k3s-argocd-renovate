@@ -31,13 +31,13 @@ spec:
       name: argocd-secret
       namespace: {{install.argocd.namespace}}
       jsonPointers:
-      - /spec/data
+      - /data
 
     - kind: ConfigMap                           # ConfigMap URL
       name: argocd-cm
       namespace: {{install.argocd.namespace}}
       jsonPointers:
-      - /spec/data/url
+      - /data/url
 
   syncPolicy:
     automated:
