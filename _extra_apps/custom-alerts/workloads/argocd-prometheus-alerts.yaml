@@ -1,0 +1,36 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: argocd-app-sync-alerts                                 
+  namespace: monitoring
+  labels:
+    release: kube-stack-prometheus                              # Required label key and value
+spec:
+  groups:
+    - name: ArgoCD                                              # Name of the prometheus rule group
+      rules:
+        - alert: ArgoAppOutOfSync                               # Name of the alerting-rule
+          expr: argocd_app_info{sync_status="OutOfSync"} == 1   # Triggered when argocd-application is `OutofSync`
+          for: 1m                                               # Duration for which expression should evaluate to true
+          labels:                                               # Labels added to triggered alert
+            severity: warning
+          annotations:                                          # Annotations added to triggered alert
+            summary: "'{{ $labels.name }}' Application has sync status as '{{ $labels.sync_status }}'"
+        - alert: ArgoAppSyncFailed                              # Name of the alerting-rule
+          expr: argocd_app_sync_total{phase!="Succeeded"} == 1  # Triggered when argocd-application is not succeeded
+          for: 1m                                               # Duration for which expression should evaluate to true
+          labels:                                               # Labels added to triggered alert
+            severity: warning
+          annotations:                                          # Annotations added to triggered alert
+            summary: "'{{ $labels.name }}' Application has sync phase as '{{ $labels.phase }}'"
+        - alert: ArgoAppMissing                                 # Name of the alerting-rule
+          expr: absent(argocd_app_info)                         # Triggered when argocd-application info is not found
+          for: 15m
+          labels:                                               # Duration for which expression should evaluate to true
+            severity: critical
+          annotations:                                          # Annotations added to triggered alert
+            summary: "[ArgoCD] No reported applications"
+            description: >
+              ArgoCD has not reported any applications data for the past 15 minutes which
+              means that it must be down or not functioning properly.

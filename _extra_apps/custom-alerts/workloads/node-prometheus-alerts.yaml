@@ -1,0 +1,101 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: node-alerts                                 
+  namespace: monitoring
+  labels:
+    release: kube-stack-prometheus                              # Required label key and value
+spec:
+  groups:
+    - name: NodeAlerts                                         # Name of the prometheus rule group
+      rules:
+        # Host out of Memory - Less than 10%
+        - alert: HostOutOfMemory
+          expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Host out of memory (instance {{ $labels.instance }})"
+            description: "Node memory is filling up (< 10% left)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+        # Host memory under memory pressure - High rate of major page faults.
+        - alert: HostMemoryUnderMemoryPressure
+          expr: rate(node_vmstat_pgmajfault[1m]) > 1000
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Host memory under memory pressure (instance {{ $labels.instance }})"
+            description: "The node is under heavy memory pressure. High rate of major page faults.\n  LABELS = {{ $labels }}"
+
+        # Host out of disk space - less than 10% left
+        - alert: HostOutOfDiskSpace
+          expr: (node_filesystem_avail_bytes{fstype!~"tmpfs"}  * 100) / node_filesystem_size_bytes{fstype!~"tmpfs"} < 10
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Host out of disk space (instance {{ $labels.instance }})"
+            description: "Host disk is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+        # Host disk almost full less than 20%
+        - alert: HostReachingOutOfDiskSpace
+          expr: (node_filesystem_avail_bytes{fstype!~"tmpfs"}  * 100) / node_filesystem_size_bytes{fstype!~"tmpfs"} < 20
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Host reaching out of disk space (instance {{ $labels.instance }})"
+            description: "Host disk is almost full (< 20% left)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+        # Host High CPU Load - more than 80%
+        - alert: HostHighCpuLoad
+          expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Host high CPU load (instance {{ $labels.instance }})"
+            description: "CPU load is > 80%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+        # Host OOM Kill Detected
+        - alert: HostOomKillDetected
+          expr: increase(node_vmstat_oom_kill[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Host OOM kill detected (instance {{ $labels.instance }})"
+            description: "OOM kill detected\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+        # Components Too Hot    
+        - alert: HostPhysicalComponentTooHot
+          expr: node_hwmon_temp_celsius > 75
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Host physical component too hot (instance {{ $labels.instance }})"
+            description: "Physical hardware component too hot\n  VALUE = {{ $value }} celsius.\n  LABELS = {{ $labels }}"
+
+        # Host Network Interface Saturated
+        - alert: HostNetworkInterfaceSaturated
+          expr: (rate(node_network_receive_bytes_total{device!~"^tap.*"}[1m]) + rate(node_network_transmit_bytes_total{device!~"^tap.*"}[1m])) / node_network_speed_bytes{device!~"^tap.*"} > 0.8 < 10000
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: Host Network Interface Saturated (instance {{ $labels.instance }})
+            description: "The network interface \"{{ $labels.device }}\" on \"{{ $labels.instance }}\" is getting overloaded.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+        # Host clock skew
+        - alert: HostClockSkew
+          expr: (node_timex_offset_seconds > 0.05 and deriv(node_timex_offset_seconds[5m]) >= 0) or (node_timex_offset_seconds < -0.05 and deriv(node_timex_offset_seconds[5m]) <= 0)
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: Host clock skew (instance {{ $labels.instance }})
+            description: "Clock skew detected. Clock is out of sync. Ensure NTP is configured correctly on this host.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"

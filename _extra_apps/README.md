@@ -29,6 +29,8 @@ Each Application uses this directory structure:
 
 ## Application List
 
+* [Custom-Alerts](./custom-alerts/) - Alerts for Prometheus Operator Alertmanager for:
+  * Node Hardware, ArgoCD Sync Issues, Traefik Ingress Error codes
 * [Mosquitto](./mosquitto/) - Eclipse Mosquitto is a lightweight MQTT Message Broker
 * [Mosquitto-Exporter](./mosquitto-exporter/) - Exposes Mosquitto MQTT Broker Metrics as Prometheus Service Monitor
 * [Unifi Controller](./unifi-controller/) - Wireless Network Management Software from Ubiquiti

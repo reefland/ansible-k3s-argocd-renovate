@@ -1,0 +1,51 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: traefik-alerts                                 
+  namespace: monitoring
+  labels:
+    release: kube-stack-prometheus                              # Required label key and value
+spec:
+  groups:
+    - name: NodeAlerts                                         # Name of the prometheus rule group
+      rules:
+        # Traefik service 401 error rate is above 5% 
+        - alert: TraefikHighHttp401ErrorRateService
+          expr: sum(rate(traefik_service_requests_total{code="401"}[3m])) by (service) / sum(rate(traefik_service_requests_total[3m])) by (service) * 100 > 5
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: Traefik high HTTP 401 Unauthorized error rate service (instance {{ $labels.instance }})
+            description: "Traefik service 401 Unauthorized error rate is above 5%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+        # Traefik service 403 error rate is above 5% 
+        - alert: TraefikHighHttp403ErrorRateService
+          expr: sum(rate(traefik_service_requests_total{code="403"}[3m])) by (service) / sum(rate(traefik_service_requests_total[3m])) by (service) * 100 > 5
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: Traefik high HTTP 403 Forbidden error rate service (instance {{ $labels.instance }})
+            description: "Traefik service 403 Forbidden error rate is above 5%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+        # Traefik service 404 error rate is above 5% 
+        - alert: TraefikHighHttp404ErrorRateService
+          expr: sum(rate(traefik_service_requests_total{code="404"}[3m])) by (service) / sum(rate(traefik_service_requests_total[3m])) by (service) * 100 > 5
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: Traefik high HTTP 404 Not Found error rate service (instance {{ $labels.instance }})
+            description: "Traefik service 404 Not Found error rate is above 5%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+      # Traefik service 5xx error rate is above 5% 
+        - alert: TraefikHighHttp5xxErrorRateService
+          expr: sum(rate(traefik_service_requests_total{code=~"5.*"}[3m])) by (service) / sum(rate(traefik_service_requests_total[3m])) by (service) * 100 > 5
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: Traefik high HTTP 5xx error rate service (instance {{ $labels.instance }})
+            description: "Traefik service 5xx error rate is above 5%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"

@@ -1,0 +1,29 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argocd
+  name: custom-alerts
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"  # Lower the number the sooner to deploy
+spec:
+  project: default
+
+  source:
+    repoURL:  https://github.com/reefland/k3s-argocd.git
+    targetRevision: HEAD
+    path: workloads/custom-alerts
+  destination:
+    server:  https://kubernetes.default.svc
+    namespace: monitoring
+
+  syncPolicy:
+    syncOptions:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    -  Validate=true
