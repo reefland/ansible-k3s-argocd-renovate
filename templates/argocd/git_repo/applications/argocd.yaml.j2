@@ -27,15 +27,13 @@ spec:
     namespace: {{install.argocd.namespace}}
 
   ignoreDifferences:
-    - group: apps
-      kind: Secret                              # Secert updates overtime
+    - kind: Secret                              # Secert updates overtime
       name: argocd-secret
       namespace: {{install.argocd.namespace}}
       jsonPointers:
       - /spec/data
 
-    - group: apps
-      kind: ConfigMap                           # ConfigMap URL
+    - kind: ConfigMap                           # ConfigMap URL
       name: argocd-cm
       namespace: {{install.argocd.namespace}}
       jsonPointers:
