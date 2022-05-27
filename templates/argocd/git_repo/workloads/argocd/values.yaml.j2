@@ -8,7 +8,9 @@ argo-cd:
       # htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'
       argocdServerAdminPassword: "$2a$10$qsjuZNhoJR7UHv/v/CryaOe0wewDzzH.wP.j1YAVLqgBXWZImdQ/u"
 
+###[ Application Controller Settings ]#############################################################
   controller:
+    name: application-controller
     clusterAdminAccess:
       enabled: true
     
@@ -21,14 +23,24 @@ argo-cd:
         memory: 384Mi
 
     ## Application controller metrics configuration
-    metrics:
-      enabled: true
+#    metrics:
+#      enabled: true
+#      serviceMonitor:
+#        enabled: true
+#        namespace: "monitoring"
+#        additionalLabels:
+#           release: kube-stack-prometheus
 
-  # used to delegate authentication to external identity provider
+###[ Dex Server Settings ]#########################################################################
+# used to delegate authentication to external identity provider
   dex:
     enabled: false
+    name: dex-server
 
+###[ Redis non-HA Settings ]#######################################################################
   redis:
+    enabled: true
+    name: redis
     resources:
       limits:
         cpu: 200m
@@ -38,8 +50,13 @@ argo-cd:
         memory: 64Mi
 
     ## redis-exporter metrics configuration
-    metrics:
-      enabled: true
+#    metrics:
+#      enabled: true
+#      serviceMonitor:
+#        enabled: true
+#        namespace: "monitoring"
+#        additionalLabels:
+#           release: kube-stack-prometheus
  
       # -- Resource limits and requests for redis-exporter sidecar
       resources:
@@ -50,7 +67,14 @@ argo-cd:
            cpu: 10m
            memory: 32Mi
 
+###[ Redis HA Settings ]###########################################################################
+# -- Enables the Redis HA subchart and disables the custom Redis single node deployment (above)
+  redis-ha:
+    enabled: false
+
+###[ ArgoCD Server Settings ]######################################################################
   server:
+    name: server
     extraArgs:
       - --insecure
       - --rootpath={{install.argocd.dashboard.path}}
@@ -75,10 +99,17 @@ argo-cd:
             key: password
 
     ## Server metrics service configuration
-    metrics:
-      enabled: true
+#    metrics:
+#      enabled: true
+#      serviceMonitor:
+#        enabled: true
+#        namespace: "monitoring"
+#        additionalLabels:
+#           release: kube-stack-prometheus
 
+###[ ArgoCD Repo Server Settings ]#################################################################
   repoServer:
+    name: repo-server
     resources:
       limits:
         cpu: 150m
@@ -88,10 +119,50 @@ argo-cd:
         memory: 512Mi
 
     ## Repo server metrics service configuration
-    metrics:
-      enabled: true
+#    metrics:
+#      enabled: true
+#      serviceMonitor:
+#        enabled: true
+#        namespace: "monitoring"
+#        additionalLabels:
+#           release: kube-stack-prometheus
 
+###[ ApplicationSet Controller Settings ]##########################################################
+  applicationSet:
+    enabled: true
+    name: applicationset-controller
+
+    # ApplicationSet controller metrics service configuration
+#    metrics:
+#      enabled: true
+#      serviceMonitor:
+#        enabled: true
+#        namespace: "monitoring"
+#        additionalLabels:
+#           release: kube-stack-prometheus
+
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+###[ Notifications Controller Settings ]###########################################################
   notifications:
+    enabled: true
+    name: notifications-controller
+
+    # Notifications Controller metrics service configuration
+#    metrics:
+#      enabled: true
+#      serviceMonitor:
+#        enabled: true
+#        namespace: "monitoring"
+#        additionalLabels:
+#           release: kube-stack-prometheus
+
     resources:
       limits:
         cpu: 100m
