@@ -1,0 +1,42 @@
+# https://artifacthub.io/packages/helm/fairwinds-stable/vpa
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argocd
+  name: vertical-pod-autoscaler
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"  # Lower the number the sooner to deploy
+spec:
+  project: default
+  source:
+    chart: vpa
+    repoURL: https://charts.fairwinds.com/stable
+    targetRevision: 1.3.2
+    helm:
+      values: |
+        admissionController:
+          enabled: false
+        recommender:
+          enabled: true
+          extraArgs: 
+            prometheus-address: |
+              http://prometheus-operated.monitoring.svc.cluster.local:9090
+            storage: prometheus
+        updater:
+          enabled: false
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vpa
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    -  Validate=true

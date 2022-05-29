@@ -1,0 +1,29 @@
+# Values:  https://github.com/FairwindsOps/charts/blob/master/stable/goldilocks/values.yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argocd
+  name: goldilocks
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"  # Lower the number the sooner to deploy
+spec:
+  project: default
+  source:
+    chart: goldilocks
+    repoURL: https://charts.fairwinds.com/stable
+    targetRevision: 6.1.2
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: goldilocks
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: false
+    syncOptions:
+    -  Validate=true

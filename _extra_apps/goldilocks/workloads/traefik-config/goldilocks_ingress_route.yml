@@ -1,0 +1,16 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: goldilocks
+  name: goldilocks-ingress-route
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`goldilocks.example.com`)
+      priority: 10
+      services:
+      - name: goldilocks-dashboard
+        port: 80
