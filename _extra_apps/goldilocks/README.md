@@ -5,9 +5,9 @@ Goldilocks is a utility from Fairwinds to identify requests and limits, based on
 [Return to Application List](../)
 
 * This tool creates a VPA for each workload in a namespace and then queries them for information
-* Once the VPA are in place, Goldilocks Dashboard can be used to view the information.
+* Once the VPA are in place, Goldilocks Dashboard can be used to view the information
 
-To enable Goldilocks on a namespace, simply apply a label to the namespace yoo want to monitor:
+To enable Goldilocks on a namespace, simply apply a label to the namespace you want to monitor:
 
 ```shell
 kubectl label namespace <nam-space-name> goldilocks.fairwinds.com/enabled=true
@@ -16,7 +16,7 @@ kubectl label namespace <nam-space-name> goldilocks.fairwinds.com/enabled=true
 For example, this enabled ArgoCD to be monitored:
 
 ```shell
-$ kubectl label ns argocd goldilocks.fairwinds.com/enabled
+$ kubectl label namespace argocd goldilocks.fairwinds.com/enabled
 
 namespace/argocd labeled
 ```
@@ -50,15 +50,15 @@ spec:
         port: 80
 ```
 
-* NOTES:  I was unable to get the application working as a pathPrefix (`https://example.com/goldilocks/`).
-  * Using it as a DNS Alias is the next easiest option
+* NOTES:  I was unable to get the application working as a pathPrefix (`https://example.com/goldilocks/`)
+  * Accessing the dashboard as a DNS alias is the next easiest option
   * You could just use a port-forward instead when you want to view the dashboard
 
-* Since the dashboard is readonly, I did not enable authentication. You can easily add it if needed.
+* Since the dashboard is read-only, I did not enable authentication. You can easily add it if needed.
 
 ---
 
-Once the IngressRoute and DNS alias in place, the Goldilocks dashboard URL will resemble `https://goldilocks.example.com`:
+Once the IngressRoute and DNS alias are in place, the Goldilocks dashboard URL will resemble `https://goldilocks.example.com`:
 
 ![Goldilocks Dashboard Namespace selector](goldilocks_dashboard_namespaces.png)
 

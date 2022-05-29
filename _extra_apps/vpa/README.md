@@ -4,14 +4,13 @@ While the full Vertical Pod Autoscaler (VPA) frees the user from setting up-to-d
 
 [Return to Application List](../)
 
+* Helm based ArgoCD application deployment
 * This installation only enables the `recommender` portion of VPA
   * It monitors the current and past resource consumption and, based on it, provides recommended values for containers' cpu and memory requests
 * It does not enable the automated modifications of container settings or admission controller
 * Historical information to base recommendations on is pulled from Prometheus
 
 This provides information to [Goldilocks](../goldilocks/) which exposes a dashboard to review current settings and recommendations.
-
-* Helm based ArgoCD application deployment.
 
 Review `vpa/applications/vpa.yaml`
 
