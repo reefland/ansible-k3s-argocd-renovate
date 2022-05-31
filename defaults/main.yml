@@ -81,11 +81,11 @@ install:
     namespace: "argocd"
 
     repository:
-      name: "k3s-argocd-renovate"
+      name: "k3s-argocd-renovate"                                                           # Name used within ArgoCD
       url: "{{argocd_repo_url|default('UNDEFINED_REPO_URL')}}"                              # https://github.com/<user>/<repo-name>
       # Define secrets in vars/secrets/main.yml
-      username: "{{ARGOCD_REPO_USERNAME_SECRET|default('oauth')}}"                           # oauth - not really used
-      password: "{{ARGOCD_REPO_PASSWORD_SECRET|default('UNDEFINED_REPO_PASSWORD_TOKEN')}}"   # Github Personal Access Token
+      username: "{{ARGOCD_REPO_USERNAME_SECRET|default('oauth')}}"                          # oauth - not really used
+      password: "{{ARGOCD_REPO_PASSWORD_SECRET|default('UNDEFINED_REPO_PASSWORD_TOKEN')}}"  # Github Personal Access Token
 
     # Default Dashboard URL:  https://k3s.{{ansible_domain}}/argocd/
     dashboard:
