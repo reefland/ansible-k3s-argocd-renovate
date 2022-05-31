@@ -80,6 +80,18 @@ NAME                  COMPLETIONS   DURATION   AGE
 renovate-1652114610   0/1           54s        54s
 ```
 
+You can add a `-w` to watch job until it completes:
+
+```shell
+$ kubectl get jobs -n renovate -w
+
+NAME                  COMPLETIONS   DURATION   AGE
+renovate-1652114610   0/1           16s        16s
+renovate-1652114610   0/1           93s        93s
+renovate-1652114610   1/1           93s        93s
+
+```
+
 * Renovate's initial job should finish quickly, this is a sign something is wrong.
 
 See Status of Job's Pods:
