@@ -130,6 +130,22 @@ The ArgoCD Settings are in variable namespace `install.argocd`.
   * The `ARGOCD_REPO_USERNAME_SECRET` and `ARGOCD_REPO_PASSWORD_SECRET` values should be defined in `vars/secrets/main.yaml` file.
     * Be sure to to use `ansible-vault` to encrypt your secrets.
 
+* Define ArgoCD Dashboard settings
+
+  ```yaml
+    # Default Dashboard URL:  https://k3s.{{ansible_domain}}/argocd/
+    dashboard:
+      path: "/argocd"                         # URI Path for Ingress Route
+      # $ARGO_PWD=password
+      # htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'
+      initial_password: "$2a$10$qsjuZNhoJR7UHv/v/CryaOe0wewDzzH.wP.j1YAVLqgBXWZImdQ/u"
+  ```
+
+  * The `path` is the URI part of the ArgoCD dashboard URL.
+  * The `initial_password` is `password`.
+    * If you have access to `htpasswd` utility you can set a different initial password.
+    * You should change the password upon first login to the dashboard.
+
 ---
 
 ## ArgoCD Initial Dashboard
@@ -148,7 +164,7 @@ The following shows the contents of the ArgoCD dashboard when only ArgoCD and Re
 
 ### Early Access to ArgoCD Dashboard
 
-The early initial installation will not have an ingress controller.  To get early access the ArgoCD dashboard to check connectivity to repository and status of deployments:
+The early initial installation will not have an ingress controller.  It can take several minutes before Traefik is deployed, ingress route is created and Cert-manager generates the SSL certificate.  To get early access to the ArgoCD dashboard to check connectivity to repository and status of deployments:
 
 #### Create a Port Forward
 
