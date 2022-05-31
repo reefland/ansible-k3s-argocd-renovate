@@ -27,12 +27,6 @@ spec:
     namespace: {{install.argocd.namespace}}
 
   ignoreDifferences:
-    - kind: Secret                              # Secert updates overtime
-      name: argocd-secret
-      namespace: {{install.argocd.namespace}}
-      jsonPointers:
-      - /data
-
     - kind: ConfigMap                           # ConfigMap URL
       name: argocd-cm
       namespace: {{install.argocd.namespace}}
@@ -42,6 +36,6 @@ spec:
   syncPolicy:
     automated:
       prune: true
-      selfHeal: false
+      selfHeal: true
     syncOptions:
     -  Validate=true

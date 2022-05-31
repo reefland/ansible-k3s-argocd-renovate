@@ -4,9 +4,7 @@ argo-cd:
   enabled: true
   configs:
     secret:
-      # $ARGO_PWD=password
-      # htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'
-      argocdServerAdminPassword: "$2a$10$qsjuZNhoJR7UHv/v/CryaOe0wewDzzH.wP.j1YAVLqgBXWZImdQ/u"
+      createSecret: false
 
 ###[ Application Controller Settings ]#############################################################
   controller:
@@ -59,13 +57,13 @@ argo-cd:
 #           release: kube-stack-prometheus
  
       # -- Resource limits and requests for redis-exporter sidecar
-      resources:
-         limits:
-           cpu: 50m
-           memory: 64Mi
-         requests:
-           cpu: 10m
-           memory: 32Mi
+#      resources:
+#         limits:
+#           cpu: 50m
+#           memory: 64Mi
+#         requests:
+#           cpu: 10m
+#           memory: 32Mi
 
 ###[ Redis HA Settings ]###########################################################################
 # -- Enables the Redis HA subchart and disables the custom Redis single node deployment (above)

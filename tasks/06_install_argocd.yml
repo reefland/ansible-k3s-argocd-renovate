@@ -24,6 +24,7 @@
     loop:
       - "argocd_secret.yaml"
       - "renovate_secret.yaml"
+      - "argocd_admin_secret.yaml"
 
   - name: Clone Remote ArgoCD Repository
     ansible.builtin.git:
@@ -61,6 +62,13 @@
         - update
         - "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd"
       creates: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd/Chart.lock"
+
+  - name: Add Default Admin Credentials
+    kubernetes.core.k8s:
+      state: present
+      src:  "/home/{{install.os.non_root_user.name}}/argocd/{{item}}"
+    loop:
+      - "argocd_admin_secret.yaml"
 
   - name: Install ArgoCD Helm Using Local Files
     kubernetes.core.helm:

@@ -90,6 +90,9 @@ install:
     # Default Dashboard URL:  https://k3s.{{ansible_domain}}/argocd/
     dashboard:
       path: "/argocd"                         # URI Path for Ingress Route
+      # $ARGO_PWD=password
+      # htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'
+      initial_password: "$2a$10$qsjuZNhoJR7UHv/v/CryaOe0wewDzzH.wP.j1YAVLqgBXWZImdQ/u"
 
   ###[ Renovate Configuration Settings ]###########################################################
   # Renovate will monitor manifests deployed to ArgoCD repositories for updates and open a PR
