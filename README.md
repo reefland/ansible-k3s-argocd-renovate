@@ -62,6 +62,7 @@ Optionally Installed:
 * [containerd](https://containerd.io/), container networking-plugins, iptables
 * [helm](https://helm.sh/), [helm diff](https://github.com/databus23/helm-diff), [apt-transport-https](http://manpages.ubuntu.com/manpages/focal/man1/apt-transport-https.1.html) (required for helm client install)
 * [open-iscsi](https://github.com/open-iscsi/open-iscsi), [lsscsi](http://sg.danny.cz/scsi/lsscsi.html), [sg3-utils](https://sg.danny.cz/sg/sg3_utils.html), [multipath-tools](https://github.com/opensvc/multipath-tools), [scsitools](https://packages.ubuntu.com/focal/scsitools-gui) (required by democratic-csi  and by Longhorn)
+* [lm-sensors](https://github.com/lm-sensors/lm-sensors) for hardware temperature monitoring
 
 ## Packages Uninstalled
 
