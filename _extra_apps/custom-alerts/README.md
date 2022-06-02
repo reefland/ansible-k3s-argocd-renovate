@@ -4,6 +4,8 @@ This is a collection of alerts to be added to AlertManger. Many of them I cherry
 
 [Return to Application List](../)
 
+---
+
 ## Node Alerts
 
 These alerts cover each node in the cluster.
@@ -33,7 +35,7 @@ These alerts cover each application deployed.
 |---                      | ---                 |---                  |
 | Application OutofSync   | More than zero      | 1 minute            |
 | Application Sycn Failed | More than zero      | 1 minute            |
-| Application Missing     | App not found       | 15 minutes
+| Application Missing     | App not found       | 15 minutes          |
 
 Example Alert sent to Slack Channel:
 ![ArgoCD Sync Failed](argocd_custom_alert.png)
@@ -48,5 +50,25 @@ Example Alert sent to Slack Channel:
 | High HTTP 403 Error Count | 5% of past 3 minute traffic | 1 minute    |
 | High HTTP 404 Error Count | 5% of past 3 minute traffic | 1 minute    |
 | High HTTP 5xx Error Count | 5% of past 3 minute traffic | 1 minute    |
+
+Example Alert sent to Slack Channel:
+![Traefik High HTTP 401 Error Count](traefik_custom_alert.png)
+
+---
+
+## Longhorn Cluster Storage Alerts
+
+| Alert Description           | Condition             | Duration to Trigger |
+|---                          | ---                   |---                  |
+| Cluster Storage at Capacity | Over 90% capacity     | 5 minutes           |
+| Node Volume Fault           | Volume Fault          | 2 minutes           |
+| Node Volume Degraded        | Volume Degraded       | 5 minutes           |
+| Node Storage at Capacity    | Over 70% capacity     | 5 minutes           |
+| Node Disk at Capacity       | Over 70% capacity     | 5 minutes           |
+| Longhorn Node Down          | Node offline          | 5 minutes           |
+| Instance Manager High CPU   | 3x CPU Request Limit  | 5 minutes           |
+| Longhorn Node High CPU      | Over 90% CPU          | 5 minutes           |
+
+---
 
 [Return to Application List](../)
