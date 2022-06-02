@@ -40,15 +40,16 @@ spec:
             summary: Traefik high HTTP 404 Not Found error rate service (instance {{ $labels.instance }})
             description: "Traefik service 404 Not Found error rate is above 5%\n  VALUE = {{ $value | humanize }}%\n  LABELS = {{ $labels }}"
 
+        # Commented out due to high occurrence but no application impact
         # Traefik service 499 error rate is above 5% 
-        - alert: TraefikHighHttp499ErrorRateService
-          expr: sum(rate(traefik_service_requests_total{code="499"}[3m])) by (service) / sum(rate(traefik_service_requests_total[3m])) by (service) * 100 > 5
-          for: 1m
-          labels:
-            severity: warning
-          annotations:
-            summary: Traefik high HTTP 499 Client Timeout error rate service (instance {{ $labels.instance }})
-            description: "Traefik service 499 Client Timeout error rate is above 5%\n  VALUE = {{ $value | humanize }}%\n  LABELS = {{ $labels }}"
+        #- alert: TraefikHighHttp499ErrorRateService
+        #  expr: sum(rate(traefik_service_requests_total{code="499"}[3m])) by (service) / sum(rate(traefik_service_requests_total[3m])) by (service) * 100 > 5
+        #  for: 1m
+        #  labels:
+        #    severity: warning
+        #  annotations:
+        #    summary: Traefik high HTTP 499 Client Timeout error rate service (instance {{ $labels.instance }})
+        #    description: "Traefik service 499 Client Timeout error rate is above 5%\n  VALUE = {{ $value | humanize }}%\n  LABELS = {{ $labels }}"
 
       # Traefik service 5xx error rate is above 5% 
         - alert: TraefikHighHttp5xxErrorRateService
