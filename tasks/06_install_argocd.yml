@@ -61,7 +61,6 @@
         - dependency
         - update
         - "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd"
-      creates: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd/Chart.lock"
 
   - name: Add Default Admin Credentials
     kubernetes.core.k8s:
