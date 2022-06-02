@@ -56,7 +56,5 @@
   when: 
     - inventory_hostname == groups['k3s_control'][0]
   tags:
-    - install_argocd
-    - deploy_apps
-    - config_le_certificates
+    - always
 
