@@ -291,3 +291,16 @@ The following tags are supported and should be used in this order:
 * `install_argocd`
 * `deploy_apps`
 * `config_le_certificates`
+
+---
+
+## Grafana Dashboard
+
+A K3s cluster monitoring dashboard specific to this installation (Containerd, ZFS backed longhorn, etc.) is available:
+
+https://grafana.com/grafana/dashboards/16380
+
+![Cluster Dashboard Screen One](./files/grafana/cluster_dashboard_01.png)
+
+[Screeen Shot #2](./files/grafana/cluster_dashboard_02.png)
+[Screeen Shot #3](./files/grafana/cluster_dashboard_03.png)
