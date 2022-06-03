@@ -233,5 +233,6 @@ The application / objects deployed via this Ansible process are assigned the fol
 |  1              | Let's Encrypt Wildcard Certificate Generation |
 |  3              | Traefik Configuration (IngressRoutes, Authentication Secrets, etc) |
 |  5              | Longhorn Distributed Cluster Storage          |
+|  7              | Longhorn Custom Config (snapshots & backups)  |
 
 [Back to README.md](../README.md)
