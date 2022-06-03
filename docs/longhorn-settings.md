@@ -91,6 +91,44 @@ The intent of longhorn is to be used instead of "local-path" storage class. Once
 
 ---
 
+## Scheduled Volume Snapshots
+
+Longhorn will automatically create snapshots for volumes at the recurring job scheduled time, as long as the volume is attached to a node.
+
+* Recurring snapshot job only takes a new snapshot when the volume has new data in the volume head (the live data)
+
+```yaml
+    # Default Snapshots - Longhorn will internally create snapshots of each volume will using the
+    # schedule parameters below. NOTE: This is unrelated to ZFS Snapshots.
+    snapshots:
+      cron_schedule: "03 6 * * *" # Daily at 6:03am
+      retain_days: "7"            # Keep for 7 days
+      concurrency: "2"            # number of jobs to run concurrently
+```
+
+---
+
+## Scheduled Volume Backups
+
+Longhorn will automatically create backups of volumes at the recurring job scheduled time, as long as the volume is attached to a node.
+
+* Recurring backup job only takes a new backup when the volume has new data since the last backup
+
+```yaml
+    # Default Backups - Longhorn will take a snapshot and backup the snapshot to a remote NFS share
+    backups:
+      cron_schedule: "08 3 * * *" # Daily at 3:08am
+      retain_days: "21"           # Keep for 14 days
+      concurrency: "2"            # number of jobs to run concurrently
+```
+
+* The target destination to store the backups is defined by variable `longhorn_backup_target` located in the inventory file or host vars file
+* It contains the full NFS URL location to place the backups, such as:
+
+  `longhorn_backup_target: "nfs://192.168.10.102:/mnt/main/backups/longhorn`
+
+---
+
 ### Longhorn Dashboard
 
 * Settings for the Longhorn Web Dashboard. The `create_route` will create a Traefik Ingress route to expose the dashboard on the URI defined in `path`.

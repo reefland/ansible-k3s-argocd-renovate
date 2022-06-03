@@ -154,6 +154,9 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
       k3s_cluster_ingress_name: "k3s-test.{{ansible_domain}}"
       argocd_repo_url: "https://github.com/<USERNAME>/<REPO-NAME>"
 
+      # Longhorn does support S3 or NFS backup targets.  Only NFS supported here.
+      longhorn_backup_target: "nfs://192.168.10.102:/mnt/main/backups/longhorn-test"
+
       K3S_TOKEN: 'secret_here'                # Set to any value you like
 ```
 
@@ -191,6 +194,8 @@ For simplicity I show the variables within the inventory file.  You can place th
 * `longhorn_zfs_pool` lets you define the ZFS pool to create Longhorn cluster storage with. It will use the ZFS pool `rpool` if not defined. This can be host specific or group scoped.
 
 * `longhorn_vol_size` specifies how much storage space you wish to dedicate to Longhorn distributed storage. This can be host specific or group scoped.
+
+* `longhorn_backup_target` full NFS share URL path for Longhorn to make backups of the cluster storage volumes.
 
 ---
 
