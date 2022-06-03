@@ -1,0 +1,16 @@
+---
+apiVersion: longhorn.io/v1beta1
+kind: RecurringJob
+metadata:
+  name: default-group-daily-backup
+  namespace: {{install.longhorn.namespace}}
+spec:
+  cron: {{install.longhorn.backups.cron_schedule}}
+  task: "backup"
+  groups:
+  - default
+  retain: {{install.longhorn.backups.retain_days}}
+  concurrency: {{install.longhorn.backups.concurrency}}
+  labels:
+    label/1: default-group-daily-backup
+  

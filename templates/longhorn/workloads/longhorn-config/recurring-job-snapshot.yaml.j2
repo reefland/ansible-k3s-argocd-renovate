@@ -1,0 +1,16 @@
+---
+apiVersion: longhorn.io/v1beta1
+kind: RecurringJob
+metadata:
+  name: default-group-daily-snapshot
+  namespace: {{install.longhorn.namespace}}
+spec:
+  cron: {{install.longhorn.snapshots.cron_schedule}}
+  task: "snapshot"
+  groups:
+  - default
+  retain: {{install.longhorn.snapshots.retain_days}}
+  concurrency: {{install.longhorn.snapshots.concurrency}}
+  labels:
+    label/1: default-group-daily-snapshot
+  
