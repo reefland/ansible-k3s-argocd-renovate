@@ -237,6 +237,19 @@ install:
     # once Longhorn is installed "local-path" will be disabled as the default storage class
     disable_local_path_as_default_storage_class: true
 
+    # Default Snapshots - Longhorn will internally create snapshots of each volume will using the
+    # schedule parameters below. NOTE: This is unrelated to ZFS Snapshots.
+    snapshots:
+      cron_schedule: "03 6 * * *" # Daily at 6:03am
+      retain_days: "7"            # Keep for 7 days
+      concurrency: "2"            # number of jobs to run concurrently
+    
+    # Default Backups - Longhorn will take a snapshot and backup the snapshot to a remote NFS share
+    backups:
+      cron_schedule: "08 3 * * *" # Daily at 3:08am
+      retain_days: "21"           # Keep for 14 days
+      concurrency: "2"            # number of jobs to run concurrently
+
     # Once installed and validated, a test claim can be processed.
     test_claim:
       enabled: true               # true = attempt longhorn storage claim
