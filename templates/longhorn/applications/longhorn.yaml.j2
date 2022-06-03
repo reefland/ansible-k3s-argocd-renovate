@@ -13,13 +13,18 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: {{install.argocd.repository.url}}.git
-    targetRevision: HEAD
-    path: workloads/longhorn/
+    chart: longhorn
+    repoURL: https://charts.longhorn.io
+    targetRevision: {{install.longhorn.install_version}}
     helm:
-      releaseName: longhorn
-      valueFiles:
-        - values.yaml
+      # Reference: https://github.com/longhorn/charts/blob/master/charts/longhorn/values.yaml
+      values: |
+        defaultSettings:
+          backupTarget: {{longhorn_backup_target|default('~')}}
+          defaultDataPath: {{install.longhorn.zfs.zvol.mountpoint}}
+          defaultDataLocality: best-effort
+          replicaAutoBalance: best-effort
+          nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
 
   destination:
     server: https://kubernetes.default.svc
