@@ -1,0 +1,102 @@
+---
+#
+# Add iSCSI persistent storage with TrueNas integration via democratic-csi packages.
+#
+# based on: https://jonathangazeley.com/2021/01/05/using-truenas-to-provide-persistent-storage-for-kubernetes/
+
+###[ Install democratic-csi packages ]############################################################
+- name: Install democratic-csi Dependencies Block
+  block:
+  - name: Install iSCSI Support packages
+    apt:
+      name: "{{democratic_csi.iscsi.packages}}"
+      state: present
+
+  - name: Copy multipath.Conf File
+    copy:
+      src: "files/democratic_csi/multipath.conf"
+      dest: "/etc/multipath.conf"
+
+  - name: Enable and Start multipath-tools Service
+    ansible.builtin.systemd:
+      enabled: yes
+      state: restarted
+      name: multipath-tools
+
+  - name: Enable and Start open-iscsi Service
+    ansible.builtin.systemd:
+      enabled: yes
+      state: restarted
+      name: open-iscsi
+
+  - name: Create directory for democratic-csi yaml files for non-root user
+    file:
+      path: "/home/{{install.os.non_root_user.name}}/democratic-csi"
+      state: directory
+      mode: 0700
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+
+  - name: Copy democratic-csi Template Files
+    template:
+      src: "templates/user-files/democratic_csi/{{item}}.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/democratic-csi/{{item}}"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0660'
+    loop:
+      - "test-claim-iscsi.yaml"
+  when:
+    - install.democratic_csi.iscsi.provisioner is defined
+  tags:
+    - never
+    - install_democratic_csi_iscsi
+
+###[ Clone ArgoCD Repository and Add Helm Chart ]##################################################
+- name: Add Democratic CSI iSCSI to ArgoCD Repository Block
+  block:
+  - name: Clone Remote ArgoCD Repository
+    ansible.builtin.git:
+      repo: "{{install.argocd.repository.url|urlsplit('scheme')}}://{{install.argocd.repository.username}}:{{install.argocd.repository.password}}@{{install.argocd.repository.url|urlsplit('hostname')}}{{install.argocd.repository.url|urlsplit('path')}}"
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+      force: yes
+
+  # Generate templates and then check into Git repository are defined below
+  - name: Process Deployable Enabled Applications
+    include_tasks: "process_app_to_deploy.yml"
+    loop:
+      - { enabled: true,  name: "democratic_csi_iscsi" }
+    when:
+      - deploy_app.enabled == true
+    loop_control:
+      loop_var: deploy_app
+      label: "{{deploy_app}}"
+
+  - name: Check-in Any New or Modified Files
+    include_tasks: "checkin_argocd_repo_files.yml"
+
+  when:
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.democratic_csi.iscsi.provisioner is defined
+  tags:
+    - never
+    - install_democratic_csi_iscsi
+
+# Make sure all changes are checked in before removing repository
+- name: Flush Handlers
+  meta: flush_handlers
+  tags:
+    - never
+    - install_democratic_csi_iscsi
+
+# Probably not safe to leave these on the K3s instance
+- name: Delete Local ArgoCD Git Repo Created
+  ansible.builtin.file:
+    path: "/home/{{install.os.non_root_user.name}}/argocd"
+    state: absent
+  when: 
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.democratic_csi.iscsi.provisioner is defined
+  tags:
+    - never
+    - install_democratic_csi_iscsi

@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-claim-iscsi
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "{{install.democratic_csi.iscsi.provisioner}}-csi"
+spec:
+  storageClassName: {{install.democratic_csi.iscsi.provisioner}}-csi
+  accessModes:
+    - {{install.democratic_csi.iscsi.test_claim.mode}}
+  resources:
+    requests:
+      storage: {{install.democratic_csi.iscsi.test_claim.size}}

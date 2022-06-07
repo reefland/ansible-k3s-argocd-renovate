@@ -108,3 +108,17 @@ longhorn:
     # Format of the filesystem used for Longhorn storage
     zvol:
       format: "xfs" 
+
+###[ Democratic-csi iSCSI & NFS Installation Settings ]############################################
+democratic_csi:
+  iscsi:
+    packages:
+    - open-iscsi
+    - lsscsi
+    - sg3-utils
+    - multipath-tools
+    - scsitools
+
+  nfs:
+    packages:
+    - libnfs-utils

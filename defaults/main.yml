@@ -250,9 +250,130 @@ install:
       retain_days: "21"           # Keep for 14 days
       concurrency: "2"            # number of jobs to run concurrently
 
-    # Once installed and validated, a test claim can be processed.
+    # Creates a test claim manifest file
     test_claim:
       enabled: true               # true = attempt longhorn storage claim
       mode: "ReadWriteOnce"       # storage claim access mode
       size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
       remove: true                # true = remove claim when test is completed (false leaves it alone)
+
+  ###[ Democratic CSI Installation Settings ]######################################################
+  democratic_csi:
+    namespace: "democratic-csi"
+
+    # Select Release to use: https://github.com/longhorn/longhorn/releases 
+    install_version: "{{democratic_csi_install_version|default('0.13.1')}}"
+
+    truenas:
+      # Define secrets in vars/secrets/main.yml
+      http_connection:
+        protocol: "https"
+        port: 443
+        allow_insecure: false
+        host: "{{TN_HTTP_HOST|default('NOT_SET_IN_vars/secrets/main.yml')}}"
+        api_key: "{{TN_HTTP_API_KEY|default('NOT_SET_IN_vars/secrets/main.yml')}}"
+
+      # Define secrets in vars/secrets/main.yml
+      ssh_connection:
+        host: "{{TN_SSH_HOST|default('NOT_SET_IN_vars/secrets/main.yml')}}"
+        port: 22
+        user: "{{TN_SSH_USER|default('NOT_SET_IN_vars/secrets/main.yml')}}"
+        
+        # Must use a password or private key
+        #password: "{{TN_SSH_PASSWD|default('NOT_SET_IN_vars/secrets/main.yml')}}"
+        private_key: "{{TN_SSH_PRIV_KEY|default('NOT_SET_IN_vars/secrets/main.yml')}}"
+
+      iscsi_connection:
+        host: "{{TN_ISCSI_HOST|default('NOT_SET_IN_vars/secrets/main.yml')}}"
+        port: 3260
+        #interface: ""                 # leave empty to omit usage of -I with iscsiadm
+
+      nfs_connection:
+        host: "{{TN_NFS_HOST|default('NOT_SET_IN_vars/secrets/main.yml')}}"
+
+    ###[ Democratic CSI iSCSI Settings ]###########################################################
+    # Available: https://github.com/democratic-csi/democratic-csi/tree/master/examples
+    iscsi:
+      provisioner: "freenas-iscsi"
+
+      storage_class:
+        default_class: false
+        reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
+        volume_expansion: true
+
+      zfs:
+        # Assumes pool named "main", dataset named "k8s", child dataset "iscsi"
+        # Any additional provisioners such as NFS would be at the same level as "iscsi" (sibling of it)
+        # IMPORTANT:
+        #   total volume name (zvol/<datasetParentName>/<pvc name>) length cannot exceed 63 chars
+        #   https://www.ixsystems.com/documentation/freenas/11.2-U5/storage.html#zfs-zvol-config-opts-tab
+        #   standard volume naming overhead is 46 chars
+        #   Which means names **MUST-BE** 17 characters or LESS!!!!
+        datasets:
+          parent_name: "main/k8s/iscsi/v"
+          snapshot_ds_name: "main/k8s/iscsi/s"
+        
+        zvol:
+          compression: "lz4"        # "" (inherit), lz4, gzip-9, etc
+          blocksize: ""             # 512, 1K, 2K, 4K, 8K, 16K, 64K, 128K default is 16K
+          enable_reservation: false
+
+      name_prefix: csi-
+      name_suffix: "-clustera"
+
+      target_group:
+        portal_group: 1             # get the correct ID from the "portal" section in the UI
+        initiator_group: 1          # get the correct ID from the "initiators" section in the UI
+        auth_type: "None"           # None, CHAP, or CHAP Mutual
+
+        # get the correct ID from the "Authorized Access" section of the UI
+        auth_group: ""              # only required if using CHAP
+
+      extent:
+        fs_type: "xfs"              # zvol block-based storage can be formatted as ext3, ext4, xfs
+        block_size: 4096            # 512, 1024, 2048, or 4096
+        rpm: "5400"                 # "" (let FreeNAS decide, currently defaults to SSD), Unknown, SSD, 5400, 7200, 10000, 15000
+        avail_threshold: 0          # 0-100 (0 == ignore)
+
+      # Once installed and validated, a test claim can be processed.
+      test_claim:
+        enabled: true               # true = attempt iscsi storage claim
+        mode: "ReadWriteOnce"       # storage claim access mode
+        size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
+        remove: true                # true = remove claim when test is completed (false leaves it alone)
+
+    ###[ Democratic CSI NFS Settings ]#############################################################
+    nfs:
+      install_this: true            # Install the NFS provisioner
+
+      provisioner: "freenas-nfs"
+      release: "truenas-nfs"
+
+      storage_class:
+        default_class: false
+        reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
+        volume_expansion: true
+
+      zfs:
+        sudo_enabled: true          # TrueNAS Core 12 requires non-root account have sudo access
+
+        # Assumes pool named "main", dataset named "k8s", child dataset "nfs"
+        # Any additional provisioners such as iSCSI would be at the same level as "nfs" (sibling of it)
+        datasets:
+          parent_name: "main/k8s/nfs/v"
+          snapshot_ds_name: "main/k8s/nfs/s"        
+
+          enable_quotas: true
+          enable_reservation: false
+
+          permissions:
+            mode: '"0777"'
+            user_id_num: 0          # 0 = root, needs User UID not a name (API needs a number)
+            group_id_num: 0         # 0 = wheel, needs Group GUID not a name (API needs a number)
+
+      # # Creates a test claim manifest file
+      test_claim:
+        enabled: true               # true = attempt nfs storage claim
+        mode: "ReadWriteOnce"       # storage claim access mode
+        size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
+        remove: true                # true = remove claim when test is completed (false leaves it alone)
