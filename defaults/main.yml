@@ -346,10 +346,7 @@ install:
 
     ###[ Democratic CSI NFS Settings ]#############################################################
     nfs:
-      install_this: true            # Install the NFS provisioner
-
       provisioner: "freenas-nfs"
-      release: "truenas-nfs"
 
       storage_class:
         default_class: false
