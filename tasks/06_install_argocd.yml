@@ -127,7 +127,7 @@
         - delete
         - secret
         - -l
-        - owner=helm,name=argo-cd
+        - owner=helm,name=argocd
         - -n
         - "{{install.argocd.namespace}}"
 
