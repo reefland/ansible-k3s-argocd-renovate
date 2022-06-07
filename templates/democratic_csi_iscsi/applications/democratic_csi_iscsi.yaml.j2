@@ -23,23 +23,27 @@ spec:
           # should be globally unique for a given cluster
           name: "org.democratic-csi.iscsi"
 
-        #########################################################################################
-        # The following will pull from the developer's "next" branch, for testing new features.
-        #controller:
-        #  driver:
-        #    image: democraticcsi/democratic-csi:next
-        #    imagePullPolicy: Always
-        #    logLevel: debug
+        controller:
+          driver:
+            image: docker.io/democraticcsi/democratic-csi:v1.6.3
+            #########################################################################################
+            # The following will pull from the developer's "next" branch, for testing new features.
+            # image: democraticcsi/democratic-csi:next
+            # imagePullPolicy: Always
+            # logLevel: debug
 
-        #node:
-        #  driver:
-        #    image: democraticcsi/democratic-csi:next
-        #    imagePullPolicy: Always
-        #    logLevel: debug
-        #########################################################################################
-        # To confirm if the "next" image is being used by the containers:
-        # kubectl get pods -n democratic-csi -o jsonpath="{.items[*].spec.containers[*].image}" | tr -s '[[:space:]]' '\n' | grep next | uniq
-        #########################################################################################
+        node:
+          driver:
+            image: docker.io/democraticcsi/democratic-csi:v1.6.3
+            #########################################################################################
+            # The following will pull from the developer's "next" branch, for testing new features.
+            # image: democraticcsi/democratic-csi:next
+            # imagePullPolicy: Always
+            # logLevel: debug
+            #########################################################################################
+            # To confirm if the "next" image is being used by the containers:
+            # kubectl get pods -n democratic-csi -o jsonpath="{.items[*].spec.containers[*].image}" | tr -s '[[:space:]]' '\n' | grep next | uniq
+            #########################################################################################
 
         storageClasses:
         - name: freenas-iscsi-csi

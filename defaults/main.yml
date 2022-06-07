@@ -258,6 +258,8 @@ install:
       remove: true                # true = remove claim when test is completed (false leaves it alone)
 
   ###[ Democratic CSI Installation Settings ]######################################################
+  # democratic-csi implements the csi (container storage interface) spec providing storage for
+  # various container orchestration systems such as Kubernetes
   democratic_csi:
     namespace: "democratic-csi"
 
@@ -292,7 +294,7 @@ install:
         host: "{{TN_NFS_HOST|default('NOT_SET_IN_vars/secrets/main.yml')}}"
 
     ###[ Democratic CSI iSCSI Settings ]###########################################################
-    # Available: https://github.com/democratic-csi/democratic-csi/tree/master/examples
+    # Provisioners Available and Examples: https://github.com/democratic-csi/democratic-csi/tree/master/examples
     iscsi:
       provisioner: "freenas-iscsi"
 
