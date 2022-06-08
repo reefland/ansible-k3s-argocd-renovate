@@ -8,7 +8,7 @@ Neither the democratic-csi iSCSI or NFS provisioners for TrueNAS are installed b
 
 Once you have configured your yaml files as outlined below you can trigger the installation by passing Ansible tags `--tags="install_democratic_csi_iscsi"` or `--tags="install_democratic_csi_nfs"`.  This should be run against all nodes in the cluster to install the respective iSCSI and NFS packages needed.
 
-On the master node Ansible will clone the ArgoCD repository and copy in the respective `applications`, `namespaces` and `workloads` files and commit and push changed to repository.  You can then monitor installation and review logs from within ArgoCD dashboard.  On all other nodes it will just install the required packaged.
+On the master node Ansible will clone the ArgoCD repository and copy in the respective `applications`, `namespaces` and `workloads` files and commit and push changes to repository.  You can then monitor installation and review logs from within ArgoCD dashboard.  On all other nodes it will just install the required packaged.
 
 ![democratic-csi iSCSI and NFS provisioners within ArgoCD](../images/democratic-csi_in_argocd.png)
 
@@ -664,26 +664,57 @@ replicaset.apps/nginx-pv-green-9c9f6d448   1         1         1       106s
 replicaset.apps/nginx-pv-blue-c7d6d44bf    1         1         1       106s
 ```
 
-Testing the deployment using the Lynx Text Browser:
-
 ```shell
-$ lynx -dump http://testlinux.example.com/nginx/
-                                Hello Green World
+$ kubectl get pvc -n nfs-test-app
 
-$ lynx -dump http://testlinux.example.com/nginx/
-                                Hello Blue World
+NAME                   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS      AGE
+test-claim-nfs-green   Bound    pvc-129d713f-54ab-42b7-a658-8395b148e722   2Mi        RWO            freenas-nfs-csi   110s
+test-claim-nfs-blue    Bound    pvc-6aaf3095-feac-487b-944a-4c72ee7fe2f4   2Mi        RWO            freenas-nfs-csi   110s
 
-$ lynx -dump http://testlinux.example.com/nginx/
-                                Hello Blue World
-
-$ lynx -dump http://testlinux.example.com/nginx/
-                                Hello Green World
-
-$ lynx -dump http://testlinux.example.com/nginx/
-                                Hello Blue World
 ```
 
-Delete the deployment:
+Testing the deployment using the `Lynx` Text Browser:
+
+```shell
+$ lynx -dump http://k3s.example.com/nginx/
+                    Hello Green World
+
+$ lynx -dump http://k3s.example.com/nginx/
+                    Hello Blue World
+
+$ lynx -dump http://k3s.example.com/nginx/
+                    Hello Blue World
+
+$ lynx -dump http://k3s.example.com/nginx/
+                    Hello Green World
+
+$ lynx -dump http://k3s.example.com/nginx/
+                    Hello Blue World
+```
+
+If you don't have `Lynx` Text Browser, the `wget` utility will work:
+
+```shell
+$ wget -q -nv -O - http://k3s.example.com/nginx/
+<h1> Hello <font color=blue>Blue World</font></h1>
+
+$ wget -q -nv -O - http://k3s.example.com/nginx/
+<h1> Hello <font color=green>Green World</font></h1>
+
+$ wget -q -nv -O - http://k3s.example.com/nginx/
+<h1> Hello <font color=blue>Blue World</font></h1>
+
+$ wget -q -nv -O - http://k3s.example.com/nginx/
+<h1> Hello <font color=green>Green World</font></h1>
+
+$ wget -q -nv -O - http://k3s.example.com/nginx/
+<h1> Hello <font color=blue>Blue World</font></h1>
+
+$ wget -q -nv -O - http://k3s.example.com/nginx/
+<h1> Hello <font color=green>Green World</font></h1>
+```
+
+Delete the deployment when done testing:
 
 ```shell
 $ kubectl delete -f test-app-nfs-claim.yaml -n nfs-test-app
@@ -696,6 +727,12 @@ service "nginx-pv-green" deleted
 service "nginx-pv-blue" deleted
 middleware.traefik.containo.us "nginx-strip-path-prefix" deleted
 ingressroute.traefik.containo.us "test-claim-ingressroute" deleted
+
+$ kubectl get pv -n nfs-test-app
+No resources found
+
+$ kubectl delete namespace nfs-test-app
+namespace "nfs-test-app" deleted
 
 # Page no longer exists:
 $ lynx -dump http://testlinux.example.com/nginx/
