@@ -4,6 +4,18 @@
 
 ## Important Notes
 
+Neither the democratic-csi iSCSI or NFS provisioners for TrueNAS are installed by default due to the complexity in setting it up.  I've gathered as much information as I could and present it below in an as easy as I could way showing examples how to configure it.  Once configured, it works fantastic!  Both can be installed giving you flexibility to pick between them.
+
+Once you have configured your yaml files as outlined below you can trigger the installation by passing Ansible tags `--tags="install_democratic_csi_iscsi"` or `--tags="install_democratic_csi_nfs"`.  This should be run against all nodes in the cluster to install the respective iSCSI and NFS packages needed.
+
+On the master node Ansible will clone the ArgoCD repository and copy in the respective `applications`, `namespaces` and `workloads` files and commit and push changed to repository.  You can then monitor installation and review logs from within ArgoCD dashboard.  On all other nodes it will just install the required packaged.
+
+![democratic-csi iSCSI and NFS provisioners within ArgoCD](../images/democratic-csi_in_argocd.png)
+
+* ArgoCD showing deployed and sync from repository.
+
+---
+
 * `democratic-csi` - CSI or **C**ontainer **S**torage **I**nterface defines a standard interface for container orchestration systems (like Kubernetes) to expose arbitrary storage systems to their container workloads.
   * Uses a combination of the TrueNAS API over SSL/TLS and SSH to dynamically allocate persistent storage zvols on TrueNAS upon request when storage claims are made.
   * The TrueNAS API key is **admin access** equivalent.  This needs to be protected (save in ansible vault, restrict access to the `yaml` file generated.)  
