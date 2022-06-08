@@ -108,56 +108,56 @@ Each of these links provide useful documentation details:
 Define a group for this playbook to use in your inventory, I like to use YAML format:
 
 ```yaml
-  k3s_control:
-    hosts:
-      k3s01.example.com:                        # Master #1
-        longhorn_zfs_pool: "tank"
-        longhorn_vol_size: "10G"
-      k3s02.example.com:                        # Master #2
-        longhorn_zfs_pool: "tank"
-        longhorn_vol_size: "10G"
-      k3s03.example.com:                        # Master #3 (add more if needed)
-        longhorn_zfs_pool: "tank"
-        longhorn_vol_size: "10G"
+k3s_control:
+  hosts:
+    k3s01.example.com:                        # Master #1
+      longhorn_zfs_pool: "tank"
+      longhorn_vol_size: "10G"
+    k3s02.example.com:                        # Master #2
+      longhorn_zfs_pool: "tank"
+      longhorn_vol_size: "10G"
+    k3s03.example.com:                        # Master #3 (add more if needed)
+      longhorn_zfs_pool: "tank"
+      longhorn_vol_size: "10G"
 
-    vars:
-      vip_endpoint_ip: "192.168.10.220"
-      vip_lb_ip_range: "cidr-global: 192.168.10.221/30"   # 4 Addresses pool
-      traefik_lb_ip: "192.168.10.221"           # must be within cidr ip_range
+  vars:
+    vip_endpoint_ip: "192.168.10.220"
+    vip_lb_ip_range: "cidr-global: 192.168.10.221/30"   # 4 Addresses pool
+    traefik_lb_ip: "192.168.10.221"           # must be within cidr ip_range
 
-  k3s_workers:
-    hosts:
-      k3s-worker01.example.com:                # Worker #1
+k3s_workers:
+  hosts:
+    k3s-worker01.example.com:                # Worker #1
 
-    vars:
-      k3s_labels:
-        - "kubernetes.io/role=worker"
-        - "node-type=worker"
+  vars:
+    k3s_labels:
+      - "kubernetes.io/role=worker"
+      - "node-type=worker"
 
-  k3s:
-    children:
-      k3s_control:
-      k3s_workers:
+k3s:
+  children:
+    k3s_control:
+    k3s_workers:
 
-    vars:
-      # Install versions are optional, lets you pin newer versions than defaults
-      k3s_install_version: "v1.23.5+k3s1"
-      argocd_install_version: "4.5.10"
-      renovate_install_version: "32.45.5"
-      cert_manager_install_version: "v1.7.1"
-      kube_vip_install_version: "v0.4.2"
-      kube_vip_cloud_provider_install_version: "v0.0.2"
-      traefik_install_version: "v10.19.4"
-      longhorn_install_version: "v1.2.4"
-      democratic_csi_install_version: "0.13.1"
+  vars:
+    # Install versions are optional, lets you pin newer versions than defaults
+    k3s_install_version: "v1.23.5+k3s1"
+    argocd_install_version: "4.5.10"
+    renovate_install_version: "32.45.5"
+    cert_manager_install_version: "v1.7.1"
+    kube_vip_install_version: "v0.4.2"
+    kube_vip_cloud_provider_install_version: "v0.0.2"
+    traefik_install_version: "v10.19.4"
+    longhorn_install_version: "v1.2.4"
+    democratic_csi_install_version: "0.13.1"
 
-      k3s_cluster_ingress_name: "k3s-test.{{ansible_domain}}"
-      argocd_repo_url: "https://github.com/<USERNAME>/<REPO-NAME>"
+    k3s_cluster_ingress_name: "k3s-test.{{ansible_domain}}"
+    argocd_repo_url: "https://github.com/<USERNAME>/<REPO-NAME>"
 
-      # Longhorn does support S3 or NFS backup targets.  Only NFS supported here.
-      longhorn_backup_target: "nfs://192.168.10.102:/mnt/main/backups/longhorn-test"
+    # Longhorn does support S3 or NFS backup targets.  Only NFS supported here.
+    longhorn_backup_target: "nfs://192.168.10.102:/mnt/main/backups/longhorn-test"
 
-      K3S_TOKEN: 'secret_here'                # Set to any value you like
+    K3S_TOKEN: 'secret_here'                # Set to any value you like
 ```
 
 * This inventory file divides hosts into Control nodes and Worker nodes:
