@@ -150,7 +150,7 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: Host(`{{ansible_fqdn|lower}}`) && PathPrefix(`/nginx`)
+  - match: Host(`{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}`) && PathPrefix(`/nginx`)
     kind: Rule
     middlewares:
     - name: nginx-strip-path-prefix
