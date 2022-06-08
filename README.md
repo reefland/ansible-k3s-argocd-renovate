@@ -21,6 +21,7 @@ Optionally Installed:
 * [kube-vip](https://kube-vip.chipzoller.dev/) for Kubernetes API Load Balancer
 * [kube-vip-cloud-provider](https://kube-vip.chipzoller.dev/) Load Balancer to replace [K3s Klipper](https://github.com/k3s-io/klipper-lb) Load Balancer for ingress traffic.
 * [Longhorn](https://longhorn.io/) distributed [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) as default storage class
+* [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) storage via **iSCSI** and **NFS** from [TrueNAS](https://www.truenas.com/)
 * [Traefik](https://traefik.io/) Load Balanced ingress deployed as a DaemonSet.
   * IngressRoutes for the following will be generated and deployed:
     * Traefik Dashboard
@@ -48,7 +49,7 @@ Optionally Installed:
 ## Environments Tested
 
 * Ubuntu 20.04.4 based [ZFS on Root](https://github.com/reefland/ansible-zfs_on_root) installation
-* TrueNAS Core 12-U8
+* TrueNAS Core 12.x
 * K3s v1.23.3 / v1.23.4+k3s1 / v1.23.5+k3s1
 
 ---
@@ -93,10 +94,10 @@ Each of these links provide useful documentation details:
 * Review [Renovate Configuration Settings](docs/renovate-settings.md)
 * Review [CertManager Configuration](docs/cert-manager.md)
 * Review [Let's Encrypt Configuration](docs/lets-encrypt-settings.md)
-
 * Review [Kube-vip API Load Balancer Settings](docs/kube-vip-settings.md)
 * Review [Traefik and Dashboard Settings](docs/traefik-settings.md)
 * Review [Longhorn Distributed Storage Settings](docs/longhorn-settings.md)
+* Review [democratic-csi for TrueNAS Settings](docs/democratic-csi-settings.md)
 
 ---
 
@@ -148,8 +149,7 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
       kube_vip_cloud_provider_install_version: "v0.0.2"
       traefik_install_version: "v10.19.4"
       longhorn_install_version: "v1.2.4"
-
-      prometheus_op_install_version: "34.7.1"
+      democratic_csi_install_version: "0.13.1"
 
       k3s_cluster_ingress_name: "k3s-test.{{ansible_domain}}"
       argocd_repo_url: "https://github.com/<USERNAME>/<REPO-NAME>"
@@ -245,6 +245,7 @@ The idea behind pinning specific versions of software is so that an installation
 * `kube_vip_cloud_provider_install_version` pins the Application Container Tag [Release](https://github.com/kube-vip/kube-vip-cloud-provider/releases)
 * `traefik_install_version` pings the Traefik Helm [Release](https://github.com/traefik/traefik-helm-chart/tags) version.
 * `longhorn_install_version` pins the Longhorn Helm [Release](https://github.com/longhorn/longhorn/releases) version.
+* `democratic_csi_install_version` pins the Democratic CSI iSCSI and/or NFS Provisioner Helm [Release](https://github.com/democratic-csi/charts/releases) version.
 
 ---
 
@@ -296,6 +297,11 @@ The following tags are supported and should be used in this order:
 * `install_argocd`
 * `deploy_apps`
 * `config_le_certificates`
+
+The following tags are not run by default but can be used to install this additional software:
+
+* `install_democratic_csi_iscsi`
+* `install_democratic_csi_nfs`
 
 ---
 
