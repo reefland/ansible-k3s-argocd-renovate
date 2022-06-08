@@ -46,6 +46,21 @@
       mode: '0660'
     loop:
       - "test-claim-iscsi.yaml"
+      - "iscsi-driver-config-secret.yaml"     # Temporary stage will be deleted once processed
+
+  - name: Apply Democratic CSI Config Secret
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/democratic-csi/{{item}}"
+      wait: yes
+      wait_timeout: 300
+    with_items:
+      - iscsi-driver-config-secret.yaml
+
+  - name: Delete Democratic CSI Config Secret File
+    ansible.builtin.file:
+      path: "/home/{{install.os.non_root_user.name}}/democratic-csi/iscsi-driver-config-secret.yaml"
+      state: absent
   when:
     - install.democratic_csi.iscsi.provisioner is defined
   tags:
