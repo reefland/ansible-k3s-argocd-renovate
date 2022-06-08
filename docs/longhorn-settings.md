@@ -33,7 +33,7 @@ The Longhorn Settings are in variable namespace `install.longhorn`.
       install_version: "{{longhorn_install_version|default('v1.2.4')}}"
   ```
 
-* The name space and release name Helm will use to install Longhorn:
+* The name space Helm will use to install Longhorn:
 
   ```yml
       namespace: "longhorn-system"
@@ -180,7 +180,7 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
 
 ### Test Claim
 
-* Adjust if you want a Longhorn storage test claim performed once all validations have completed:
+* Adjust if you want a Longhorn storage test claim created:
 
 ```yml
   test_claim:
@@ -189,6 +189,8 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
     size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
     remove: true                # true = remove claim when test is completed (false leaves it alone)
 ```
+
+* The test claim will be stored on the master node at `/home/kube/longhorn/longhorn-test-claim.yaml`.
 
 ---
 
