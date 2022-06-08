@@ -261,11 +261,11 @@ install:
   # democratic-csi implements the csi (container storage interface) spec providing storage for
   # various container orchestration systems such as Kubernetes
   democratic_csi:
-    namespace: "democratic-csi"
-
-    # Select Release to use: https://github.com/longhorn/longhorn/releases 
+    # Select Release to use: https://github.com/democratic-csi/charts/releases
     install_version: "{{democratic_csi_install_version|default('0.13.1')}}"
 
+    namespace: "democratic-csi"
+    
     truenas:
       # Define secrets in vars/secrets/main.yml
       http_connection:
