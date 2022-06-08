@@ -735,7 +735,7 @@ $ kubectl delete namespace nfs-test-app
 namespace "nfs-test-app" deleted
 
 # Page no longer exists:
-$ lynx -dump http://testlinux.example.com/nginx/
+$ lynx -dump http://k3s.example.com/nginx/
 404 page not found
 ```
 
