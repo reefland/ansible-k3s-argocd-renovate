@@ -29,6 +29,7 @@
       mode: '0660'
     loop:
       - "test-claim-nfs.yaml"
+      - "test-app-nfs-claim.yaml"
       - "nfs-driver-config-secret.yaml"     # Temporary stage will be deleted once processed
 
   - name: Apply Democratic CSI Config Secret

@@ -1,0 +1,161 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: nginx-pv-green
+  labels:
+    app: nginx-pv-green
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-pv-green
+  template:
+    metadata:
+      labels:
+        app: nginx-pv-green
+    spec:
+      volumes:
+      - name: nginx-pv-storage-green
+        persistentVolumeClaim:
+          claimName: test-claim-nfs-green
+      initContainers:
+      - name: web-content-green
+        image: busybox
+        volumeMounts:
+        - mountPath: "/webdata"
+          name: nginx-pv-storage-green
+        command: ["/bin/sh", "-c", 'echo "<h1> Hello <font color=green>Green World</font></h1>" > /webdata/index.html']
+      containers:
+      - name: nginx-green
+        image: nginx
+        ports:
+          - containerPort: 80
+        volumeMounts:
+          - mountPath: "/usr/share/nginx/html"
+            name: nginx-pv-storage-green
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: nginx-pv-blue
+  labels:
+    app: nginx-pv-blue
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-pv-blue
+  template:
+    metadata:
+      labels:
+        app: nginx-pv-blue
+    spec:
+      volumes:
+      - name: nginx-pv-storage-blue
+        persistentVolumeClaim:
+          claimName: test-claim-nfs-blue
+      initContainers:
+      - name: web-content-blue
+        image: busybox
+        volumeMounts:
+        - mountPath: "/webdata"
+          name: nginx-pv-storage-blue
+        command: ["/bin/sh", "-c", 'echo "<h1> Hello <font color=blue>Blue World</font></h1>" > /webdata/index.html']
+      containers:
+      - name: nginx-blue
+        image: nginx
+        ports:
+          - containerPort: 80
+        volumeMounts:
+          - mountPath: "/usr/share/nginx/html"
+            name: nginx-pv-storage-blue
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-claim-nfs-green
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "freenas-nfs-csi"
+spec:
+  storageClassName: freenas-nfs-csi
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Mi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-claim-nfs-blue
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "freenas-nfs-csi"
+spec:
+  storageClassName: freenas-nfs-csi
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-pv-green
+
+spec:
+  ports:
+    - protocol: TCP
+      name: web
+      port: 80
+  selector:
+    app: nginx-pv-green
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-pv-blue
+
+spec:
+  ports:
+    - protocol: TCP
+      name: web
+      port: 80
+  selector:
+    app: nginx-pv-blue
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: nginx-strip-path-prefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /nginx
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: test-claim-ingressroute
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: Host(`{{ansible_fqdn|lower}}`) && PathPrefix(`/nginx`)
+    kind: Rule
+    middlewares:
+    - name: nginx-strip-path-prefix
+    services:
+    - name: nginx-pv-green
+      port: 80
+    - name: nginx-pv-blue
+      port: 80
