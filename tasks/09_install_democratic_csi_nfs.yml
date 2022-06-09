@@ -30,7 +30,25 @@
     loop:
       - "test-claim-nfs.yaml"
       - "test-app-nfs-claim.yaml"
-      - "nfs-driver-config-secret.yaml"     # Temporary stage will be deleted once processed
+
+  when:
+    - install.democratic_csi.nfs.provisioner is defined
+  tags:
+    - never
+    - install_democratic_csi_nfs
+
+###[ Clone ArgoCD Repository and Add Helm Chart ]##################################################
+- name: Add Democratic CSI NFS to ArgoCD Repository Block
+  block:
+  - name: Copy democratic-csi Secret Template Files
+    template:
+      src: "templates/user-files/democratic_csi/{{item}}.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/democratic-csi/{{item}}"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0660'
+    loop:
+      - "nfs-driver-config-secret.yaml"     # Temporary stage will be deleted (below) once processed
 
   - name: Apply Democratic CSI Config Secret
     kubernetes.core.k8s:
@@ -45,15 +63,7 @@
     ansible.builtin.file:
       path: "/home/{{install.os.non_root_user.name}}/democratic-csi/nfs-driver-config-secret.yaml"
       state: absent
-  when:
-    - install.democratic_csi.nfs.provisioner is defined
-  tags:
-    - never
-    - install_democratic_csi_nfs
 
-###[ Clone ArgoCD Repository and Add Helm Chart ]##################################################
-- name: Add Democratic CSI NFS to ArgoCD Repository Block
-  block:
   - name: Clone Remote ArgoCD Repository
     ansible.builtin.git:
       repo: "{{install.argocd.repository.url|urlsplit('scheme')}}://{{install.argocd.repository.username}}:{{install.argocd.repository.password}}@{{install.argocd.repository.url|urlsplit('hostname')}}{{install.argocd.repository.url|urlsplit('path')}}"
