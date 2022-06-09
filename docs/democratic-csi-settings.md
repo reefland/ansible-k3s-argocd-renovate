@@ -519,7 +519,7 @@ freenas-nfs-csi        org.democratic-csi.nfs     Delete          Immediate     
 Test claims for NFS and iSCSI are provided.  They can be used as-is or modified:
 
 ```shell
-kube@testlinux:~/democratic-csi$ ls -l test*
+$ kube@testlinux:~/democratic-csi$ ls -l test*
 -rw-rw---- 1 kube kube 287 Mar  1 16:50 test-claim-iscsi.yaml
 -rw-rw---- 1 kube kube 280 Mar  2 10:52 test-claim-nfs.yaml
 
@@ -541,6 +541,7 @@ Show detailed information of provisioning process:
 
 ```shell
 $ kubectl describe pvc/test-claim-iscsi -n democratic-csi
+
 Name:          test-claim-iscsi
 Namespace:     democratic-csi
 StorageClass:  freenas-iscsi-csi
@@ -627,7 +628,7 @@ A full test deployment script will be placed in the non-root `kube` home directo
 * Requests to the `/nginx/` URI will be round-robin between the two containers
 
 ```shell
-cd /home/kube/democratic-csi
+$ cd /home/kube/democratic-csi
 
 $ kubectl create namespace nfs-test-app
 namespace/nfs-test-app created
@@ -728,7 +729,7 @@ service "nginx-pv-blue" deleted
 middleware.traefik.containo.us "nginx-strip-path-prefix" deleted
 ingressroute.traefik.containo.us "test-claim-ingressroute" deleted
 
-$ kubectl get pv -n nfs-test-app
+$ kubectl get pvc -n nfs-test-app
 No resources found
 
 $ kubectl delete namespace nfs-test-app
