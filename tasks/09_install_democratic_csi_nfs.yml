@@ -50,6 +50,12 @@
     loop:
       - "nfs-driver-config-secret.yaml"     # Temporary stage will be deleted (below) once processed
 
+  - name: Create Namespace to Apply Secret to   # ArgoCD will have a copy namespace file
+    kubernetes.core.k8s:
+      state: present
+      kind: Namespace
+      name: "{{install.democratic_csi.namespace}}"
+
   - name: Apply Democratic CSI Config Secret
     kubernetes.core.k8s:
       state: present
