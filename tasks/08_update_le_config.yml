@@ -21,13 +21,23 @@
   - name: Process Deployable Enabled Applications
     include_tasks: "process_app_to_deploy.yml"
     loop:
-      - { enabled: true,  name: "lets-encrypt" }
+      - { enabled: true,  name: "lets-encrypt", overwrite_files: "yes" }
     when:
       - deploy_app.enabled == true
     loop_control:
       loop_var: deploy_app
       label: "{{deploy_app}}"
 
+  # Update Traefik Certificate (domain names, or ClusterIssuer)
+  - name: Process Traefik Certificate
+    ansible.builtin.template:
+      src: "traefik/workloads/traefik-config/traefik_wildcard_cert.yaml.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/traefik-config/traefik_wildcard_cert.yaml"
+      mode: 0660
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      force: yes
+      
   - name: Check-in Any New or Modified Files
     include_tasks: "checkin_argocd_repo_files.yml"
 
