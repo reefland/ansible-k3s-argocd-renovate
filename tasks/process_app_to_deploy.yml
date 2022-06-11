@@ -21,7 +21,7 @@
       mode: 0660
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
-      force: no                                       # Do not overwrite existing files in repo (which might force old versions)
+      force: "{{deploy_app.overwrite_files|default('no')}}"
     with_filetree: "../templates/{{deploy_app.name}}"
     loop_control:
       label: "{{ item.path }}"
@@ -47,7 +47,7 @@
       mode: 0660
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
-      force: yes
+      force: "{{deploy_app.overwrite_files|default('no')}}"
     with_filetree: "../templates/user-files/{{deploy_app.name}}"
     loop_control:
       label: "{{ item.path }}"
