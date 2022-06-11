@@ -4,7 +4,7 @@
 
 ## Important Notes
 
-* **Let's Encrypt** is configured for **Staging** certificates, but you can default it to **Prod** or use provided CLI parameter `--extra-vars='le_staging=false'` to generate **Prod** certificates once you have a working configuration.
+* **Let's Encrypt** is configured for **Staging** certificates, but you can default it to **Prod** or use provided CLI parameter `--extra-vars='le_staging=false'` to generate **Prod** certificates if you have a known working configuration.
 * Let's Encrypt is configured to use CloudFlare DNS ACME Challenge
   * (other methods may be added in the future)
 
@@ -137,7 +137,7 @@ Once the default staging certificates are verified to be working, the playbook c
 * Apply playbook to create Production ClusterIssuer:
 
 ```shell
-ansible-playbook -i inventory kubernetes.yml --tags="config_le_certificates,config_traefik" --extra-vars="le_staging=false"
+ansible-playbook -i inventory kubernetes.yml --tags="config_le_certificates" --extra-vars="le_staging=false"
 ```
 
 ### Review Production Certificate Created
