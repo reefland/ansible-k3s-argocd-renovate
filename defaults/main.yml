@@ -76,7 +76,7 @@ install:
     enabled: true
 
     # Select Release to install: https://artifacthub.io/packages/helm/argo/argo-cd
-    install_version: "{{argocd_install_version|default('4.6.0')}}"
+    install_version: "{{argocd_install_version|default('4.8.3')}}"
     
     namespace: "argocd"
 
@@ -258,6 +258,7 @@ install:
       remove: true                # true = remove claim when test is completed (false leaves it alone)
 
   ###[ Democratic CSI Installation Settings ]######################################################
+  # This is not installed by default.  Can be installed later once the cluster is stable.
   # democratic-csi implements the csi (container storage interface) spec providing storage for
   # various container orchestration systems such as Kubernetes
   democratic_csi:
@@ -312,8 +313,8 @@ install:
         #   standard volume naming overhead is 46 chars
         #   Which means names **MUST-BE** 17 characters or LESS!!!!
         datasets:
-          parent_name: "main/k8s/iscsi/v"
-          snapshot_ds_name: "main/k8s/iscsi/s"
+          parent_name: "{{democratic_csi_parent_dataset|default('main/k8s')}}/iscsi/v"
+          snapshot_ds_name: "{{democratic_csi_parent_dataset|default('main/k8s')}}/iscsi/s"
         
         zvol:
           compression: "lz4"        # "" (inherit), lz4, gzip-9, etc
@@ -337,7 +338,7 @@ install:
         rpm: "5400"                 # "" (let FreeNAS decide, currently defaults to SSD), Unknown, SSD, 5400, 7200, 10000, 15000
         avail_threshold: 0          # 0-100 (0 == ignore)
 
-      # Once installed and validated, a test claim can be processed.
+      # Creates a test claim manifest file
       test_claim:
         enabled: true               # true = attempt iscsi storage claim
         mode: "ReadWriteOnce"       # storage claim access mode
@@ -354,13 +355,13 @@ install:
         volume_expansion: true
 
       zfs:
-        sudo_enabled: true          # TrueNAS Core 12 requires non-root account have sudo access
+        sudo_enabled: true          # TrueNAS Core 12 requires non-root account with sudo access
 
         # Assumes pool named "main", dataset named "k8s", child dataset "nfs"
         # Any additional provisioners such as iSCSI would be at the same level as "nfs" (sibling of it)
         datasets:
-          parent_name: "main/k8s/nfs/v"
-          snapshot_ds_name: "main/k8s/nfs/s"        
+          parent_name: "{{democratic_csi_parent_dataset|default('main/k8s')}}/nfs/v"
+          snapshot_ds_name: "{{democratic_csi_parent_dataset|default('main/k8s')}}/nfs/s"        
 
           enable_quotas: true
           enable_reservation: false
@@ -370,9 +371,82 @@ install:
             user_id_num: 0          # 0 = root, needs User UID not a name (API needs a number)
             group_id_num: 0         # 0 = wheel, needs Group GUID not a name (API needs a number)
 
-      # # Creates a test claim manifest file
+      # Creates a test claim manifest file
       test_claim:
         enabled: true               # true = attempt nfs storage claim
         mode: "ReadWriteOnce"       # storage claim access mode
         size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
         remove: true                # true = remove claim when test is completed (false leaves it alone)
+
+  ###[ Prometheus Operator Installation Settings ]#################################################
+  # This is not installed by default.  Can be installed later once the cluster is stable.
+  prometheus_operator:
+    # Select release to use:  https://github.com/prometheus-community/helm-charts/releases
+    install_version: "{{prometheus_op_install_version|default('34.7.1')}}"
+
+    namespace: "monitoring"
+
+    prometheus:
+      retention: "21d"             # How long to retain data
+
+      storage_claim:              # Define where and how data is stored
+        access_mode: "ReadWriteOnce"
+        class_name: "freenas-iscsi-csi"
+        claim_size: 50Gi
+
+      # Prometheus Web Interface
+      dashboard:
+        create_route: true        # Create Ingress Route to make accessible 
+        enable_basic_auth: true   # Require Authentication to access dashboard
+
+        # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+        # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+        ingress_name: '{{ k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}") }}'
+
+        # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
+        path: "/prometheus"       # URI Path for Ingress Route
+
+        # Define secrets in vars/secrets/main.yml
+        # Encoded users and passwords for basic authentication
+        allowed_users: "{{PROMETHEUS_DASHBOARD_USERS_SECRET}}"
+
+    grafana:
+      storage_claim:              # Define where and how data is stored
+        access_mode: "ReadWriteOnce"
+        class_name: "freenas-iscsi-csi"
+        claim_size: 5Gi
+
+      # Grafana Dashboard
+      dashboard:
+        create_route: true        # Create Ingress Route to make accessible 
+        enable_basic_auth: false  # Has its own login page
+
+        # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+        # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+        ingress_name: '{{ k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}") }}'
+
+        # Default Dashboard URL:  https://k3s.{{ansible_domain}}/grafana/
+        path: "/grafana"          # URI Path for Ingress Route
+
+    alertmanager:
+      storage_claim:              # Define where and how data is stored
+        access_mode: "ReadWriteOnce"
+        class_name: "freenas-iscsi-csi"
+        claim_size: 3Gi
+
+      # Alertmanager Web Interface
+      dashboard:
+        create_route: true        # Create Ingress Route to make accessible 
+        enable_basic_auth: true   # Has its own login page
+
+        # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
+        # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
+        ingress_name: '{{ k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}") }}'
+
+        # Default Dashboard URL:  https://k3s.{{ansible_domain}}/alertmanager/
+        path: "/alertmanager"     # URI Path for Ingress Route
+
+        # Define secrets in vars/secrets/main.yml
+        # Encoded users and passwords for basic authentication
+        allowed_users: "{{ALERTMANAGER_DASHBOARD_USERS_SECRET}}"
+      

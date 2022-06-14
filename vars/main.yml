@@ -122,3 +122,10 @@ democratic_csi:
   nfs:
     packages:
     - libnfs-utils
+
+###[ Prometheus Operator Installation Settings ]###################################################
+prometheus_op:
+  packages:
+    - lm-sensors                          # For Hardware temperature monitoring
+
+  release_name: "kube-prometheus-stack"   # To find name of services

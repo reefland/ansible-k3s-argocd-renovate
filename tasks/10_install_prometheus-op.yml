@@ -1,0 +1,129 @@
+---
+### [ Install Prometheus Operator Block ]##########################################################
+- name: Install Prometheus Operator Block
+  block:
+  - name: Install Prometheus Operator Support packages
+    apt:
+      name: "{{prometheus_op.packages}}"
+      state: present
+
+  - name: Create directory for Prometheus Operator files for non-root user
+    file:
+      path: "/home/{{install.os.non_root_user.name}}/prometheus-op"
+      state: directory
+      mode: '0700'
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+
+  # Temporary stage will be deleted (below) once processed
+  - name: Copy Prometheus-op Secret Template Files
+    template:
+      src: "templates/user-files/prometheus-op/{{item.file}}.j2"
+      dest: "/home/{{install.os.non_root_user.name}}/prometheus-op/{{item.file}}"
+      owner: "{{install.os.non_root_user.name}}"
+      group: "{{install.os.non_root_user.name}}"
+      mode: '0660'
+    loop:
+      - { file: "prometheus-alertmanger_secret.yaml", enabled: "{{install.prometheus_operator.alertmanager.dashboard.enable_basic_auth|default(false)|bool}}" }
+      - { file: "prometheus_secret.yaml", enabled: "{{install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool}}" }
+      - { file: "prometheus-grafana_secret.yaml", enabled: "{{install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool}}" }
+    when:
+      item.enabled  == true
+
+  - name: Create Namespace to Apply Secret to   # ArgoCD will have a copy namespace file
+    kubernetes.core.k8s:
+      state: present
+      kind: Namespace
+      name: "{{install.prometheus_operator.namespace}}"
+
+  - name: Apply Prometheus-op Config Secret
+    kubernetes.core.k8s:
+      state: present
+      src: "/home/{{install.os.non_root_user.name}}/prometheus-op/{{item.file}}"
+      wait: yes
+      wait_timeout: 300
+    loop:
+      - { file: "prometheus-alertmanger_secret.yaml", enabled: "{{install.prometheus_operator.alertmanager.dashboard.enable_basic_auth|default(false)|bool}}" }
+      - { file: "prometheus_secret.yaml", enabled: "{{install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool}}" }
+      - { file: "prometheus-grafana_secret.yaml", enabled: "{{install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool}}" }
+    when: item.enabled == true
+
+  - name: Delete Prometheus-op Config Secret File
+    ansible.builtin.file:
+      path: "/home/{{install.os.non_root_user.name}}/prometheus-op/{{item.file}}"
+      state: absent
+    loop:
+      - { file: "prometheus-alertmanger_secret.yaml", enabled: "{{install.prometheus_operator.alertmanager.dashboard.enable_basic_auth|default(false)|bool}}" }
+      - { file: "prometheus_secret.yaml", enabled: "{{install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool}}" }
+      - { file: "prometheus-grafana_secret.yaml", enabled: "{{install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool}}" }
+    when: item.enabled == true
+
+  # K3s does not have control-plane in a pod, get IPs of nodes in control-plane
+  - name: Determine InternalIP's for ControlPlane nodes
+    command: >
+      kubectl get nodes --selector=node-role.kubernetes.io/control-plane=true
+      -o jsonpath='{.items[*].status.addresses[?(@.type=="InternalIP")].address}'
+    register: controlPlaneIPs
+
+  - name: Copy K3S config.yaml if not exist
+    copy:
+      src: "files/prometheus-op/k3s_config.yaml"
+      dest: "/etc/rancher/k3s/config.yaml"
+      force: "no"
+
+  - name: Clone Remote ArgoCD Repository
+    ansible.builtin.git:
+      repo: "{{install.argocd.repository.url|urlsplit('scheme')}}://{{install.argocd.repository.username}}:{{install.argocd.repository.password}}@{{install.argocd.repository.url|urlsplit('hostname')}}{{install.argocd.repository.url|urlsplit('path')}}"
+      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+      force: yes
+
+  # Generate templates and then check into Git repository are defined below
+  - name: Process Deployable Enabled Applications
+    include_tasks: "process_app_to_deploy.yml"
+    loop:
+      - { enabled: true,  name: "prometheus-op" }
+    when:
+      - deploy_app.enabled == true
+    loop_control:
+      loop_var: deploy_app
+      label: "{{deploy_app}}"
+
+  # Remove some files copied if not enabled
+  - name: Remove Traefik Pod Monitor if Traefik not enabled
+    ansible.builtin.file:
+      state: absent
+      path: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/prometheus-op/workloads/{{item.file}}"
+    loop:
+      - { file: "traefik_podmonitor.yaml", enabled: "{{install.traefik.enabled|default(false)|bool}}" }
+      - { file: "longhorn_servicemonitor.yaml", enabled: "{{install.longhorn.enabled|default(false)|bool}}"}
+    when:
+      - item.enabled == false
+
+  # Commit Changed to Repository
+  - name: Check-in Any New or Modified Files
+    include_tasks: "checkin_argocd_repo_files.yml"
+
+  when:
+    - inventory_hostname == groups['k3s_control'][0]
+  tags:
+    - never
+    - install_prometheus_operator
+
+# Make sure all changes are checked in before removing repository
+- name: Flush Handlers
+  meta: flush_handlers
+  tags:
+    - never
+    - install_prometheus_operator
+
+# Probably not safe to leave these on the K3s instance
+- name: Delete Local ArgoCD Git Repo Created
+  ansible.builtin.file:
+    path: "/home/{{install.os.non_root_user.name}}/argocd"
+    state: absent
+  when: 
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.democratic_csi.nfs.provisioner is defined
+  tags:
+    - never
+    - install_prometheus_operator

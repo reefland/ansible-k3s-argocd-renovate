@@ -1,0 +1,20 @@
+---
+# Monitor Longhorn Storage
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: longhorn-prometheus-servicemonitor
+  namespace: {{install.prometheus_operator.namespace}}
+  labels:
+    name: longhorn-prometheus-servicemonitor
+    release: {{prometheus_op.release_name}}
+spec:
+  selector:
+    matchLabels:
+      app: longhorn-manager
+  namespaceSelector:
+    matchNames:
+    - {{install.longhorn.namespace}}
+  endpoints:
+  - port: manager

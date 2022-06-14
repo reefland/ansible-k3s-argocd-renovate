@@ -1,0 +1,205 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: {{install.argocd.namespace}}
+  name: {{prometheus_op.release_name}}
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "14"  # Lower the number the sooner to deploy
+    
+spec:
+  project: default
+  source:
+    chart: kube-prometheus-stack
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: {{install.prometheus_operator.install_version}}
+    helm:
+      skipCrds: true
+      # Reference: # Reference: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
+      values: |
+        kubeApiServer:
+          enabled: true
+
+        kubelet:
+          enabled: true
+          namespace: kube-system
+          resource: true
+
+        kubeControllerManager:
+          enabled: true
+          endpoints:
+{% filter indent(width=4) %}{% for IP in controlPlaneIPs.stdout_lines %}
+          - {{IP}}
+{% endfor %}{% endfilter %}
+          service:
+            enabled: true
+            port: 10257
+            targetPort: 10257
+          serviceMonitor:
+            enabled: true
+            https: true
+            insecureSkipVerify: true
+
+        coreDns:
+          enabled: true
+
+        kubeScheduler:
+          enabled: true
+          endpoints:
+{% filter indent(width=4) %}{% for IP in controlPlaneIPs.stdout_lines %}
+          - {{IP}}
+{% endfor %}{% endfilter %}
+          service:
+            enabled: true
+            port: 10259
+            targetPort: 10259
+          serviceMonitor:
+            enabled: true
+            https: true
+            insecureSkipVerify: true
+
+        kubeProxy:
+          enabled: true
+          endpoints:
+{% filter indent(width=4) %}{% for IP in controlPlaneIPs.stdout_lines %}
+          - {{IP}}
+{% endfor %}{% endfilter %}
+
+        kubeEtcd:
+          enabled: true
+          endpoints:
+{% filter indent(width=4) %}{% for IP in controlPlaneIPs.stdout_lines %}
+          - {{IP}}
+{% endfor %}{% endfilter %}
+          service:
+            enabled: true
+            port: 2381
+            targetPort: 2381
+
+        kubeStateMetrics:
+          enabled: true
+
+        ## Manages Prometheus and Alertmanager components
+        ##
+        prometheusOperator:
+          enabled: true
+
+        # Prometheus values
+        prometheus:
+          enabled: true
+          prometheusSpec:
+            ## Prometheus StorageSpec for persistent data
+            ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/storage.md
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: {{install.prometheus_operator.prometheus.storage_claim.class_name}}
+                  accessModes: 
+                    - {{install.prometheus_operator.prometheus.storage_claim.access_mode}}
+                  resources:
+                    requests:
+                      storage: {{install.prometheus_operator.prometheus.storage_claim.claim_size}}
+
+            retention: {{install.prometheus_operator.prometheus.retention}}
+{% if install.prometheus_operator.prometheus.dashboard.path is defined %}
+            externalUrl: {{install.prometheus_operator.prometheus.dashboard.path}}
+{% endif %}
+
+        # Graphana values
+        # Reference: https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
+        grafana:
+          enabled: true
+
+          sidecar:
+            dashboards:
+              # To enable sidecar
+              enabled: true
+              # Label key that configMaps should have in order to be mounted 
+              label: grafana_dashboard
+              # Folder where the configMaps are mounted in Grafana container
+              folder: /tmp/dashboards
+              # To enable searching configMap accross all namespaces
+              searchNamespace: ALL
+
+          grafana.ini:
+            server:
+              root_url: https://{{install.prometheus_operator.grafana.dashboard.ingress_name|default("k3s.{{ansible_domain}}")|lower}}{{install.prometheus_operator.grafana.dashboard.path}}/
+          persistence:
+            type: pvc
+            enabled: true
+            storageClassName: {{install.prometheus_operator.grafana.storage_claim.class_name}}
+            accessModes: 
+              - {{install.prometheus_operator.grafana.storage_claim.access_mode}}
+            size: {{install.prometheus_operator.grafana.storage_claim.claim_size}}
+            # annotations: {}
+            finalizers:
+              - kubernetes.io/pvc-protection
+            # subPath: ""
+            # existingClaim:
+          admin:
+            existingSecret: ""
+            userKey: admin-user
+            passwordKey: admin-password
+
+        # AlertManager values
+        # Reference: https://prometheus.io/docs/alerting/latest/configuration/
+        alertmanager:
+          enabled: true
+
+          # Reference: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#alertmanagerspec
+          alertmanagerSpec:
+            retention: 120h
+            
+            # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/storage.md
+            storage:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: {{install.prometheus_operator.alertmanager.storage_claim.class_name}}
+                  accessModes: 
+                    - {{install.prometheus_operator.alertmanager.storage_claim.access_mode}}
+                  resources:
+                    requests:
+                      storage: {{install.prometheus_operator.alertmanager.storage_claim.claim_size}}
+            externalUrl: {% if install.traefik.dashboard.enable_https|default(false)|bool == false %}http://{% else %}https://{% endif %}{{install.prometheus_operator.alertmanager.dashboard.ingress_name|default("k3s.{{ansible_domain}}")|lower}}{{install.prometheus_operator.alertmanager.dashboard.path|default("/alertmanager")}}
+
+            # Configuration Values for Helm for Alert Configurations
+            # Reference: https://prometheus.io/docs/alerting/latest/configuration/
+            config:
+              global:
+                resolve_timeout: 5m
+              route:
+                receiver: default-receiver
+                group_wait: 30s
+                group_interval: 5m
+                repeat_interval: 4h
+                group_by: [cluster, alertname]
+                # All alerts that do not match the following child routes
+                # will remain at the root node and be dispatched to 'default-receiver'.
+                routes:
+                #  - matchers:
+                #    - service=~"foo1|foo2|baz"
+                #  receiver: database-team
+              receivers:
+{% if VAULT_SLACK_CONFIG_API_URL_SECRET is defined %}
+              - name: 'default-receiver'
+                # https://prometheus.io/docs/alerting/latest/configuration/#slack_config
+                slack_configs:
+                  - api_url: "{{VAULT_SLACK_CONFIG_API_URL_SECRET}}"
+                    send_resolved: true
+                    channel: 'monitoring'
+                    {% raw %}text: "{{ range .Alerts }}<!channel> {{ .Annotations.summary }}\n{{ .Annotations.description }}\n{{ end }}"{% endraw %}
+{% endif %}
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace:  {{install.prometheus_operator.namespace}}
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - Validate=true

@@ -1,0 +1,56 @@
+{% if install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool == true%}
+# Secret moved to prometheus-grafana_secret.yaml
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: grafana-basic-auth
+  namespace: {{install.prometheus_operator.namespace}}
+spec:
+  basicAuth:
+    secret: grafana-authsecret
+{% endif -%}
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: svc-grafana-headers
+  namespace: {{install.prometheus_operator.namespace}}
+spec:
+  headers:
+    customRequestHeaders:
+      X-Forwarded-Proto: "https"
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  namespace: {{install.prometheus_operator.namespace}}
+  name: grafana-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - {{install.prometheus_operator.grafana.dashboard.path|default("/grafana")}}
+    forceSlash: true
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: {{install.prometheus_operator.namespace}}
+  name: grafana-ingress-route
+spec:
+  entryPoints:
+    - {% if install.traefik.dashboard.enable_https|default(false)|bool == false %}web{% else %}websecure{% endif %}{{''}}
+  routes:
+    - match: Host(`{{install.prometheus_operator.grafana.dashboard.ingress_name|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.prometheus_operator.grafana.dashboard.path|default("/grafana")}}`))
+      kind: Rule
+      services:
+      - kind: Service
+        name: {{prometheus_op.release_name}}-grafana
+        port: 80
+      middlewares:
+      - name: grafana-stripprefix
+      - name: svc-grafana-headers
+{% if install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool == true%}
+      - name: grafana-basic-auth
+{% endif %}

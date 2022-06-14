@@ -1,0 +1,21 @@
+---
+# Monitor Traefik Ingress Controller Pods
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: traefik-prometheus-podmonitor
+  namespace: {{install.prometheus_operator.namespace}}
+  labels:
+    name: traefik-prometheus-podmonitor
+    release: {{prometheus_op.release_name}}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: traefik
+  namespaceSelector:
+    matchNames:
+    - {{install.traefik.namespace}}
+  podMetricsEndpoints:
+  - port: metrics
+    path: /metrics

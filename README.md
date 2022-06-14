@@ -142,7 +142,7 @@ k3s:
   vars:
     # Install versions are optional, lets you pin newer versions than defaults
     k3s_install_version: "v1.23.5+k3s1"
-    argocd_install_version: "4.5.10"
+    argocd_install_version: "4.8.3"
     renovate_install_version: "32.45.5"
     cert_manager_install_version: "v1.7.1"
     kube_vip_install_version: "v0.4.2"

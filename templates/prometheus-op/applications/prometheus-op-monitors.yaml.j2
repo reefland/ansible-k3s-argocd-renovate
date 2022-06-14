@@ -1,0 +1,29 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: {{install.argocd.namespace}}
+  name: {{prometheus_op.release_name}}-monitors
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "14"  # Lower the number the sooner to deploy
+spec:
+  project: default
+
+  source:
+    repoURL:  {{install.argocd.repository.url}}.git
+    targetRevision: HEAD
+    path: workloads/prometheus-op-monitors
+  destination:
+    server:  https://kubernetes.default.svc
+    namespace: {{install.prometheus_operator.namespace}}
+
+  syncPolicy:
+    syncOptions:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    -  Validate=true

@@ -1,0 +1,55 @@
+{% if install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool == true%}
+# Secret moved to prometheus_secret.yaml
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: prometheus-basic-auth
+  namespace: {{install.prometheus_operator.namespace}}
+spec:
+  basicAuth:
+    secret: prometheus-authsecret
+{% endif %}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: svc-prometheus-headers
+  namespace: {{install.prometheus_operator.namespace}}
+spec:
+  headers:
+    customRequestHeaders:
+      X-Forwarded-Proto: "https"
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  namespace: {{install.prometheus_operator.namespace}}
+  name: prometheus-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - {{install.prometheus_operator.prometheus.dashboard.path|default("/prometheus")}}
+    forceSlash: true
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: {{install.prometheus_operator.namespace}}
+  name: prometheus-ingress-route
+spec:
+  entryPoints:
+    - {% if install.traefik.dashboard.enable_https|default(false)|bool == false %}web{% else %}websecure{% endif %}{{''}}
+  routes:
+    - match: Host(`{{install.prometheus_operator.prometheus.dashboard.ingress_name|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.prometheus_operator.prometheus.dashboard.path|default("/prometheus")}}`))
+      kind: Rule
+      services:
+      - kind: Service
+        name: {{prometheus_op.release_name}}-prometheus
+        port: 9090
+      middlewares:
+      - name: prometheus-stripprefix
+      - name: svc-prometheus-headers
+{% if install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool == true%}
+      - name: prometheus-basic-auth
+{% endif %}

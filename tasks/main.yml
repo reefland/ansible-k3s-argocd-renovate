@@ -43,6 +43,7 @@
     - 08_update_le_config.yml
     - 09_install_democratic_csi_iscsi.yml
     - 09_install_democratic_csi_nfs.yml
+    - 10_install_prometheus-op.yml
   loop_control:
     label: "{{task_names}}"
     loop_var: task_names
