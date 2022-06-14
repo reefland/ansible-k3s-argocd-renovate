@@ -140,7 +140,7 @@ spec:
             # subPath: ""
             # existingClaim:
           admin:
-            existingSecret: ""
+            existingSecret: "{{prometheus_op.release_name}}-grafana"
             userKey: admin-user
             passwordKey: admin-password
 
