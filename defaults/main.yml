@@ -99,7 +99,7 @@ install:
   # request to start the process of upgrading applications.
   renovate:
     # Select Release to install: https://github.com/renovatebot/helm-charts/releases
-    install_version: "{{renovate_install_version|default('32.52.2')}}"
+    install_version: "{{renovate_install_version|default('32.71.3')}}"
 
     namespace: "renovate"
 
@@ -419,7 +419,7 @@ install:
       # Grafana Dashboard
       dashboard:
         create_route: true        # Create Ingress Route to make accessible 
-        enable_basic_auth: false  # Has its own login page
+        enable_basic_auth: false  # Grafana has its own login page
 
         # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
         # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
@@ -427,6 +427,13 @@ install:
 
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/grafana/
         path: "/grafana"          # URI Path for Ingress Route
+
+        # Disabled by default as Grafana has its own login page
+        # Define secrets in vars/secrets/main.yml
+        # Encoded users and passwords for basic authentication
+        allowed_users: "{{GRAFANA_DASHBOARD_USERS_SECRET}}"
+
+        # See vars/secret/main.yml for default Grafana Admin & Password values
 
     alertmanager:
       storage_claim:              # Define where and how data is stored
