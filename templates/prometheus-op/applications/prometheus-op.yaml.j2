@@ -31,9 +31,9 @@ spec:
         kubeControllerManager:
           enabled: true
           endpoints:
-{% filter indent(width=4) %}{% for IP in controlPlaneIPs.stdout_lines %}
-          - {{IP}}
-{% endfor %}{% endfilter %}
+{% for IP in controlPlaneIPs.stdout_lines[0] | split(' ') %}
+            - {{IP}}
+{% endfor %}
           service:
             enabled: true
             port: 10257
@@ -49,9 +49,9 @@ spec:
         kubeScheduler:
           enabled: true
           endpoints:
-{% filter indent(width=4) %}{% for IP in controlPlaneIPs.stdout_lines %}
-          - {{IP}}
-{% endfor %}{% endfilter %}
+{% for IP in controlPlaneIPs.stdout_lines[0] | split(' ') %}
+            - {{IP}}
+{% endfor %}
           service:
             enabled: true
             port: 10259
@@ -64,16 +64,16 @@ spec:
         kubeProxy:
           enabled: true
           endpoints:
-{% filter indent(width=4) %}{% for IP in controlPlaneIPs.stdout_lines %}
-          - {{IP}}
-{% endfor %}{% endfilter %}
+{% for IP in controlPlaneIPs.stdout_lines[0] | split(' ') %}
+            - {{IP}}
+{% endfor %}
 
         kubeEtcd:
           enabled: true
           endpoints:
-{% filter indent(width=4) %}{% for IP in controlPlaneIPs.stdout_lines %}
-          - {{IP}}
-{% endfor %}{% endfilter %}
+{% for IP in controlPlaneIPs.stdout_lines[0] | split(' ') %}
+            - {{IP}}
+{% endfor %}
           service:
             enabled: true
             port: 2381
