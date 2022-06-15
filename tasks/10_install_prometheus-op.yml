@@ -85,6 +85,7 @@
     include_tasks: "process_app_to_deploy.yml"
     loop:
       - { enabled: true,  name: "prometheus-op" }
+      - { enabled: true,  name: "grafana-dashboards"}
     when:
       - deploy_app.enabled == true
     loop_control:

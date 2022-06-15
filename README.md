@@ -309,7 +309,7 @@ The following tags are not run by default but can be used to install this additi
 
 A K3s cluster monitoring dashboard specific to this installation (Containerd, ZFS backed longhorn, etc.) is available:
 
-[https://grafana.com/grafana/dashboards/16380](https://grafana.com/grafana/dashboards/16380)
+[https://grafana.com/grafana/dashboards/16450](https://grafana.com/grafana/dashboards/16450)
 
 ![Cluster Dashboard Screen One](./files/grafana/cluster_dashboard_01.png)
 

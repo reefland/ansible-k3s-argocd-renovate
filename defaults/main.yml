@@ -416,6 +416,12 @@ install:
         class_name: "freenas-iscsi-csi"
         claim_size: 5Gi
 
+      # Labels for Grafana Sidecar to use to locate configMap based dashboards
+      sidecar:
+        label: "grafana_dashboard" # Label Key
+        label_value: null         # Ignore value, just find label key
+        search_namespaces: "ALL"  # Limit Searched to name spaces
+
       # Grafana Dashboard
       dashboard:
         create_route: true        # Create Ingress Route to make accessible 

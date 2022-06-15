@@ -83,7 +83,6 @@ spec:
           enabled: true
 
         ## Manages Prometheus and Alertmanager components
-        ##
         prometheusOperator:
           enabled: true
 
@@ -113,17 +112,6 @@ spec:
         grafana:
           enabled: true
 
-          sidecar:
-            dashboards:
-              # To enable sidecar
-              enabled: true
-              # Label key that configMaps should have in order to be mounted 
-              label: grafana_dashboard
-              # Folder where the configMaps are mounted in Grafana container
-              folder: /tmp/dashboards
-              # To enable searching configMap accross all namespaces
-              searchNamespace: ALL
-
           grafana.ini:
             server:
               root_url: https://{{install.prometheus_operator.grafana.dashboard.ingress_name|default("k3s.{{ansible_domain}}")|lower}}{{install.prometheus_operator.grafana.dashboard.path}}/
@@ -143,6 +131,23 @@ spec:
             existingSecret: "{{prometheus_op.release_name}}-grafana"
             userKey: admin-user
             passwordKey: admin-password
+
+          plugins:
+            - grafana-piechart-panel
+
+          sidecar:
+            dashboards:
+              # To enable sidecar
+              enabled: true
+              # Label key that configMaps should have in order to be mounted 
+              label: {{install.prometheus_operator.grafana.sidecar.label}}
+              # value of label that the configmaps with dashboards are set to
+              labelValue: {{install.prometheus_operator.grafana.sidecar.label_value}}
+              # Folder where the configMaps are mounted in Grafana container
+              folder: /tmp/dashboards
+              # To enable searching configMap accross all namespaces
+              searchNamespace: {{install.prometheus_operator.grafana.sidecar.search_namespaces}}
+
 
         # AlertManager values
         # Reference: https://prometheus.io/docs/alerting/latest/configuration/
