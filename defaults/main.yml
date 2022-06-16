@@ -301,7 +301,7 @@ install:
 
       storage_class:
         default_class: false
-        reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
+        reclaim_policy: "Retain"    # "Retain", "Recycle" or "Delete"
         volume_expansion: true
 
       zfs:
@@ -322,7 +322,7 @@ install:
           enable_reservation: false
 
       name_prefix: csi-
-      name_suffix: "-clustera"
+      name_suffix: "-{{democratic_csi_parent_dataset|default('main/k8s') | replace ('/','-')}}"
 
       target_group:
         portal_group: 1             # get the correct ID from the "portal" section in the UI
