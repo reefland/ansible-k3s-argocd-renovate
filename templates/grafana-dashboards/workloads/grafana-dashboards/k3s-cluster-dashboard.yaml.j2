@@ -9,6 +9,55 @@ data:
   argocd.json: |          # Json of the grafana dashboard
     {% raw -%}
     {
+      "__inputs": [
+        {
+          "name": "DS_PROMETHEUS",
+          "label": "Prometheus-1",
+          "description": "",
+          "type": "datasource",
+          "pluginId": "prometheus",
+          "pluginName": "Prometheus"
+        }
+      ],
+      "__elements": [],
+      "__requires": [
+        {
+          "type": "panel",
+          "id": "gauge",
+          "name": "Gauge",
+          "version": ""
+        },
+        {
+          "type": "grafana",
+          "id": "grafana",
+          "name": "Grafana",
+          "version": "8.4.2"
+        },
+        {
+          "type": "datasource",
+          "id": "prometheus",
+          "name": "Prometheus",
+          "version": "1.0.0"
+        },
+        {
+          "type": "panel",
+          "id": "stat",
+          "name": "Stat",
+          "version": ""
+        },
+        {
+          "type": "panel",
+          "id": "text",
+          "name": "Text",
+          "version": ""
+        },
+        {
+          "type": "panel",
+          "id": "timeseries",
+          "name": "Time series",
+          "version": ""
+        }
+      ],
       "annotations": {
         "list": [
           {
@@ -33,7 +82,8 @@ data:
       "fiscalYearStartMonth": 0,
       "gnetId": 15282,
       "graphTooltip": 1,
-      "iteration": 1655252026531,
+      "id": null,
+      "iteration": 1655304597790,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -2178,12 +2228,28 @@ data:
       "templating": {
         "list": [
           {
-            "allValue": ".*",
             "current": {
               "selected": false,
-              "text": "All",
-              "value": "$__all"
+              "text": "default",
+              "value": "default"
             },
+            "description": "Name of your datasource",
+            "hide": 0,
+            "includeAll": false,
+            "label": "Data Source",
+            "multi": false,
+            "name": "DS_PROMETHEUS",
+            "options": [],
+            "query": "prometheus",
+            "queryValue": "",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "type": "datasource"
+          },
+          {
+            "allValue": ".*",
+            "current": {},
             "datasource": {
               "type": "prometheus",
               "uid": "${DS_PROMETHEUS}"
@@ -2209,11 +2275,7 @@ data:
           },
           {
             "allValue": ".*",
-            "current": {
-              "selected": false,
-              "text": "All",
-              "value": "$__all"
-            },
+            "current": {},
             "datasource": {
               "type": "prometheus",
               "uid": "${DS_PROMETHEUS}"
@@ -2238,11 +2300,7 @@ data:
             "useTags": false
           },
           {
-            "current": {
-              "selected": false,
-              "text": "v1.23.5+k3s1",
-              "value": "v1.23.5+k3s1"
-            },
+            "current": {},
             "datasource": {
               "type": "prometheus",
               "uid": "${DS_PROMETHEUS}"
@@ -2262,14 +2320,6 @@ data:
             "skipUrlSync": false,
             "sort": 0,
             "type": "query"
-          },
-          {
-            "description": "Name of your datasource",
-            "hide": 2,
-            "name": "DS_PROMETHEUS",
-            "query": "prometheus",
-            "skipUrlSync": false,
-            "type": "constant"
           }
         ]
       },
@@ -2305,7 +2355,7 @@ data:
       "timezone": "browser",
       "title": "K3S Cluster Monitoring for ContainerD with ZFS",
       "uid": "1bI4P-xiz",
-      "version": 9,
+      "version": 2,
       "weekStart": ""
     }
     {% endraw %}
