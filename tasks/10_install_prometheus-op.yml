@@ -28,6 +28,7 @@
       - { file: "prometheus_secret.yaml", enabled: "{{install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool}}" }
       - { file: "prometheus-grafana_secret.yaml", enabled: "{{install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool}}" }
       - { file: "prometheus-grafana_admin_secret.yaml", enabled: true }
+      - { file: "prometheus-alertmanager-config_secret.yaml", enabled: true}
     when:
       item.enabled  == true
 
@@ -48,6 +49,7 @@
       - { file: "prometheus_secret.yaml", enabled: "{{install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool}}" }
       - { file: "prometheus-grafana_secret.yaml", enabled: "{{install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool}}" }
       - { file: "prometheus-grafana_admin_secret.yaml", enabled: true }
+      - { file: "prometheus-alertmanager-config_secret.yaml", enabled: true}
     when: item.enabled == true
 
   - name: Delete Prometheus-op Config Secret File
@@ -59,6 +61,7 @@
       - { file: "prometheus_secret.yaml", enabled: "{{install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool}}" }
       - { file: "prometheus-grafana_secret.yaml", enabled: "{{install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool}}" }
       - { file: "prometheus-grafana_admin_secret.yaml", enabled: true }
+      - { file: "prometheus-alertmanager-config_secret.yaml", enabled: true}
     when: item.enabled == true
 
   # K3s does not have control-plane in a pod, get IPs of nodes in control-plane
