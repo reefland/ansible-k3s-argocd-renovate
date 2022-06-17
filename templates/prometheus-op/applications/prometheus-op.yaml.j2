@@ -170,7 +170,7 @@ spec:
             externalUrl: {% if install.traefik.dashboard.enable_https|default(false)|bool == false %}http://{% else %}https://{% endif %}{{install.prometheus_operator.alertmanager.dashboard.ingress_name|default("k3s.{{ansible_domain}}")|lower}}{{install.prometheus_operator.alertmanager.dashboard.path|default("/alertmanager")}}
 
             useExistingSecret: true
-            configSecret: alertmanager-kube-prometheus-stack-alertmanager-config
+            configSecret: alertmanager-{{prometheus_op.release_name}}-alertmanager-config
 
   destination:
     server: https://kubernetes.default.svc

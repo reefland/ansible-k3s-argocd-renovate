@@ -22,11 +22,15 @@ Optionally Installed:
 * [kube-vip-cloud-provider](https://kube-vip.chipzoller.dev/) Load Balancer to replace [K3s Klipper](https://github.com/k3s-io/klipper-lb) Load Balancer for ingress traffic.
 * [Longhorn](https://longhorn.io/) distributed [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) as default storage class
 * [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) storage via **iSCSI** and **NFS** from [TrueNAS](https://www.truenas.com/)
+* [Kube-Prometheus Stack](https://github.com/prometheus-operator/kube-prometheus) collection of Kubernetes manifests, [Grafana](http://grafana.com/) dashboards, and [Prometheus rules](https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/) to provide easy to operate end-to-end Kubernetes cluster monitoring
 * [Traefik](https://traefik.io/) Load Balanced ingress deployed as a DaemonSet.
   * IngressRoutes for the following will be generated and deployed:
     * Traefik Dashboard
     * ArgoCD Dashboard
     * Longhorn Dashboard
+    * Prometheus Dashboard
+    * AlertManager Dashboards
+    * Grafana Dashboards
 
 ---
 
@@ -98,6 +102,7 @@ Each of these links provide useful documentation details:
 * Review [Traefik and Dashboard Settings](docs/traefik-settings.md)
 * Review [Longhorn Distributed Storage Settings](docs/longhorn-settings.md)
 * Review [democratic-csi for TrueNAS Settings](docs/democratic-csi-settings.md)
+* Review [Kube Prometheus Stack Settings](docs/prometheus-op-settings.md)
 
 ---
 
@@ -150,7 +155,10 @@ k3s:
     traefik_install_version: "v10.19.4"
     longhorn_install_version: "v1.2.4"
     democratic_csi_install_version: "0.13.1"
+    prometheus_op_install_version: "36.0.2"
 
+    #[ Unique Per Cluster Settings ]############################################
+    democratic_csi_parent_dataset: "main/kts"
     k3s_cluster_ingress_name: "k3s-test.{{ansible_domain}}"
     argocd_repo_url: "https://github.com/<USERNAME>/<REPO-NAME>"
 
@@ -230,6 +238,8 @@ For simplicity I show the variables within the inventory file.  You can place th
 #### Other Inventory Variables Used
 
 * `argocd_repo_url` is a URL which points the the Git repository (private recommended) that ArgoCD will monitor.  Do NOT put `.git` at the end.
+* `democratic_csi_parent_dataset` (if Democratic-CSI is to be used) specifies the TrueNAS parent dataset for iSCSI and NFS Persistent Volume storage. If multiple clusters are setup against the same TrueNAS server then this value needs to be unique.
+* `k3s_cluster_ingress_name` is the Fully Qualified Domain Name the cluster will be known as.  This is a DNS name that Cert-Manager will create Let's Encrypt Wildcard certificates for.  Most dashboards will be based on this name.
 
 ---
 
@@ -246,6 +256,7 @@ The idea behind pinning specific versions of software is so that an installation
 * `traefik_install_version` pings the Traefik Helm [Release](https://github.com/traefik/traefik-helm-chart/tags) version.
 * `longhorn_install_version` pins the Longhorn Helm [Release](https://github.com/longhorn/longhorn/releases) version.
 * `democratic_csi_install_version` pins the Democratic CSI iSCSI and/or NFS Provisioner Helm [Release](https://github.com/democratic-csi/charts/releases) version.
+* `prometheus_op_install_version` pins the Kube Prometheus Stack Helm [Release](https://github.com/prometheus-community/helm-charts/releases) version
 
 ---
 
@@ -302,6 +313,7 @@ The following tags are not run by default but can be used to install this additi
 
 * `install_democratic_csi_iscsi`
 * `install_democratic_csi_nfs`
+* `install_prometheus_operator`
 
 ---
 
@@ -310,6 +322,8 @@ The following tags are not run by default but can be used to install this additi
 A K3s cluster monitoring dashboard specific to this installation (Containerd, ZFS backed longhorn, etc.) is available:
 
 [https://grafana.com/grafana/dashboards/16450](https://grafana.com/grafana/dashboards/16450)
+
+* This will be automatically installed as a configMap Dashboard for Grafana as part of the Kube Prometheus Stack procedure.
 
 ![Cluster Dashboard Screen One](./files/grafana/cluster_dashboard_01.png)
 
