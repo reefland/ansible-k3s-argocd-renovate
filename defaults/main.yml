@@ -382,12 +382,12 @@ install:
   # This is not installed by default.  Can be installed later once the cluster is stable.
   prometheus_operator:
     # Select release to use:  https://github.com/prometheus-community/helm-charts/releases
-    install_version: "{{prometheus_op_install_version|default('34.7.1')}}"
+    install_version: "{{prometheus_op_install_version|default('36.0.2')}}"
 
     namespace: "monitoring"
 
     prometheus:
-      retention: "21d"             # How long to retain data
+      retention: "21d"            # How long to retain data
 
       storage_claim:              # Define where and how data is stored
         access_mode: "ReadWriteOnce"
@@ -463,3 +463,27 @@ install:
         # Encoded users and passwords for basic authentication
         allowed_users: "{{ALERTMANAGER_DASHBOARD_USERS_SECRET}}"
       
+      # Configuration Values for Alertmanager Notifications
+      config_values: |
+        global:
+          resolve_timeout: 5m
+        route:
+          receiver: default-receiver
+          group_wait: 30s
+          group_interval: 5m
+          repeat_interval: 4h
+          group_by: [cluster, alertname]
+          # All alerts that do not match the following child routes
+          # will remain at the root node and be dispatched to 'default-receiver'.
+          routes:
+          #  - matchers:
+          #    - service=~"foo1|foo2|baz"
+          #  receiver: database-team
+        receivers:
+        - name: 'default-receiver'
+          # https://prometheus.io/docs/alerting/latest/configuration/#slack_config
+          slack_configs:
+            - api_url: "{{VAULT_SLACK_CONFIG_API_URL_SECRET}}"
+              send_resolved: true
+              channel: 'monitoring'
+              {% raw %}text: "{{ range .Alerts }}<!channel> {{ .Annotations.summary }}\n{{ .Annotations.description }}\n{{ end }}"{% endraw %}
