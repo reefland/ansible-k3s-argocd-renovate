@@ -382,7 +382,7 @@ $ kubectl -n monitoring get secret alertmanager-kube-prometheus-stack-alertmanag
 
 ## Upgrading Kube Prometheus Stack
 
-* You should review project documentation for any special notes or breaking changes. 
+* You should review project documentation for any special notes or breaking changes.
 
 I was able to upgrade from Helm Chart version 34.x to 36.x by just making two small edits to the version numbers within:
 
