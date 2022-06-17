@@ -95,6 +95,7 @@ From the Admin Console Web Interface:
         └── v
   ```
 
+  * WARNING: You need to create a dataset at the `k8s` level for each cluster you will be connecting to TrueNAS.  Multiple clusters can not share the same dataset.  And create the `iscsi` and `nfs` dataset structures within each cluster dataset.
   * The datasets named `v` will hold the zvols created for persistent storage whereas datasets `s` will hold detached snapshots of the `v` dataset
 
   The following commands can be used from TrueNAS Shell to create the iSCSI and NFS datasets:
@@ -312,7 +313,7 @@ The democratic-csi Settings are in variable namespace `install.democratic_csi`.
   ```yml
       storage_class:
         default_class: false
-        reclaim_policy: "Delete"    # "Retain", "Recycle" or "Delete"
+        reclaim_policy: "Retain"    # "Retain", "Recycle" or "Delete"
         volume_expansion: true
   ```
   
@@ -349,6 +350,19 @@ The democratic-csi Settings are in variable namespace `install.democratic_csi`.
         blocksize: ""          # 512, 1K, 2K, 4K, 8K, 16K, 64K, 128K default is 16K
         enable_reservation: false
   ```
+
+* Settings for TrueNAS ZVOL Volume Naming
+  * These settings need to be unique per cluster.  The `name_suffix` will be the name of the ZFS parent dataset that will hold the iSCSI volumes. As this is already required to be unique per cluster it is a reasonable value to use. (you can make this `dev`, `test`, `prod` per cluster if that is more meaningful to your setup)
+  * Note that any `/` characters in the parent dataset name path will be converted to `-` character.
+
+  ```yml
+      name_prefix: csi-
+      name_suffix: "-{{democratic_csi_parent_dataset|default('main/k8s') | replace ('/','-')}}"
+  ```
+  
+  The iSCSI Target and Extent names will use these values to insure unique across clusters.
+
+  ![iSCSi Target and Extent names example ](../images/zfs_iscsi_target_names.png)
 
 * Settings for the iSCSI target group and iSCSI authentication:
 
