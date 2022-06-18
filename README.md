@@ -158,7 +158,7 @@ k3s:
     prometheus_op_install_version: "36.0.2"
 
     #[ Unique Per Cluster Settings ]############################################
-    democratic_csi_parent_dataset: "main/kts"
+    democratic_csi_parent_dataset: "main/k8s"
     k3s_cluster_ingress_name: "k3s-test.{{ansible_domain}}"
     argocd_repo_url: "https://github.com/<USERNAME>/<REPO-NAME>"
 
