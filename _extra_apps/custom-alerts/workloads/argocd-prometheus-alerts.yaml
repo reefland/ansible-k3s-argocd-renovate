@@ -5,7 +5,7 @@ metadata:
   name: argocd-app-sync-alerts                                 
   namespace: monitoring
   labels:
-    release: kube-stack-prometheus                              # Required label key and value
+    release: kube-prometheus-stack                              # Required label key and value
 spec:
   groups:
     - name: ArgoCD                                              # Name of the prometheus rule group

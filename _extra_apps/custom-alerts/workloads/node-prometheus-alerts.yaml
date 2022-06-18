@@ -5,7 +5,7 @@ metadata:
   name: node-alerts                                 
   namespace: monitoring
   labels:
-    release: kube-stack-prometheus                              # Required label key and value
+    release: kube-prometheus-stack                              # Required label key and value
 spec:
   groups:
     - name: NodeAlerts                                         # Name of the prometheus rule group
