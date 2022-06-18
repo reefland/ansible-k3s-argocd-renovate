@@ -29,13 +29,34 @@ Example Alert sent to Slack Channel:
 
 ## ArgoCD Sync Alerts
 
+**IMPORTANT**: You need to _enable_ the ArgoCD serviceMonitors.  They are **not** enabled by default. If the serviceMonitors are not enabled you will see an alert `No reported applications` such as:
+
+![argocd no reported applications alert](../custom-alerts/argocd_no_reported_applications.png)
+
+### Enable ArgoCD ServiceMonitors
+
+To enable the serviceMonitors, edit the ArgoCD `values.yaml` file in the ArgoCD git repository located at `/workloads/argocd/values.yaml` and uncomment the serviceMonitor entries such as:
+
+```yaml
+  ## Application controller metrics configuration
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring
+      additionalLabels:
+        release: kube-prometheus-stack
+```
+
+* Uncomment for `Application Controller`, `redis-exporter`, `Server metrics`, `Repo server`, `ApplicationSet controller` and `Notifications Controller`.  Save and commit change to the git repository.
+
 These alerts cover each application deployed.
 
-| Alert Description       | Condition           | Duration to Trigger |
-|---                      | ---                 |---                  |
-| Application OutofSync   | More than zero      | 1 minute            |
-| Application Sycn Failed | More than zero      | 1 minute            |
-| Application Missing     | App not found       | 15 minutes          |
+| Alert Description             | Condition             | Duration to Trigger |
+|---                            | ---                   |---                  |
+| Application OutofSync         | More than zero        | 1 minute            |
+| Application Sycn Failed       | More than zero        | 1 minute            |
+| ArgoCD Application Missing    | ArgoCD App not found  | 15 minutes          |
 
 Example Alert sent to Slack Channel:
 ![ArgoCD Sync Failed](argocd_custom_alert.png)
