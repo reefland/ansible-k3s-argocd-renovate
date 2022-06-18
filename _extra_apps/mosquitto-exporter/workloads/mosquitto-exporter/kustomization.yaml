@@ -27,6 +27,6 @@ patches:
       value: monitoring
     - op: replace
       path: /metadata/labels/release
-      value: kube-stack-prometheus
+      value: kube-prometheus-stack
   target:
     kind: ServiceMonitor
