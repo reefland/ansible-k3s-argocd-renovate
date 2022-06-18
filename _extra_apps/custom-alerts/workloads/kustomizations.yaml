@@ -1,0 +1,16 @@
+---
+bases:
+  - ./base/application/
+
+# Set namespace where Prometheus is located
+# Set label Prometheus uses for PrometheusRule auto-discovery
+patches:
+- patch: |-
+    - op: replace
+      path: /metadata/namespace
+      value: monitoring
+    - op: replace
+      path: /metadata/labels/release
+      value: kube-prometheus-stack
+  target:
+    kind: PrometheusRule

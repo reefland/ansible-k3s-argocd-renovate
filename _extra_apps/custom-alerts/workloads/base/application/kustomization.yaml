@@ -1,0 +1,5 @@
+resources:
+  - argocd-prometheus-alerts.yaml
+  - longhorn-prometheus-alerts.yaml
+  - node-prometheus-alerts.yaml
+  - traefik-prometheus-alerts.yaml
