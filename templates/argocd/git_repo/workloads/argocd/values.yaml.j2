@@ -25,9 +25,9 @@ argo-cd:
 #      enabled: true
 #      serviceMonitor:
 #        enabled: true
-#        namespace: "monitoring"
+#        namespace: {{install.prometheus_operator.namespace}}
 #        additionalLabels:
-#           release: kube-stack-prometheus
+#           release: {{prometheus_op.release_name}}
 
 ###[ Dex Server Settings ]#########################################################################
 # used to delegate authentication to external identity provider
@@ -52,9 +52,9 @@ argo-cd:
 #      enabled: true
 #      serviceMonitor:
 #        enabled: true
-#        namespace: "monitoring"
+#        namespace: {{install.prometheus_operator.namespace}}
 #        additionalLabels:
-#           release: kube-stack-prometheus
+#           release: {{prometheus_op.release_name}}
 
       # -- Resource limits and requests for redis-exporter sidecar
 #      resources:
@@ -101,9 +101,9 @@ argo-cd:
 #      enabled: true
 #      serviceMonitor:
 #        enabled: true
-#        namespace: "monitoring"
+#        namespace: {{install.prometheus_operator.namespace}}
 #        additionalLabels:
-#           release: kube-stack-prometheus
+#           release: {{prometheus_op.release_name}}
 
 ###[ ArgoCD Repo Server Settings ]#################################################################
   repoServer:
@@ -121,9 +121,9 @@ argo-cd:
 #      enabled: true
 #      serviceMonitor:
 #        enabled: true
-#        namespace: "monitoring"
+#        namespace: {{install.prometheus_operator.namespace}}
 #        additionalLabels:
-#           release: kube-stack-prometheus
+#           release: {{prometheus_op.release_name}}
 
 ###[ ApplicationSet Controller Settings ]##########################################################
   applicationSet:
@@ -135,9 +135,9 @@ argo-cd:
 #      enabled: true
 #      serviceMonitor:
 #        enabled: true
-#        namespace: "monitoring"
+#        namespace: {{install.prometheus_operator.namespace}}
 #        additionalLabels:
-#           release: kube-stack-prometheus
+#           release: {{prometheus_op.release_name}}
 
     resources:
       limits:
@@ -157,9 +157,9 @@ argo-cd:
 #      enabled: true
 #      serviceMonitor:
 #        enabled: true
-#        namespace: "monitoring"
+#        namespace: {{install.prometheus_operator.namespace}}
 #        additionalLabels:
-#           release: kube-stack-prometheus
+#           release: {{prometheus_op.release_name}}
 
     resources:
       limits:
