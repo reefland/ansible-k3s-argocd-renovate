@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: k3s-cluster-dashboard-16380         # ConfigMap name
+  name: k3s-cluster-dashboard-16450         # ConfigMap name
   namespace: {{install.prometheus_operator.namespace}}          # ConfigMap namespace (can be any namespace)
   labels:
     {{install.prometheus_operator.grafana.sidecar.label}}: "k3s-cluster"          # Required label key 'grafana_dashboard', label value can be anything
 data:
-  argocd.json: |          # Json of the grafana dashboard
+  k3s-cluster.json: |          # Json of the grafana dashboard
     {% raw -%}
     {
       "__inputs": [
