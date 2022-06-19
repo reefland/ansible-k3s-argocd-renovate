@@ -62,6 +62,8 @@ Review `mosquitto-exporter/applications/mosquitto-exporter.yaml`
 
 Grafana Dashboard for Mosquitto MQTT: `11542`
 
+This will be automatically installed as a configMap Dashboard for Grafana as part of the Mosquitto Exporter deployment.
+
 ![Grafana Dashboard using exporter](grafana_dashboard_11542.png)
 
 [Return to Application List](../)
