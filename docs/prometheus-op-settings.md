@@ -173,6 +173,12 @@ The Grafana Dashboard URL path will resemble: `https://k3s.example.com/grafana/`
 
 ![Grafana Dashboard](../images/grafana_dashboard.png)
 
+Several Grafana Dashboards will be loaded to be managed by ArgoCD:
+
+![ArgoCD managed Grafana Dashboards](../images/argocd_grafana_dashboards.png)
+
+You can add your own confipMap based dashboards to the ArgoCD git repository `/workloads/grafana-dashboards`
+
 To Search for Dashboards to add to Grafana: [https://grafana.com/grafana/dashboards/](https://grafana.com/grafana/dashboards/)
 
 ---
@@ -253,9 +259,11 @@ K3s has been designed for low resource consumption, as such the etcd (not used b
 
   ![Alertmanager Down Notices](../images/alertmanager_k3s_alerts.png)
 
+### Resolution
+
 To resolve these issues, the following are performed by this Ansible script:
 
-* If the file `/etc/rancher/k3s/config.yaml` does not exist (it does not by default) on the master then it will be created with the content below to enable these resources to expose Prometheus metrics.
+* If the file `/etc/rancher/k3s/config.yaml` does not exist (it does not by default) on each  master then it will be created with the content below to enable these resources to expose Prometheus metrics.
 
   ```yaml
   etcd-expose-metrics: true
@@ -270,7 +278,9 @@ To resolve these issues, the following are performed by this Ansible script:
   * IMPORTANT: If the file already exists, it is not modified. You will have to manually add the entries above.
   * NOTE: K3s needs to be restarted for the above parameters to be enabled.
 
-* The Kube Prometheus Stack Helm Chart values stored in ArgoCD in the Git repository `applications/prometheus-op.yaml` will adjust `kubeApiServer`, `kubeControllerManager`, `kubeScheduler`, `kubeProxy`, `kubeEtcd` entries to use IP & Port information instead of pods.  It will attempt to add all detected node IPs who are members of the Kubernetes Control-Plane Role.  You will need to adjust these manually once deployed if these values need to change.
+* The Kube Prometheus Stack Helm Chart values stored in ArgoCD in the Git repository `applications/prometheus-op.yaml` will adjust `kubeApiServer`, `kubeControllerManager`, `kubeScheduler`, `kubeProxy`, `kubeEtcd` entries to use IP & Port information instead of pods.
+  * It will attempt to add all detected node IPs who are members of the Kubernetes Control-Plane Role.
+  * You will need to adjust these manually once deployed if these values need to change.
 * Once the installation is completed all of these services should be active targets in Prometheus:
 
   ![Prometheus Additional Services](../images/prometheus_k3s_additional_services.png)
@@ -377,6 +387,31 @@ $ kubectl -n monitoring get secret alertmanager-kube-prometheus-stack-alertmanag
 # Configuration from possible parse / templating / rendering issue:
 $ kubectl -n monitoring get secret alertmanager-kube-prometheus-stack-alertmanager-generated -o jsonpath='{.data}' | cut -d'"' -f 4 | base64 --decode
 ```
+
+---
+
+## Enable ArgoCD serviceMonitors
+
+As ArgoCD is installed so early in the ansible process and Prometheus stack is optional the ArgoCD serviceMonitors for Prometheus are not enabled by default.  However placeholders for them are included in the `/workloads/argocd/values.yaml` file.
+
+The placeholders look like the following:
+
+```yaml
+    ## Application controller metrics configuration
+#   metrics:
+#     enabled: true
+#     serviceMonitor:
+#       enabled: true
+#       namespace: "monitoring"
+#       additionalLabels:
+#         release: kube-prometheus-stack
+```
+
+You need to uncomment each of them (there will be several of these) and then commit the change to ArgoCD git repository.  ArgoCD will then create all the service monitors.
+
+You can use the Prometheus UI to view the active targets and you should see the ArgoCD serviceMonitors listed:
+
+![prometheus argocd service monitor list](../images/prometheus_argocd_servicemonitors.png)
 
 ---
 
