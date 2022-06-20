@@ -5,8 +5,8 @@ metadata:
   name: unifi-longhorn-pvc
 spec:
   accessModes:
-   - ReadWriteOnce
+    - ReadWriteOnce
   storageClassName: longhorn
   resources:
     requests:
-      storage: 1Gi
+      storage: 5Gi
