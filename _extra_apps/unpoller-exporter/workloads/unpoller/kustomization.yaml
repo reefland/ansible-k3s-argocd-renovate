@@ -1,4 +1,5 @@
 ---
+apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 bases:
@@ -7,6 +8,9 @@ bases:
 images:
   - name: golift/unifi-poller
     newTag: 2.1.3
+
+generatorOptions:
+  disableNameSuffixHash: true
 
 configMapGenerator:
 - name: unpoller-config-file
@@ -30,10 +34,18 @@ patches:
       value: monitoring
     - op: replace
       path: /metadata/labels/release
-      value: kube-stack-prometheus
+      value: kube-prometheus-stack
   target:
     kind: PodMonitor
 
+- patch: |-
+    - op: replace
+      path: /metadata/namespace
+      value: monitoring
+  target:
+    kind: ConfigMap
+    name: unpollerdashboard-*
+  
 commonLabels:
   app: unpoller
   app.kubernetes.io/instance: unpoller

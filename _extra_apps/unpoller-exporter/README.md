@@ -24,6 +24,9 @@ images:
   * No changed to this file should be needed
 
 ```yaml
+generatorOptions:
+  disableNameSuffixHash: true
+
 configMapGenerator:
 - name: unpoller-config-file
   files:
@@ -55,18 +58,47 @@ patches:
       value: monitoring
     - op: replace
       path: /metadata/labels/release
-      value: kube-stack-prometheus
+      value: kube-prometheus-stack
   target:
     kind: PodMonitor
+```
+
+* Set namespace for Grafana dashboards where the sidecar is looking for matching labels
+
+```yaml
+- patch: |-
+    - op: replace
+      path: /metadata/namespace
+      value: monitoring
+  target:
+    kind: ConfigMap
+    name: unpollerdashboard-*
+```
+
+---
+
+Once configured correctly, the unpoller container logs will resemble something like:
+
+```log
+2022/06/19 22:26:36 [INFO] Prometheus exported at http://0.0.0.0:9130/ - namespace: unifipoller
+2022/06/19 22:26:54 [INFO] UniFi Measurements Exported. Site: 1, Client: 26, UAP: 2, USG/UDM: 0, USW: 4, DPI Site/Client: 0/0, Desc: 167, Metric: 1372, Err: 0, 0s: 349, Req/Total: 44.2ms / 50ms
+2022/06/19 22:27:24 [INFO] UniFi Measurements Exported. Site: 1, Client: 26, UAP: 2, USG/UDM: 0, USW: 4, DPI Site/Client: 0/0, Desc: 167, Metric: 1372, Err: 0, 0s: 350, Req/Total: 41.8ms / 49.3ms
+2022/06/19 22:27:54 [INFO] UniFi Measurements Exported. Site: 1, Client: 26, UAP: 2, USG/UDM: 0, USW: 4, DPI Site/Client: 0/0, Desc: 167, Metric: 1372, Err: 0, 0s: 371, Req/Total: 31.3ms / 40.9ms
+2022/06/19 22:28:24 [INFO] UniFi Measurements Exported. Site: 1, Client: 27, UAP: 2, USG/UDM: 0, USW: 4, DPI Site/Client: 0/0, Desc: 167, Metric: 1392, Err: 0, 0s: 360, Req/Total: 33.5ms / 43.5ms
+2022/06/19 22:28:54 [INFO] UniFi Measurements Exported. Site: 1, Client: 27, UAP: 2, USG/UDM: 0, USW: 4, DPI Site/Client: 0/0, Desc: 167, Metric: 1392, Err: 0, 0s: 358, Req/Total: 34.3ms / 41.6ms
 ```
 
 ---
 
 Grafana Dashboard for Unifi Controller UAP Insights / Unpoller: [11314](https://grafana.com/grafana/dashboards/11314)
 
+This will be automatically installed as a configMap Dashboard for Grafana as part of the Unpoller Exporter deployment.
+
 ![Grafana Dashboard for Unifi](grafana_dashboard_11314.png)
 
 Grafana Dashboard for Unifi Controller Client Insights: [11315](https://grafana.com/grafana/dashboards/11315)
+
+This will be automatically installed as a configMap Dashboard for Grafana as part of the Unpoller Exporter deployment.
 
 ![Grafana Dashboard for Unifi](grafana_dashboard_11315.png)
 

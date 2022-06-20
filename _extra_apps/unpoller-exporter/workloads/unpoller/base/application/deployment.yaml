@@ -40,6 +40,6 @@ spec:
         - mountPath: /etc/unifi-poller
           name: unpoller-config
       volumes:
-      - configMap:
-          name: unpoller-config-file
-        name: unpoller-config
+      - name: unpoller-config
+        configMap:
+          name: unpoller-config-fil

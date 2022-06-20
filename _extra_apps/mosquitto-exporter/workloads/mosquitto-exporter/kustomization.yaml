@@ -30,3 +30,10 @@ patches:
       value: kube-prometheus-stack
   target:
     kind: ServiceMonitor
+
+- patch: |-
+    - op: replace
+      path: /metadata/namespace
+      value: monitoring
+  target:
+    kind: ConfigMap
