@@ -21,7 +21,6 @@ spec:
     namespace: mosquitto
 
   syncPolicy:
-    syncOptions:
     automated:
       prune: true
       selfHeal: true
