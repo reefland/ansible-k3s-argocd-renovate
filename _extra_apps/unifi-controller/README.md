@@ -5,7 +5,7 @@
 [Return to Application List](../)
 
 * Kustomize based ArgoCD application deployment
-* Deployed as a Statefulset with a 2Gi Longhorn Persistent Storage Volume for data
+* Deployed as a Statefulset with a 5Gi Longhorn Persistent Storage Volume for data
 
 Review `unifi-controller/kustomization.yaml`
 
@@ -51,7 +51,7 @@ patches:
   - patch: |-
       - op: replace
         path: /spec/resources/requests/storage
-        value: 2Gi
+        value: 5Gi
     target:
       kind: PersistentVolumeClaim
 ```
@@ -72,6 +72,14 @@ Review `unifi-controller/applications/unifi-controller.yaml`
 Note the Unifi Controller application can take several minutes to become ready.  Getting a `Bad Gateway` message after installation or upgrade is normal.  Monitor the container logs to see when it is ready, or just try again in a few minutes.
 
 ---
+First time connecting should show this screen:
+![Unifi Controller Initial Installation Wizard](unifi-controller-initial-install.png)
+
+From here you can restore your configuration from a backup or start building your network from scratch.  
+
+* NOTE if you had to change the name or IP Address of your controller to get it working on Kubernetes, then will need to use your existing (old) UniFi Controller to push a configuration change to all your devices to tell them to start reporting to your new controller.
+
+One all the kinks are worked out, your network devices will start reporting in:
 
 ![Unifi Controller Console Screen Shot](unifi-controller-screenshot.png)
 
