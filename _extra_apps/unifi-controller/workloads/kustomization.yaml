@@ -33,7 +33,7 @@ patches:
   - patch: |-
       - op: replace
         path: /spec/resources/requests/storage
-        value: 2Gi
+        value: 5Gi
     target:
       kind: PersistentVolumeClaim
 
