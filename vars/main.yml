@@ -59,7 +59,7 @@ k3s:
   cli_disable_storage_options:              
     - "--disable local-storage"   
 
-  # When "install.metallb.enabled == true" or "install.kube_vip.lb.enabled == true"
+  # When "install.kube_vip.lb.enabled == true"
   # this will be added to k3s_exec_options
   cli_disable_loadbalancer_options:        
     - "--disable servicelb"
