@@ -89,7 +89,7 @@
       label: "{{deploy_app}}"
 
   # Remove some files copied if not enabled
-  - name: Remove Traefik Pod Monitor if Traefik not enabled
+  - name: Remove Application Pod Monitor if Application not enabled
     ansible.builtin.file:
       state: absent
       path: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/prometheus-op/workloads/{{item.file}}"
