@@ -35,7 +35,7 @@
   - name: Process Initial ArgoCD Repository
     include_tasks: "process_app_to_deploy.yml"
     loop:
-      - { name: "argocd/git_repo" }
+      - { enabled: true, name: "argocd/git_repo" }
     loop_control:
       loop_var: deploy_app
       label: "{{deploy_app}}"
