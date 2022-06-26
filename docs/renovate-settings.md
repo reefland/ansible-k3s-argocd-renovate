@@ -57,6 +57,23 @@ The Renovate Settings are in variable namespace `install.renovate`.
 
 ---
 
+## Renovate Deployed Configuration
+
+Renovate can be customized to perform additional functionality.  The renovate runtime configuration file is located at the root of the repository named `renovate.json`. The default contents have been modified to support ArgoCD application files:
+
+```json
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "argocd": {
+    "fileMatch": ["applications/.+\\.yaml$"]
+  }
+}
+```
+
+* Renovate Documentation: [https://docs.renovatebot.com/](https://docs.renovatebot.com/)
+
+---
+
 ## Troubleshooting Renovate
 
 Renovate is not an application that runs all the time.  It is a Kubernetes job that is scheduled.  When scheduled it will creates pod(s) that are intended to run one time.  If you don't know how Kubernetes jobs work, see [documentation](https://kubernetes.io/docs/concepts/workloads/controllers/job/)
