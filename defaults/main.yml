@@ -76,7 +76,7 @@ install:
     enabled: true
 
     # Select Release to install: https://artifacthub.io/packages/helm/argo/argo-cd
-    install_version: "{{argocd_install_version|default('4.8.3')}}"
+    install_version: "{{argocd_install_version|default('4.9.7')}}" 
     
     namespace: "argocd"
 
@@ -99,7 +99,7 @@ install:
   # request to start the process of upgrading applications.
   renovate:
     # Select Release to install: https://github.com/renovatebot/helm-charts/releases
-    install_version: "{{renovate_install_version|default('32.71.3')}}"
+    install_version: "{{renovate_install_version|default('32.99.1')}}"
 
     namespace: "renovate"
 
@@ -113,7 +113,7 @@ install:
   ###[ Cert Manager Installation Settings ]########################################################
   cert_manager:
     # Select release to use:  https://github.com/cert-manager/cert-manager/releases
-    install_version: "{{cert_manager_install_version|default('v1.8.0')}}"
+    install_version: "{{cert_manager_install_version|default('v1.8.2')}}"
 
     namespace: "cert-manager"
 
@@ -168,7 +168,7 @@ install:
     enabled: true
 
     # Select release to use: https://github.com/traefik/traefik-helm-chart/tags
-    install_version: "{{traefik_install_version|default('v10.19.4')}}"
+    install_version: "{{traefik_install_version|default('v10.22.0')}}"
 
     namespace: "traefik"                      # Add resources to this namespace
 
@@ -200,7 +200,7 @@ install:
     enabled: "{{longhorn_enabled|default(true)}}"  # Install longhorn distributed cluster storage
 
     # Select Release to use: https://github.com/longhorn/longhorn/releases 
-    install_version: "{{longhorn_install_version|default('v1.2.4')}}"
+    install_version: "{{longhorn_install_version|default('v1.3.0')}}"
 
     namespace: "longhorn-system"   # Add resources to this namespace
 
@@ -382,7 +382,7 @@ install:
   # This is not installed by default.  Can be installed later once the cluster is stable.
   prometheus_operator:
     # Select release to use:  https://github.com/prometheus-community/helm-charts/releases
-    install_version: "{{prometheus_op_install_version|default('36.0.2')}}"
+    install_version: "{{prometheus_op_install_version|default('36.2.0')}}"
 
     namespace: "monitoring"
 
