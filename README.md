@@ -29,7 +29,7 @@ Optionally Installed:
     * ArgoCD Dashboard
     * Longhorn Dashboard
     * Prometheus Dashboard
-    * AlertManager Dashboards
+    * AlertManager Dashboard
     * Grafana Dashboards
 
 ---
@@ -147,15 +147,15 @@ k3s:
   vars:
     # Install versions are optional, lets you pin newer versions than defaults
     k3s_install_version: "v1.23.5+k3s1"
-    argocd_install_version: "4.8.3"
-    renovate_install_version: "32.45.5"
-    cert_manager_install_version: "v1.7.1"
-    kube_vip_install_version: "v0.4.2"
+    argocd_install_version: "4.9.7"
+    renovate_install_version: "32.99.1"
+    cert_manager_install_version: "v1.8.2"
+    kube_vip_install_version: "v0.4.4"
     kube_vip_cloud_provider_install_version: "v0.0.2"
-    traefik_install_version: "v10.19.4"
-    longhorn_install_version: "v1.2.4"
+    traefik_install_version: "v10.22.0"
+    longhorn_install_version: "v1.3.0"
     democratic_csi_install_version: "0.13.1"
-    prometheus_op_install_version: "36.0.2"
+    prometheus_op_install_version: "36.2.0"
 
     #[ Unique Per Cluster Settings ]############################################
     democratic_csi_parent_dataset: "main/k8s"
