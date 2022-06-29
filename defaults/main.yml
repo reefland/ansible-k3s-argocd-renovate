@@ -48,7 +48,10 @@ install:
     alias:
       enabled: true
       entries:
-        - { alias_name: "k", command: "kubectl" }   # alias for kubectl  ($ k get all -A)
+        # alias for kubectl  ($ k get all -A)
+        - { alias_name: "k", command: "kubectl" }   
+        # alias for a pod to run curl against other pods
+        - { alias_name: "kcurl", command: "kubectl run curl --image=radial/busyboxplus:curl --rm=true --stdin=true --tty=true --restart=Never" }
 
   ###[ Containerd Installation Settings ]##########################################################
   containerd:

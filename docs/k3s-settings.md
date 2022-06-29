@@ -61,10 +61,11 @@ install:
      # Define handy alias names for commands
     alias:
       enabled: true
-      entries:
-        - { alias_name: "k", command: "kubectl" }   # alias for kubectl  ($ k get all -A)
-
-
+     entries:
+        # alias for kubectl  ($ k get all -A)
+        - { alias_name: "k", command: "kubectl" }   
+        # alias for a pod to run curl against other pods
+        - { alias_name: "kcurl", command: "kubectl run curl --image=radial/busyboxplus:curl --rm=true --stdin=true --tty=true --restart=Never" }
 ```
 
 By default `k` will be setup as an alias for `kubectl`:
@@ -76,7 +77,28 @@ Client Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.5+k3s1", G
 Server Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.5+k3s1", GitCommit:"313aaca547f030752788dce696fdf8c9568bc035", GitTreeState:"clean", BuildDate:"2022-03-31T01:02:40Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
 ```
 
+The `kcurl` will create a pod to run the `curl`, `ping`, `wget`, etc. commands against other pods.  Handy for troubleshooting pod networking.
+
+```shell
+$ nslookup cert-manager.cert-manager
+Server:    10.43.0.10
+Address 1: 10.43.0.10 kube-dns.kube-system.svc.cluster.local
+
+Name:      cert-manager.cert-manager
+Address 1: 10.43.48.136 cert-manager.cert-manager.svc.cluster.local
+
+$ curl http://cert-manager.cert-manager:9402/metrics
+# HELP certmanager_certificate_expiration_timestamp_seconds The date after which the certificate expires. Expressed as a Unix Epoch Time.
+# TYPE certmanager_certificate_expiration_timestamp_seconds gauge
+certmanager_certificate_expiration_timestamp_seconds{name="wildcard-cert",namespace="traefik"} 1.66074062e+09
+...
+certmanager_controller_sync_call_count{controller="certificates-trigger"} 1
+certmanager_controller_sync_call_count{controller="clusterissuers"} 2
+certmanager_controller_sync_call_count{controller="orders"} 1
+```
+
 * If you want something like `kga` to be an alias for `kubectl get all --all-namespaces` this is where you can define that. Be as creative as you want.
+* To apply new aliases to cluster nodes, just run the K3S Validation Step documented below to push out changes.
 
 ---
 
