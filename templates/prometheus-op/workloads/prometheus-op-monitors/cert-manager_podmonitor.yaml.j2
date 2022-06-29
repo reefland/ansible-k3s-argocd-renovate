@@ -1,0 +1,21 @@
+---
+# Monitor Cert-Manager Pods
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cert-manager-prometheus-podmonitor
+  namespace: {{install.prometheus_operator.namespace}}
+  labels:
+    name: cert-manager-prometheus-podmonitor
+    release: {{prometheus_op.release_name}}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cert-manager
+  namespaceSelector:
+    matchNames:
+    - {{install.cert_manager.namespace}}
+  podMetricsEndpoints:
+  - port: http-metrics
+    path: /metrics

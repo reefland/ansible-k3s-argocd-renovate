@@ -92,4 +92,16 @@ Example Alert sent to Slack Channel:
 
 ---
 
+## Cert-Manager Certificate Alerts
+
+| Alert Description           | Condition              | Duration to Trigger |
+|---                          | ---                    |---                  |
+| Cert-Manager Absent         | Application Missing    | 10 minutes          |
+| Certificate Expires Soon    | Expires within 21 days | 1 hour              |
+| Certificate Not Ready       | Not Ready Status       | 10 minutes          |
+| Lets Encrypt Rate Limit Hit | Unable to Renew Cert   | 5 minutes           |
+
+Example Alert sent to Slack Channel:
+![Cert-Manager Absent](cert-manager_custom_alert.png)
+
 [Return to Application List](../)
