@@ -64,13 +64,59 @@ Renovate can be customized to perform additional functionality.  The renovate ru
 ```json
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:base"],
   "argocd": {
-    "fileMatch": ["applications/.+\\.yaml$"]
-  }
+  	"fileMatch": ["applications/.+\\.yaml$"]
+  },
+  "regexManagers": [
+    {
+      "description": "Update Democratic-csi docker image references",
+      "fileMatch": ["^applications\\/democratic_csi_.*\\.yaml$"],
+      "matchStrings": ["image: (?<depName>.*?):(?<currentValue>.*?)\\s+"],
+      "datasourceTemplate": "docker"
+  }]
 }
 ```
 
 * Renovate Documentation: [https://docs.renovatebot.com/](https://docs.renovatebot.com/)
+* The `argocd` > `fileMatch` enables processing of ArgoCD application files
+* The `regexManagers` covers special case Docker image names within democratic-csi yaml files
+
+---
+
+## Renovate Config Validation Github Workflow
+
+As Renovate runtime is a batch job that runs at intervals, you might not know for a while if a configuration change to the `renovate.json` is invalid.  The following GitHub workflow action is deployed to `.github/workflows` folder to help validate the configuration file.
+
+```yaml
+name: renovate-config-validator
+
+on:
+  pull_request:
+    branches:
+    - main
+    paths:
+    - .github/workflows/renovate-config-validator.yaml
+    - renovate.json
+  push:
+    branches:
+    - main
+    paths:
+    - .github/workflows/renovate-config-validator.yaml
+    - renovate.json
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Validate
+      uses: rinchsan/renovate-config-validator@v0.0.11
+      with:
+        pattern: 'renovate.json'
+```
 
 ---
 
