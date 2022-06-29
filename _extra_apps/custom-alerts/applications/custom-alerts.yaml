@@ -13,11 +13,11 @@ spec:
   project: default
 
   source:
-    repoURL:  https://github.com/reefland/k3s-argocd.git
+    repoURL: https://github.com/reefland/k3s-argocd.git
     targetRevision: HEAD
     path: workloads/custom-alerts
   destination:
-    server:  https://kubernetes.default.svc
+    server: https://kubernetes.default.svc
     namespace: monitoring
 
   syncPolicy:
@@ -25,4 +25,4 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-    -  Validate=true
+      - Validate=true
