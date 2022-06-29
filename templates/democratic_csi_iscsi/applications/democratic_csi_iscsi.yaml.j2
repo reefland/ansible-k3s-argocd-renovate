@@ -70,11 +70,11 @@ spec:
 
   destination:
     server: https://kubernetes.default.svc
-    namespace:  {{install.democratic_csi.namespace}}
+    namespace: {{install.democratic_csi.namespace}}
 
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-    - Validate=true
+      - Validate=true

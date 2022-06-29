@@ -18,7 +18,7 @@ spec:
     targetRevision: {{install.prometheus_operator.install_version}}
     helm:
       skipCrds: true
-      # Reference: # Reference: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
+      # Reference: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
       values: |
         kubeApiServer:
           enabled: true
@@ -89,8 +89,8 @@ spec:
         prometheus:
           enabled: true
           prometheusSpec:
-            ## Prometheus StorageSpec for persistent data
-            ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/storage.md
+            # Prometheus StorageSpec for persistent data
+            # ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/storage.md
             storageSpec:
               volumeClaimTemplate:
                 spec:
@@ -174,11 +174,11 @@ spec:
 
   destination:
     server: https://kubernetes.default.svc
-    namespace:  {{install.prometheus_operator.namespace}}
+    namespace: {{install.prometheus_operator.namespace}}
 
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-    - Validate=true
+      - Validate=true
