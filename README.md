@@ -317,15 +317,29 @@ The following tags are not run by default but can be used to install this additi
 
 ---
 
-## Grafana Dashboard
+## Grafana Dashboards
 
 A K3s cluster monitoring dashboard specific to this installation (Containerd, ZFS backed longhorn, etc.) is available:
 
 [https://grafana.com/grafana/dashboards/16450](https://grafana.com/grafana/dashboards/16450)
 
-* This will be automatically installed as a configMap Dashboard for Grafana as part of the Kube Prometheus Stack procedure.
+* This will be automatically installed as a configMap Dashboard for Grafana as part of the Kube-Prometheus-Stack procedure.
 
 ![Cluster Dashboard Screen One](./files/grafana/cluster_dashboard_01.png)
 
-[Screeen Shot #2](./files/grafana/cluster_dashboard_02.png)
-[Screeen Shot #3](./files/grafana/cluster_dashboard_03.png)
+[Screen Shot #2](./files/grafana/cluster_dashboard_02.png) - [Screen Shot #3](./files/grafana/cluster_dashboard_03.png)
+
+Additional Dashboards will also be deployed as ConfigMaps (modified from defaults to work with containerd and not docker):
+
+* [ArgoCD](./images/dashboard_argocd-1.png) - [Screen Shot #2](./images/dashboard_argocd-2.png) - [#3](./images/dashboard_argocd-3.png) - [#4](./images/dashboard_argocd-4.png) - [#5](./images/dashboard_argocd-5.png)
+* [Cert-Manager](./images/dashboard_cert-manager.png)
+* [Longhorn](./images/dashboard_longhorn-1.png) - [Screen Shot #2](./images/dashboard_longhorn-2.png) - [#3](./images/dashboard_longhorn-3.png)
+* [Traefik](./images/dashboard_traefik-1.png) - [Screen Shot #2](./images/dashboard_traefik-2.png) - [#3](./images/dashboard_traefik-3.png)
+* Several from [dotdc](https://github.com/dotdc/grafana-dashboards-kubernetes) modern dashboards (modified)
+  * [Global View](./images/dashboard_dotdc-cluster-1.png) - [Screen Short #2](./images/dashboard_dotdc-cluster-2.png) - [#3](./images/dashboard_dotdc-cluster-3.png)
+  * [Namespaces](./images/dashboard_dotdc-namespace-1.png)
+  * [Nodes](./images/dashboard_dotdc-nodes-1.png) - [Screen Shot#2](./images/dashboard_dotdc-nodes-2.png) - [#3](./images/dashboard_dotdc-nodes-3.png) - [#4](./images/dashboard_dotdc-nodes-4.png) - [#5](./images/dashboard_dotdc-nodes-5.png) - - [#6](./images/dashboard_dotdc-nodes-6.png)
+  * [Pods](./images/dashboard_dotdc-pods-1.png)
+  * [API Server](./images/dashboard_dotdc-apiserver-1.png) - [Screen Shot #2](./images/dashboard_dotdc-apiserver-2.png)
+  * [CoreDNS](./images/dashboard_dotdc-coredns-1.png) - [Screen Shot #2](./images/dashboard_dotdc-coredns-2.png)
+* Several from Kubernetes-Mixin (Deployed by Kube-Prometheus-Stack)
