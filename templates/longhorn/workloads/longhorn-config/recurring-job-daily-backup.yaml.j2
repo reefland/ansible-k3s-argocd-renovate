@@ -8,7 +8,7 @@ spec:
   cron: {{install.longhorn.backups.cron_schedule}}
   task: "backup"
   groups:
-  - default
+    - default
   retain: {{install.longhorn.backups.retain_days}}
   concurrency: {{install.longhorn.backups.concurrency}}
   labels:

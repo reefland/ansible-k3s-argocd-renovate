@@ -8,7 +8,7 @@ spec:
   cron: {{install.longhorn.snapshots.cron_schedule}}
   task: "snapshot"
   groups:
-  - default
+    - default
   retain: {{install.longhorn.snapshots.retain_days}}
   concurrency: {{install.longhorn.snapshots.concurrency}}
   labels:

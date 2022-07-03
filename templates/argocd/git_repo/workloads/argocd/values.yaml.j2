@@ -1,3 +1,4 @@
+---
 # Reference: https://github.com/argoproj/argo-helm/blob/master/charts/argo-cd/values.yaml
 
 argo-cd:
@@ -6,7 +7,7 @@ argo-cd:
     secret:
       createSecret: false
 
-###[ Application Controller Settings ]#############################################################
+###[ Application Controller Settings ]#########################################
   controller:
     name: application-controller
     clusterAdminAccess:
@@ -29,13 +30,13 @@ argo-cd:
 #        additionalLabels:
 #           release: {{prometheus_op.release_name}}
 
-###[ Dex Server Settings ]#########################################################################
+###[ Dex Server Settings ]#####################################################
 # used to delegate authentication to external identity provider
   dex:
     enabled: false
     name: dex-server
 
-###[ Redis non-HA Settings ]#######################################################################
+###[ Redis non-HA Settings ]###################################################
   redis:
     enabled: true
     name: redis
@@ -65,12 +66,13 @@ argo-cd:
 #           cpu: 10m
 #           memory: 32Mi
 
-###[ Redis HA Settings ]###########################################################################
-# -- Enables the Redis HA subchart and disables the custom Redis single node deployment (above)
+###[ Redis HA Settings ]#######################################################
+# -- Enables the Redis HA subchart and disables the custom Redis single node 
+#    deployment (above)
   redis-ha:
     enabled: false
 
-###[ ArgoCD Server Settings ]######################################################################
+###[ ArgoCD Server Settings ]##################################################
   server:
     name: server
     extraArgs:
@@ -105,7 +107,7 @@ argo-cd:
 #        additionalLabels:
 #           release: {{prometheus_op.release_name}}
 
-###[ ArgoCD Repo Server Settings ]#################################################################
+###[ ArgoCD Repo Server Settings ]#############################################
   repoServer:
     name: repo-server
     resources:
@@ -125,7 +127,7 @@ argo-cd:
 #        additionalLabels:
 #           release: {{prometheus_op.release_name}}
 
-###[ ApplicationSet Controller Settings ]##########################################################
+###[ ApplicationSet Controller Settings ]######################################
   applicationSet:
     enabled: true
     name: applicationset-controller
@@ -147,7 +149,7 @@ argo-cd:
         cpu: 100m
         memory: 128Mi
 
-###[ Notifications Controller Settings ]###########################################################
+###[ Notifications Controller Settings ]#######################################
   notifications:
     enabled: true
     name: notifications-controller

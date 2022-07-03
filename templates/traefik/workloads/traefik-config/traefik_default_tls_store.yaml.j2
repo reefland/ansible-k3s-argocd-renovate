@@ -1,10 +1,11 @@
+---
 apiVersion: traefik.containo.us/v1alpha1
 kind: TLSStore
 metadata:
   name: default
   namespace: {{install.traefik.namespace}}
   annotations:
-    argocd.argoproj.io/sync-wave: "-1"  # Lower the number the sooner to deploy  
+    argocd.argoproj.io/sync-wave: "-1"  # Lower the number the sooner to deploy
 spec:
   defaultCertificate:
     secretName: wildcard-cert

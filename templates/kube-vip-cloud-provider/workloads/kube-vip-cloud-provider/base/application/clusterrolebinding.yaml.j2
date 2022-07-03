@@ -8,6 +8,6 @@ roleRef:
   kind: ClusterRole
   name: system:kube-vip-cloud-controller-role
 subjects:
-- kind: ServiceAccount
-  name: kube-vip-cloud-controller
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: kube-vip-cloud-controller
+    namespace: kube-system

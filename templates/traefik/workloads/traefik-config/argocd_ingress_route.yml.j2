@@ -12,12 +12,12 @@ spec:
       match: Host(`{{install.traefik.dashboard.ingress_name|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.argocd.dashboard.path}}`))
       priority: 10
       services:
-      - name: argocd-server
-        port: 80
+        - name: argocd-server
+          port: 80
     - kind: Rule
       match: Host(`{{install.traefik.dashboard.ingress_name|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.argocd.dashboard.path}}`)) && Headers(`Content-Type`, `application/grpc`)
       priority: 11
       services:
-      - name: argocd-server
-        port: 80
-        scheme: h2c
+        - name: argocd-server
+          port: 80
+          scheme: h2c

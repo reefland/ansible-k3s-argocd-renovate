@@ -10,8 +10,8 @@ spec:
     privateKeySecretRef:
       name: issuer-{% if install.lets_encrypt.le_staging|default(true)|bool == true %}letsencrypt-staging{% else %}letsencrypt-prod{% endif %}{{''}}
     solvers:
-    - dns01:
-        cloudflare:
-          apiTokenSecretRef:
-            key: api-token
-            name: cloudflare-api-token-secret
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              key: api-token
+              name: cloudflare-api-token-secret
