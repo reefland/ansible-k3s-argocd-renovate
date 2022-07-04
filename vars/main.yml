@@ -92,6 +92,26 @@ containerd:
 
     zfs_uuid_detect_cmd: "zfs list -o name | grep -E -o '{{install.containerd.zfs.pool}}/{{install.containerd.zfs.dataset_prefix}}{{install.containerd.zfs.uuid}}[^/]*{6}$' | rev | cut -c 1-6 | rev"
 
+###[ Sealed Secrets Configuration Settings ]#######################################################
+sealed_secrets:
+  # This defines the default name used in Helm Chart, does not overwrite or change name to be used
+  controller_name: "sealed-secrets"
+
+  # Sealed Secret Scope:
+  # "strict" (default): Sealed Secret uses secret name and the namespace. You can’t change the
+  #                     name or the namespaces of your SealedSecret once you've created it.
+  # "namespace-wide"    This scope allows you to freely rename the SealedSecret within the 
+  #                     namespace for which you’ve sealed the Secret.
+  # "cluster-wide"      This scope allows you to freely move the Secret to any namespace and give
+  #                     it any name you wish.
+  # This can be overridden per invocation of "process_secret.yml" vai deploy_secret.scope variable.
+  # When this variable is not set, the default_scope below will be used.
+  default_scope: "strict"
+
+  # Annotation that can be applied to an existing unsealed secret to mark it managed by Sealed
+  # Secrets to allow it to be overwritten by Sealed Secrets.
+  replace_unsealed_secrets_annotation: "sealedsecrets.bitnami.com/managed=true"
+
 ###[ Let's Encrypt Configuration Settings ]########################################################
 lets_encrypt:
 

@@ -1,5 +1,7 @@
 # K3s Kubernetes with ContainerD for ZFS & ArgoCD with Renovate for GitOps via Ansible
 
+![](https://img.shields.io/github/v/release/reefland/ansible-k3s-argocd-renovate?display_name=tag&include_prereleases)
+
 An Ansible role to provide an automated _K3s Lightweight Distribution of Kubernetes_ initial deployment. The goal is to have Anisble build just enough Kubernetes on each cluster node to get ArgoCD running.  Anisble will then be used to render various application manifest files that ArgoCD will deploy.  Once the initial deployment is successful you do not need Ansible to maintain the cluster applications - ArgoCD will be using an "App of Apps" pattern along with Renovate will handle this.  (Ansible can be reused in the future to upgrade K3s to a newer version).
 
 The following enhancements are part of this Ansible role:
@@ -305,6 +307,7 @@ The following tags are supported and should be used in this order:
 * `apply_labels`
 * `validate_k3s`
 * `install_helm_client`
+* `install_sealed_secrets`
 * `install_argocd`
 * `deploy_apps`
 * `config_le_certificates`

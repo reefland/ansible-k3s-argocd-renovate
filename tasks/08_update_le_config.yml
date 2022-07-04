@@ -40,24 +40,14 @@
       
   - name: Check-in Any New or Modified Files
     include_tasks: "checkin_argocd_repo_files.yml"
+    vars:
+      commit_message: "- Lets Encrypt Certificates"  # Keep under 30 chars
 
-  when: 
-    - inventory_hostname == groups['k3s_control'][0]
-    - install.argocd.enabled|default(false)|bool == true
-  tags:
-    - config_le_certificates
+  - name: Delete Local ArgoCD Secrets and Git Repo
+    ansible.builtin.file:
+      path: "/home/{{install.os.non_root_user.name}}/argocd"
+      state: absent
 
-# Make sure all changes are checked in before removing repository
-- name: Flush Handlers
-  meta: flush_handlers
-  tags:
-    - config_le_certificates
-
-# Probably not safe to leave these on the K3s instance
-- name: Delete Local ArgoCD Secrets and Git Repo
-  ansible.builtin.file:
-    path: "/home/{{install.os.non_root_user.name}}/argocd"
-    state: absent
   when: 
     - inventory_hostname == groups['k3s_control'][0]
     - install.argocd.enabled|default(false)|bool == true

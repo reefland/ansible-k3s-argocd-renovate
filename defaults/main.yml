@@ -52,6 +52,8 @@ install:
         - { alias_name: "k", command: "kubectl" }   
         # alias for a pod to run curl against other pods
         - { alias_name: "kcurl", command: "kubectl run curl --image=radial/busyboxplus:curl --rm=true --stdin=true --tty=true --restart=Never" }
+        # Alias for Kubeseal to include controller name by default
+        - { alias_name: "kubeseal", command: "kubeseal --controller-name {{sealed_secrets.controller_name}}" }
 
   ###[ Containerd Installation Settings ]##########################################################
   containerd:
@@ -133,6 +135,25 @@ install:
     le_staging: "{{le_staging|default(true)}}"
 
 ###[ Optional Software Listed Below - Can be DISABLED ]############################################
+
+  ###[ Bitnami Sealed-Secrets Controller ]#########################################################
+  # This will deploy the sealed secrets controller which allows for encrypted secrets to be safely
+  # committed to a repository.  Sealed secrets also add some more complexity to cluster management
+  # and deployment.
+  sealed_secrets:
+    enabled: true
+
+    # Select release to use: https://artifacthub.io/packages/helm/bitnami-labs/sealed-secrets
+    install_version: "{{sealed_secret_install_version|default('v2.3.0')}}"
+
+    namespace: "kube-system"                       # Add resources to this namespace
+
+    # If a non-Sealed Secret (unsealed secret) already exists, by default it can NOT be replaced
+    # by Sealed Secret version as it will fail with "Resource already exists and is not managed
+    # by Sealed Secret" message. if replace_unsealed_secrets is "true" then the existing secret
+    # will be annotated as managed by Sealed Secrets which will allow the non-Seale dSecret to be
+    # replaced.
+    replace_unsealed_secrets: true
 
   ###[ Kube-VIP Configuration Settings ]###########################################################
   # Kube-VIP provides HA Load Balancer for the API service and optionally LoadBalancer services
@@ -238,6 +259,7 @@ install:
         
     # The intent of longhorn is to be used instead of "local-path" storage class
     # once Longhorn is installed "local-path" will be disabled as the default storage class
+    # If true on initial installation, then "local-path" is disabled entirely (not available)
     disable_local_path_as_default_storage_class: true
 
     # Default Snapshots - Longhorn will internally create snapshots of each volume will using the

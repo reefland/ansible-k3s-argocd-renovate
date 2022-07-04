@@ -1,10 +1,11 @@
 ---
 #
-# Add iSCSI persistent storage with TrueNas integration via democratic-csi packages.
+# Add iSCSI persistent storage with TrueNas integration via democratic-csi
+# packages.
 #
 # based on: https://jonathangazeley.com/2021/01/05/using-truenas-to-provide-persistent-storage-for-kubernetes/
 
-###[ Install democratic-csi packages ]############################################################
+###[ Install democratic-csi packages ]#########################################
 - name: Install democratic-csi Dependencies Block
   block:
   - name: Install iSCSI Support packages
@@ -53,40 +54,9 @@
     - never
     - install_democratic_csi_iscsi
 
-###[ Clone ArgoCD Repository and Add Helm Chart ]##################################################
+###[ Clone ArgoCD Repository and Add Helm Chart ]##############################
 - name: Add Democratic CSI iSCSI to ArgoCD Repository Block
   block:
-  - name: Copy democratic-csi Secret Template Files
-    template:
-      src: "templates/user-files/democratic_csi/{{item}}.j2"
-      dest: "/home/{{install.os.non_root_user.name}}/democratic-csi/{{item}}"
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-      mode: '0660'
-    loop:
-      - "iscsi-driver-config-secret.yaml"       # Temporary stage will be deleted (below) once processed
-
-  - name: Create Namespace to Apply Secret to   # ArgoCD will have a copy namespace file
-    kubernetes.core.k8s:
-      state: present
-      kind: Namespace
-      name: "{{install.democratic_csi.namespace}}"
-
-  - name: Apply Democratic CSI Config Secret
-    kubernetes.core.k8s:
-      state: present
-      src: "/home/{{install.os.non_root_user.name}}/democratic-csi/{{item}}"
-      namespace: 
-      wait: yes
-      wait_timeout: 300
-    with_items:
-      - iscsi-driver-config-secret.yaml
-
-  - name: Delete Democratic CSI Config Secret File
-    ansible.builtin.file:
-      path: "/home/{{install.os.non_root_user.name}}/democratic-csi/iscsi-driver-config-secret.yaml"
-      state: absent
-
   - name: Clone Remote ArgoCD Repository
     ansible.builtin.git:
       repo: "{{install.argocd.repository.url|urlsplit('scheme')}}://{{install.argocd.repository.username}}:{{install.argocd.repository.password}}@{{install.argocd.repository.url|urlsplit('hostname')}}{{install.argocd.repository.url|urlsplit('path')}}"
@@ -104,8 +74,29 @@
       loop_var: deploy_app
       label: "{{deploy_app}}"
 
+  - name: Create Namespace to Apply Secret to   # ArgoCD will have a copy namespace file
+    kubernetes.core.k8s:
+      state: present
+      kind: Namespace
+      name: "{{install.democratic_csi.namespace}}"
+
+  - name: Apply Democratic CSI Config Secret
+    ansible.builtin.include_tasks: process_secret.yml
+    loop:
+      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/iscsi-driver-config-secret.yaml", delete_src: "yes" }
+    loop_control:
+      loop_var: deploy_secret
+      label: "{{deploy_secret}}"      
+
   - name: Check-in Any New or Modified Files
     include_tasks: "checkin_argocd_repo_files.yml"
+    vars:
+      commit_message: "- Democratic CSI iSCSI"  # Keep under 30 chars
+
+  - name: Delete Local ArgoCD Git Repo Created
+    ansible.builtin.file:
+      path: "/home/{{install.os.non_root_user.name}}/argocd"
+      state: absent
 
   when:
     - inventory_hostname == groups['k3s_control'][0]
@@ -117,18 +108,6 @@
 # Make sure all changes are checked in before removing repository
 - name: Flush Handlers
   meta: flush_handlers
-  tags:
-    - never
-    - install_democratic_csi_iscsi
-
-# Probably not safe to leave these on the K3s instance
-- name: Delete Local ArgoCD Git Repo Created
-  ansible.builtin.file:
-    path: "/home/{{install.os.non_root_user.name}}/argocd"
-    state: absent
-  when: 
-    - inventory_hostname == groups['k3s_control'][0]
-    - install.democratic_csi.iscsi.provisioner is defined
   tags:
     - never
     - install_democratic_csi_iscsi

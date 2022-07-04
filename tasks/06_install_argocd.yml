@@ -8,23 +8,11 @@
   block:
   - name: Create directory for ArgoCD files for non-root user
     file:
-      path: "/home/{{install.os.non_root_user.name}}/argocd"
+      path: "/home/{{install.os.non_root_user.name}}/argocd/"
       state: directory
       mode: 0770
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
-
-  - name: Copy Repository Connection Template Files
-    template:
-      src: "templates/argocd/config/{{item}}.j2"
-      dest: "/home/{{install.os.non_root_user.name}}/argocd/{{item}}"
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-      mode: '0660'
-    loop:
-      - "argocd_secret.yaml"
-      - "renovate_secret.yaml"
-      - "argocd_admin_secret.yaml"
 
   - name: Clone Remote ArgoCD Repository
     ansible.builtin.git:
@@ -33,13 +21,15 @@
       force: yes
 
   - name: Process Initial ArgoCD Repository
-    include_tasks: "process_app_to_deploy.yml"
+    ansible.builtin.include_tasks: "process_app_to_deploy.yml"
     loop:
       - { enabled: true, name: "argocd/git_repo" }
+      - { enabled: "{{install.sealed_secrets.enabled|default(false)|bool}}", name: "sealed-secrets" }
+    when:
+      - deploy_app.enabled == true
     loop_control:
       loop_var: deploy_app
-      label: "{{deploy_app}}"
-
+      label: "{{deploy_app.name}}"
 
   # Ansible helm was unable to process chart dependencies, got this message:
   # Error: An error occurred while checking for chart dependencies. You may need to run `helm dependency build` to fetch missing dependencies: found in Chart.yaml, but missing in charts/ directory: argo-cd
@@ -62,12 +52,15 @@
         - update
         - "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd"
 
-  - name: Add Default Admin Credentials
-    kubernetes.core.k8s:
-      state: present
-      src:  "/home/{{install.os.non_root_user.name}}/argocd/{{item}}"
+  - name: Process Default Admin Credential
+    ansible.builtin.include_tasks: process_secret.yml
     loop:
-      - "argocd_admin_secret.yaml"
+      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/argocd_admin_secret.yaml", delete_src: "yes", process: "yes" }
+      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/argocd_secret.yaml", delete_src: "yes", process: "yes" }
+      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/renovate_secret.yaml", delete_src: "yes", process: "yes" }
+    loop_control:
+      loop_var: deploy_secret
+      label: "{{deploy_secret}}"      
 
   - name: Install ArgoCD Helm Using Local Files
     kubernetes.core.helm:
@@ -76,14 +69,6 @@
       release_namespace: "{{install.argocd.namespace}}"
       chart_ref: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd"
       wait: yes
-
-  - name: Add Repository Credentials
-    kubernetes.core.k8s:
-      state: present
-      src:  "/home/{{install.os.non_root_user.name}}/argocd/{{item}}"
-    loop:
-      - "argocd_secret.yaml"
-      - "renovate_secret.yaml"
 
   - name: Create root ArgoCD Application
     kubernetes.core.k8s:
@@ -95,7 +80,7 @@
       kind: Pod
       namespace: "{{install.argocd.namespace}}"
       label_selectors:
-        - "{{item}}"
+        - "{{pod_label}}"
       wait: yes
       wait_condition:
         type: Ready
@@ -107,7 +92,8 @@
       - "app.kubernetes.io/name=argocd-application-controller"
       - "app.kubernetes.io/name=argocd-applicationset-controller"
     loop_control:
-      label: "{{task_names}}"
+      loop_var: pod_label
+      label: "{{pod_label}}"
 
   - name: Check Renovate Kubernetes CronJob is Scheduled
     k8s_info:
@@ -118,6 +104,8 @@
 
   - name: Check-in Any New or Modified Files
     include_tasks: "checkin_argocd_repo_files.yml"
+    vars:
+      commit_message: "- ArgoCD Updated Files"  # Keep under 30 chars
 
   # Let Helm know not to manage ArgoCD anymore
   - name: Remove ArgoCD secrets from Helm
@@ -131,23 +119,11 @@
         - -n
         - "{{install.argocd.namespace}}"
 
-  when: 
-    - inventory_hostname == groups['k3s_control'][0]
-    - install.argocd.enabled|default(false)|bool == true
-  tags:
-    - install_argocd
+  - name: Delete Local Working ArgoCD Git Repo as Cleanup
+    ansible.builtin.file:
+      path: "/home/{{install.os.non_root_user.name}}/argocd/"
+      state: absent
 
-# Make sure all changes are checked in before removing repository
-- name: Flush Handlers
-  meta: flush_handlers
-  tags:
-    - install_argocd
-
-# Probably not safe to leave these on the K3s instance
-- name: Delete Local ArgoCD Secrets and Git Repo
-  ansible.builtin.file:
-    path: "/home/{{install.os.non_root_user.name}}/argocd"
-    state: absent
   when: 
     - inventory_hostname == groups['k3s_control'][0]
     - install.argocd.enabled|default(false)|bool == true

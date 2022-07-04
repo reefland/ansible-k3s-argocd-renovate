@@ -1,10 +1,11 @@
 ---
 #
-# Add NFS persistent storage with TrueNas integration via democratic-csi packages.
+# Add NFS persistent storage with TrueNas integration via democratic-csi
+# packages.
 #
 # based on: https://jonathangazeley.com/2021/01/05/using-truenas-to-provide-persistent-storage-for-kubernetes/
 
-###[ Install democratic-csi packages ]############################################################
+###[ Install democratic-csi packages ]#########################################
 - name: Install democratic-csi Dependencies Block
   block:
   - name: Install NFS Support packages
@@ -37,38 +38,9 @@
     - never
     - install_democratic_csi_nfs
 
-###[ Clone ArgoCD Repository and Add Helm Chart ]##################################################
+###[ Clone ArgoCD Repository and Add Helm Chart ]##############################
 - name: Add Democratic CSI NFS to ArgoCD Repository Block
   block:
-  - name: Copy democratic-csi Secret Template Files
-    template:
-      src: "templates/user-files/democratic_csi/{{item}}.j2"
-      dest: "/home/{{install.os.non_root_user.name}}/democratic-csi/{{item}}"
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-      mode: '0660'
-    loop:
-      - "nfs-driver-config-secret.yaml"     # Temporary stage will be deleted (below) once processed
-
-  - name: Create Namespace to Apply Secret to   # ArgoCD will have a copy namespace file
-    kubernetes.core.k8s:
-      state: present
-      kind: Namespace
-      name: "{{install.democratic_csi.namespace}}"
-
-  - name: Apply Democratic CSI Config Secret
-    kubernetes.core.k8s:
-      state: present
-      src: "/home/{{install.os.non_root_user.name}}/democratic-csi/{{item}}"
-      wait: yes
-      wait_timeout: 300
-    with_items:
-      - nfs-driver-config-secret.yaml
-
-  - name: Delete Democratic CSI Config Secret File
-    ansible.builtin.file:
-      path: "/home/{{install.os.non_root_user.name}}/democratic-csi/nfs-driver-config-secret.yaml"
-      state: absent
 
   - name: Clone Remote ArgoCD Repository
     ansible.builtin.git:
@@ -86,6 +58,20 @@
     loop_control:
       loop_var: deploy_app
       label: "{{deploy_app}}"
+
+  - name: Create Namespace to Apply Secret to   # ArgoCD will have a copy namespace file
+    kubernetes.core.k8s:
+      state: present
+      kind: Namespace
+      name: "{{install.democratic_csi.namespace}}"
+
+  - name: Apply Democratic CSI Config Secret
+    ansible.builtin.include_tasks: process_secret.yml
+    loop:
+      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/nfs-driver-config-secret.yaml", delete_src: "yes" }
+    loop_control:
+      loop_var: deploy_secret
+      label: "{{deploy_secret}}"      
 
   - name: Check-in Any New or Modified Files
     include_tasks: "checkin_argocd_repo_files.yml"

@@ -1,0 +1,49 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: {{install.argocd.namespace}}
+  name: sealed-secrets
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"  # Lower the number the sooner to deploy
+    
+spec:
+  project: default
+  source:
+    chart: sealed-secrets
+    repoURL: https://bitnami-labs.github.io/sealed-secrets
+    targetRevision: {{install.sealed_secrets.install_version}}
+    helm:
+      # Reference: https://github.com/bitnami-labs/sealed-secrets/tree/helm-v2.3.0/helm/sealed-secrets
+      values: |
+        keyrenewperiod: "720h30m"     # Specifiy in hours and minutes, not days.
+        resources:
+          limits: {}
+          requests: {}
+        metrics:
+          ## Prometheus Operator ServiceMonitor configuration
+          serviceMonitor:
+            enabled: false
+            namespace: {{install.prometheus_operator.namespace}}
+            labels:
+              release: {{prometheus_op.release_name}}
+          ## Grafana dashboards configuration
+          dashboards:
+            create: false
+            labels:
+              {{install.prometheus_operator.grafana.sidecar.label}}: "true"
+            namespace: {{install.prometheus_operator.namespace}}
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{install.sealed_secrets.namespace}}
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true

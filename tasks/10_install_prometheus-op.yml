@@ -15,55 +15,6 @@
       owner: "{{install.os.non_root_user.name}}"
       group: "{{install.os.non_root_user.name}}"
 
-  # Temporary stage will be deleted (below) once processed
-  - name: Copy Prometheus-op Secret Template Files
-    template:
-      src: "templates/user-files/prometheus-op/{{item.file}}.j2"
-      dest: "/home/{{install.os.non_root_user.name}}/prometheus-op/{{item.file}}"
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-      mode: '0660'
-    loop:
-      - { file: "prometheus-alertmanger_secret.yaml", enabled: "{{install.prometheus_operator.alertmanager.dashboard.enable_basic_auth|default(false)|bool}}" }
-      - { file: "prometheus_secret.yaml", enabled: "{{install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool}}" }
-      - { file: "prometheus-grafana_secret.yaml", enabled: "{{install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool}}" }
-      - { file: "prometheus-grafana_admin_secret.yaml", enabled: true }
-      - { file: "prometheus-alertmanager-config_secret.yaml", enabled: true}
-    when:
-      item.enabled  == true
-
-  - name: Create Namespace to Apply Secret to   # ArgoCD will have a copy namespace file
-    kubernetes.core.k8s:
-      state: present
-      kind: Namespace
-      name: "{{install.prometheus_operator.namespace}}"
-
-  - name: Apply Prometheus-op Config Secret
-    kubernetes.core.k8s:
-      state: present
-      src: "/home/{{install.os.non_root_user.name}}/prometheus-op/{{item.file}}"
-      wait: yes
-      wait_timeout: 300
-    loop:
-      - { file: "prometheus-alertmanger_secret.yaml", enabled: "{{install.prometheus_operator.alertmanager.dashboard.enable_basic_auth|default(false)|bool}}" }
-      - { file: "prometheus_secret.yaml", enabled: "{{install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool}}" }
-      - { file: "prometheus-grafana_secret.yaml", enabled: "{{install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool}}" }
-      - { file: "prometheus-grafana_admin_secret.yaml", enabled: true }
-      - { file: "prometheus-alertmanager-config_secret.yaml", enabled: true}
-    when: item.enabled == true
-
-  - name: Delete Prometheus-op Config Secret File
-    ansible.builtin.file:
-      path: "/home/{{install.os.non_root_user.name}}/prometheus-op/{{item.file}}"
-      state: absent
-    loop:
-      - { file: "prometheus-alertmanger_secret.yaml", enabled: "{{install.prometheus_operator.alertmanager.dashboard.enable_basic_auth|default(false)|bool}}" }
-      - { file: "prometheus_secret.yaml", enabled: "{{install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool}}" }
-      - { file: "prometheus-grafana_secret.yaml", enabled: "{{install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool}}" }
-      - { file: "prometheus-grafana_admin_secret.yaml", enabled: true }
-      - { file: "prometheus-alertmanager-config_secret.yaml", enabled: true}
-    when: item.enabled == true
-
   # K3s does not have control-plane in a pod, get IPs of nodes in control-plane
   - name: Determine InternalIP's for ControlPlane nodes
     command: >
@@ -87,6 +38,26 @@
     loop_control:
       loop_var: deploy_app
       label: "{{deploy_app}}"
+
+  - name: Create Namespace to Apply Secret to   # ArgoCD will have a copy namespace file
+    kubernetes.core.k8s:
+      state: present
+      kind: Namespace
+      name: "{{install.prometheus_operator.namespace}}"
+
+  - name: Apply Prometheus Operator Config Secrets
+    ansible.builtin.include_tasks: process_secret.yml
+    loop:
+      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-auth_secret.yaml", delete_src: "yes", enabled: "{{install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool}}" }
+      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-alertmanager-auth_secret.yaml", delete_src: "yes", enabled: "{{install.prometheus_operator.alertmanager.dashboard.enable_basic_auth|default(false)|bool}}" }
+      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-alertmanager-config_secret.yaml", delete_src: "yes", enabled: true }
+      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-grafana-auth_secret.yaml", delete_src: "yes", enabled: "{{install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool}}" }
+      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-grafana-admin_secret.yaml", delete_src: "yes", enabled: true }
+    loop_control:
+      loop_var: deploy_secret
+      label: "{{deploy_secret.source}}"   
+    when:
+      - deploy_secret.enabled == true
 
   # Remove some files copied if not enabled
   - name: Remove Application Pod Monitor if Application not enabled
@@ -135,6 +106,13 @@
     force: "no"
   when: 
     - inventory_hostname in groups['k3s_control']
+  notify:
+    - Restart k3s Service
   tags:
     - never
+    - install_prometheus_operator
+
+- name: Flush Handlers
+  meta: flush_handlers
+  tags:
     - install_prometheus_operator

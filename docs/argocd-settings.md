@@ -224,6 +224,8 @@ The application / objects deployed via this Ansible process are assigned the fol
 |     :----:      | :---                        |
 | -5              | All namespaces              |
 | -3              | ArgoCD Application          |
+| -2              | Sealed-Secrets Controller   |
+| -2              | Application Secrets         |
 | -1              | Cert-manager                |
 | -1              | Let's Encrypt Configuration |
 | -1              | Renovate                    |

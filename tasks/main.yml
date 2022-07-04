@@ -38,6 +38,7 @@
     - 03_apply_labels.yml
     - 04_validate_k3s.yml
     - 05_install_helm_client.yml
+    - 06_install_sealed_secrets.yml
     - 06_install_argocd.yml
     - 07_deploy_apps.yml
     - 08_update_le_config.yml

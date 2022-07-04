@@ -8,14 +8,33 @@
       - status
   register: git_status
 
-- name: Add New Files Generated Files to ArgoCD Repository
-  ansible.builtin.command:
-    chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
-    argv:
-      - /usr/bin/git
-      - add
-      - --all
+- name: Git Checkin and Commit Block
+  block:
+  - name: Add New Files Generated Files to ArgoCD Repository
+    ansible.builtin.command:
+      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+      argv:
+        - /usr/bin/git
+        - add
+        - --all
+    register: git_add
+
+  - name: Commit Checked in Files to ArgoCD Repository
+    ansible.builtin.command:
+      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+      argv:
+        - /usr/bin/git
+        - commit
+        - -a
+        - -m
+        - "Commit via Ansible {{commit_message|default('')}}"
+
+  - name: Git Push ArgoCD
+    ansible.builtin.command:
+      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+      argv:
+        - /usr/bin/git
+        - push
+
   when:
     - git_status.stdout.find("nothing to commit") == -1
-  notify:
-    - Commit Checked in Files to ArgoCD Repository
