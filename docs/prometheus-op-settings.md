@@ -253,11 +253,13 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
 
 ## K3s and Prometheus / Alertmanager Expected Issues
 
+### K3s Services Down
+
 K3s has been designed for low resource consumption, as such the etcd (not used by default; but enabled by default with this Ansible script), Kube Control Manager, Kube Scheduler, Kube Proxy are not deployed as pods but included in the k3s binary.  This means standard `Kube Prometheus Stack` is unable to obtain any metrics from these services.  
 
 * You will typically have down alerts such as the following:
 
-  ![Alertmanager Down Notices](../images/alertmanager_k3s_alerts.png)
+  ![Alertmanager Services Down Notices](../images/alertmanager_k3s_alerts.png)
 
 ### Resolution
 
@@ -284,6 +286,17 @@ To resolve these issues, the following are performed by this Ansible script:
 * Once the installation is completed all of these services should be active targets in Prometheus:
 
   ![Prometheus Additional Services](../images/prometheus_k3s_additional_services.png)
+
+### etcd Metrics Unavailable
+
+When etcd metrics are used in an environment with Let's Encrypt Staging certificated the collection of metrics against etcd may be impacted.  The following may ne observed in AlertManager:
+
+![AlertManager etcd Insufficient Members](../images/alertmanager_k3s_alerts_etcd.png)
+
+Resolution
+
+* This message can be ignored if you intent to use Let's Encrypt staging certificates
+* Once Let's Encrypt Certificates are upgraded from staging to production these messages should go away.
 
 ---
 
@@ -415,24 +428,6 @@ You can use the Prometheus UI to view the active targets and you should see the 
 
 ---
 
-## Upgrading Kube Prometheus Stack
-
-* You should review project documentation for any special notes or breaking changes.
-
-I was able to upgrade from Helm Chart version 34.x to 36.x by just making two small edits to the version numbers within:
-
-```text
-/applications/prometheus-op.yaml
-    targetRevision: 36.0.2
-
-/applications/prometheus-op-crds.yaml
-    targetRevision: kube-prometheus-stack-36.0.2
-```
-
-Once changes were committed to git repository, upon ArgoCD's next sync cycle the Custom Resource Definitions and the the application stack was upgraded successfully.
-
----
-
 ## Uninstall Kube Prometheus Stack
 
 Should you need to remove Prometheus Operator:
@@ -447,6 +442,11 @@ Should you need to remove Prometheus Operator:
 /workloads/grafana-dashboards/*
 /workloads/prometheus-op-monitors/*
 /namespaces/monitoring.yaml
+/secrets/prometheus-alertmanager-auth_secret-sealed.yaml
+/secrets/prometheus-alertmanager-config_secret-sealed.yaml
+/secrets/prometheus-auth_secret-sealed.yaml
+/secrets/prometheus-grafana-admin_secret-sealed.yaml
+/secrets/prometheus-grafana-auth_secret-sealed.yaml
 ```
 
 Once changes are committed to the repository, upon ArgoCD's next sync cycle all removed assets will be undeployed from the cluster.
