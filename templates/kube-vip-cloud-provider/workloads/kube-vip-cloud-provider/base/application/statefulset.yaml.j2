@@ -20,13 +20,13 @@ spec:
         component: kube-vip-cloud-provider
     spec:
       containers:
-      - command:
-        - /kube-vip-cloud-provider
-        - --leader-elect-resource-name=kube-vip-cloud-controller
-        image: ghcr.io/kube-vip/kube-vip-cloud-provider:{{ kube_vip_cloud_provider_install_version|default(install.kube_vip.lb.install_version) }}
-        name: kube-vip-cloud-provider
-        imagePullPolicy: Always
-        resources: {}
+        - name: kube-vip-cloud-provider
+          image: ghcr.io/kube-vip/kube-vip-cloud-provider:{{ kube_vip_cloud_provider_install_version|default(install.kube_vip.lb.install_version) }}
+          command:
+            - /kube-vip-cloud-provider
+            - --leader-elect-resource-name=kube-vip-cloud-controller
+          imagePullPolicy: Always
+          resources: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
