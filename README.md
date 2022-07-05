@@ -1,6 +1,6 @@
 # K3s Kubernetes with ContainerD for ZFS & ArgoCD with Renovate for GitOps via Ansible
 
-![](https://img.shields.io/github/v/release/reefland/ansible-k3s-argocd-renovate?display_name=tag&include_prereleases)
+![current version tag](https://img.shields.io/github/v/release/reefland/ansible-k3s-argocd-renovate?display_name=tag&include_prereleases)
 
 An Ansible role to provide an automated _K3s Lightweight Distribution of Kubernetes_ initial deployment. The goal is to have Anisble build just enough Kubernetes on each cluster node to get ArgoCD running.  Anisble will then be used to render various application manifest files that ArgoCD will deploy.  Once the initial deployment is successful you do not need Ansible to maintain the cluster applications - ArgoCD will be using an "App of Apps" pattern along with Renovate will handle this.  (Ansible can be reused in the future to upgrade K3s to a newer version).
 
@@ -22,10 +22,11 @@ Optionally Installed:
 
 * [kube-vip](https://kube-vip.chipzoller.dev/) for Kubernetes API Load Balancer
 * [kube-vip-cloud-provider](https://kube-vip.chipzoller.dev/) Load Balancer to replace [K3s Klipper](https://github.com/k3s-io/klipper-lb) Load Balancer for ingress traffic.
+* [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets) for true encrypted secrets safe for public git repositories (still recommend using private repository)
 * [Longhorn](https://longhorn.io/) distributed [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) as default storage class
 * [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) storage via **iSCSI** and **NFS** from [TrueNAS](https://www.truenas.com/)
 * [Kube-Prometheus Stack](https://github.com/prometheus-operator/kube-prometheus) collection of Kubernetes manifests, [Grafana](http://grafana.com/) dashboards, and [Prometheus rules](https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/) to provide easy to operate end-to-end Kubernetes cluster monitoring
-* [Traefik](https://traefik.io/) Load Balanced ingress deployed as a DaemonSet.
+* [Traefik](https://traefik.io/) HA Load Balanced ingress deployed as a DaemonSet.
   * IngressRoutes for the following will be generated and deployed:
     * Traefik Dashboard
     * ArgoCD Dashboard
@@ -49,6 +50,7 @@ Optionally Installed:
 * **Let's Encrypt** configuration requires you to define your challenge credentials and list domains for certificate generation
 * **Kube-vip** Load Balancer section will require you to specify a range of IP addresses available for use and a VIP address for the API Load Balancer
 * **Longhorn** Distributed storage is intended to be the default storage class, the `local-path` StorageClass is not installed
+* **Sealed Secrets** can be used to provide truly encrypted secrets considered safe to be committed to public git repositories.
 
 ---
 
@@ -98,6 +100,7 @@ Each of these links provide useful documentation details:
 * Review [Containerd Configuration Settings](docs/containerd-settings.md)
 * Review [ArgoCD Configuration Settings](docs/argocd-settings.md)
 * Review [Renovate Configuration Settings](docs/renovate-settings.md)
+* Review [Sealed Secrets Configuration Settings](docs/sealed-secrets-settings.md)
 * Review [CertManager Configuration](docs/cert-manager.md)
 * Review [Let's Encrypt Configuration](docs/lets-encrypt-settings.md)
 * Review [Kube-vip API Load Balancer Settings](docs/kube-vip-settings.md)
@@ -152,6 +155,7 @@ k3s:
     argocd_install_version: "4.9.7"
     renovate_install_version: "32.99.1"
     cert_manager_install_version: "v1.8.2"
+    sealed_secret_install_version: "v2.3.0"
     kube_vip_install_version: "v0.4.4"
     kube_vip_cloud_provider_install_version: "v0.0.2"
     traefik_install_version: "v10.22.0"
@@ -253,6 +257,7 @@ The idea behind pinning specific versions of software is so that an installation
 * `argocd_install_version` pings the ArgoCD Helm [Release](https://artifacthub.io/packages/helm/argo/argo-cd) (not application version)
 * `renovate_install_version` pins the Renovate Helm [Release](https://github.com/renovatebot/helm-charts/releases) (not application version)
 * `cert_manager_install_version` pins the Cert-manager Helm [Release](https://github.com/cert-manager/cert-manager/releases)
+* `sealed_secret_install_version` pins the Sealed Secrets Helm [Release](https://github.com/bitnami-labs/sealed-secrets/releases)
 * `kube_vip_install_version` pins the Application Container Tag [Release](https://github.com/kube-vip/kube-vip/releases)
 * `kube_vip_cloud_provider_install_version` pins the Application Container Tag [Release](https://github.com/kube-vip/kube-vip-cloud-provider/releases)
 * `traefik_install_version` pings the Traefik Helm [Release](https://github.com/traefik/traefik-helm-chart/tags) version.
