@@ -28,53 +28,53 @@ spec:
                   - key: node-role.kubernetes.io/control-plane
                     operator: Exists
       containers:
-      - args:
-        - manager
-        env:
-        - name: vip_arp
-          value: "true"
-        - name: port
-          value: "6443"
+        - name: kube-vip
+          image: ghcr.io/kube-vip/kube-vip:{{ kube_vip_install_version|default(install.kube_vip.install_version) }}
+          args:
+            - manager
+          env:
+            - name: vip_arp
+              value: "true"
+            - name: port
+              value: "6443"
 {%- if vip_interface is defined %}{{''}}
-        - name: vip_interface
-          value: {{ vip_interface }}{% endif %}{{''}}
-        - name: vip_cidr
-          value: "32"
-        - name: cp_enable
-          value: "true"
-        - name: cp_namespace
-          value: kube-system
-        - name: vip_ddns
-          value: "false"
-        - name: svc_enable
-          value: "true"
-        - name: vip_leaderelection
-          value: "true"
-        - name: vip_leaseduration
-          value: "5"
-        - name: vip_renewdeadline
-          value: "3"
-        - name: vip_retryperiod
-          value: "1"
-        - name: address
-          value: {{ vip_endpoint_ip }}
-        - name: vip_configmap
-          value: kubevip
-        image: ghcr.io/kube-vip/kube-vip:{{ kube_vip_install_version|default(install.kube_vip.install_version) }}
-        imagePullPolicy: Always
-        name: kube-vip
-        resources:
-          limits:
-            cpu: 100m
-            memory: 128Mi
-          requests:
-            cpu: 100m
-            memory: 128Mi
-        securityContext:
-          capabilities:
-            add:
-              - NET_ADMIN
-              - NET_RAW
+            - name: vip_interface
+              value: {{ vip_interface }}{% endif %}{{''}}
+            - name: vip_cidr
+              value: "32"
+            - name: cp_enable
+              value: "true"
+            - name: cp_namespace
+              value: kube-system
+            - name: vip_ddns
+              value: "false"
+            - name: svc_enable
+              value: "true"
+            - name: vip_leaderelection
+              value: "true"
+            - name: vip_leaseduration
+              value: "5"
+            - name: vip_renewdeadline
+              value: "3"
+            - name: vip_retryperiod
+              value: "1"
+            - name: address
+              value: {{ vip_endpoint_ip }}
+            - name: vip_configmap
+              value: kubevip
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - NET_RAW
       hostNetwork: true
       serviceAccountName: kube-vip
       tolerations:
