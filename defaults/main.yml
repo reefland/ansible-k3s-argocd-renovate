@@ -164,7 +164,7 @@ install:
 
     # if not enabled, then a new private key will be used each time Sealed Secrets is installed,
     # this is the default behavior.
-    use_pre_generated_private_key: true
+    use_pre_generated_private_key: false
 
   ###[ Kube-VIP Configuration Settings ]###########################################################
   # Kube-VIP provides HA Load Balancer for the API service and optionally LoadBalancer services
