@@ -19,6 +19,10 @@ spec:
     helm:
       # Reference: https://github.com/bitnami-labs/sealed-secrets/tree/helm-v2.3.0/helm/sealed-secrets
       values: |
+{% if install.sealed_secrets.use_pre_generated_private_key|default(false)|bool == true%}
+        secretName: {{sealed_secrets.use_pre_generated_private_key_name}}
+{% endif %}
+        namespace: {{install.sealed_secrets.namespace}}
         keyrenewperiod: "720h30m"     # Specifiy in hours and minutes, not days.
         resources:
           limits: {}

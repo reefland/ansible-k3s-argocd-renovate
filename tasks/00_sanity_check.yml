@@ -35,6 +35,26 @@
         - vip_lb_ip_range is undefined
         - install.kube_vip.lb.enabled|default(false)|bool == true
 
+    - name: Sealed Secrets Private Certificate check
+      fail:
+        msg: |
+          Since install.sealed_secrets.use_pre_generated_private_key is True
+
+          You must define variable "SEALED_SECRETS_PRIVATE_CERT_SECRET" within vars/secrets/main.yaml file.
+      when:
+        - install.sealed_secrets.use_pre_generated_private_key|default(false)|bool == true
+        - SEALED_SECRETS_PRIVATE_CERT_SECRET is undefined
+
+    - name: Sealed Secrets Private Key check
+      fail:
+        msg: |
+          Since install.sealed_secrets.use_pre_generated_private_key is True
+
+          You must define variable "SEALED_SECRETS_PRIVATE_KEY_SECRET" within vars/secrets/main.yaml file.
+      when:
+        - install.sealed_secrets.use_pre_generated_private_key|default(false)|bool == true
+        - SEALED_SECRETS_PRIVATE_KEY_SECRET is undefined
+
   when:
     - inventory_hostname == groups['k3s_control'][0]
   tags:

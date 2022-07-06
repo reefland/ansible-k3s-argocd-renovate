@@ -112,6 +112,12 @@ sealed_secrets:
   # Secrets to allow it to be overwritten by Sealed Secrets.
   replace_unsealed_secrets_annotation: "sealedsecrets.bitnami.com/managed=true"
 
+  # Define name of Sealed Secret Private to use
+  use_pre_generated_private_key_name: "sealed-secrets-key"
+  
+  # Define label to be applied to pre-generated private key
+  use_pre_generated_private_key_label: "sealedsecrets.bitnami.com/sealed-secrets-key: active"
+
 ###[ Let's Encrypt Configuration Settings ]########################################################
 lets_encrypt:
 
