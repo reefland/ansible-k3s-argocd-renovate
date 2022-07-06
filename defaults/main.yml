@@ -156,10 +156,12 @@ install:
     replace_unsealed_secrets: true
 
     # By default Sealed Secrets will create a new private key with each installation and secrets
-    # can only be decrypted in that cluster unless you manually manipulate the private key.  The
-    # settings below when enabled will instead install your standard private key for Sealed 
+    # can only be decrypted in that cluster unless you manually manipulate the private keys. The
+    # setting below when enabled will instead install your standard private key for Sealed 
     # Secrets which allows secrets to work across clusters and allows cluster to be restored from
-    # git repository and re-use secrets encrypted with your standard private key.
+    # git repository and re-use secrets encrypted with your standard private key. After initial
+    # 30 days, new signing keys will be generated automatically and used for new sealed secrets.
+
     # if not enabled, then a new private key will be used each time Sealed Secrets is installed,
     # this is the default behavior.
     use_pre_generated_private_key: true

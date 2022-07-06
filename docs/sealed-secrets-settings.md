@@ -35,18 +35,24 @@ _Without Sealed Secrets the default Kubernetes secret is only base64 encoded whi
 
 ---
 
+It is important to understand how Sealed Secrets work.  Every 30 days a new signing key is generated.  Any new sealed secrets created after that will be signed with the new key and not the private key below.  
+
+Overtime you will have many sealed secrets signed by different signing keys.  This is normal and a good thing.  However, older sealed secrets do not get re-encrypted with new keys.  It will be up to you to change passwords and re-seal (re-sign) with new keys from time to time.
+
 ## Review `vars/secrets/main.yml` for Sealed Secret Pregenerated Private Key
 
-This is completely optional.  You can have Sealed Secrets always generate a new private key with each installation.  However, no other installation will be able to decrypt the sealed secret YAML files.  By using your own Private Key you can share your sealed secrets across multiple clusters or restore a cluster from an existing git repository.
+This is completely optional:  
+
+You can have Sealed Secrets always generate a new private key with each installation.  However, no other installation will be able to decrypt the sealed secret YAML files.  By using your own Private Key you can share your initial sealed secrets across multiple clusters or restore a cluster from an existing git repository (you will need to extract all active signing keys). Remember every 30 days (default) new signing keys are generated automatically so multiple clusters will start to diverge.
 
 Your private certificate and key can be stored within `vars/secrets/main.yml`:
 
 ```yaml
 ###[ Sealed Secrets Private Key ]##################################################################
-# By default Sealed Secrets will generate its own private key upon installation.  This can can not
-# be shared acrosss clusters or used to restore your cluster and male existing sealed secrets 
-# reusable without your taking manual steps.  This section allows you to define your own reusable
-# private keys for Sealed Secrets to use.
+# By default Sealed Secrets will generate its own private key upon installation.  These can not
+# be shared across clusters or used to restore your cluster and make existing sealed secrets 
+# reusable without you taking manual steps.  This section allows you to define your own reusable
+# initial private keys for Sealed Secrets to use.
 
 SEALED_SECRETS_PRIVATE_CERT_SECRET: |
   -----BEGIN CERTIFICATE-----
@@ -146,14 +152,16 @@ The Sealed Secrets Settings are in variable namespace `install.sealed_secrets`.
 
 > Use Pregenerated Private Key for Sealed Secrets:
 
-* Have Sealed Secrets use your own pregenerated private certificate and private key that you are stored within an ansible secret.  The benefit of using a pregenerated key includes being able to share your generated sealed secrets across multiple environments or being able to use it as part of a recovery process getting a new cluster to use an existing repository.
+* Have Sealed Secrets use your own pregenerated private certificate and private key that you stored within an ansible secret.  The benefit of using a pregenerated key includes being able to share your initial sealed secrets across multiple environments or being able to use it as part of a recovery process getting a new cluster to use an existing repository. (After the initial 30 days (default) new signing are automatically generated)
 
   ```yaml
       # By default Sealed Secrets will create a new private key with each installation and secrets
-      # can only be decrypted in that cluster unless you manually manipulate the private key.  The
-      # settings below when enabled will instead install your standard private key for Sealed 
+      # can only be decrypted in that cluster unless you manually manipulate the private keys. The
+      # setting below when enabled will instead install your standard private key for Sealed 
       # Secrets which allows secrets to work across clusters and allows cluster to be restored from
-      # git repository and re-use secrets encrypted with your standard private key.
+      # git repository and re-use secrets encrypted with your standard private key. After initial
+      # 30 days, new signing keys will be generated automatically and used for new sealed secrets.
+
       # if not enabled, then a new private key will be used each time Sealed Secrets is installed,
       # this is the default behavior.
       use_pre_generated_private_key: true
