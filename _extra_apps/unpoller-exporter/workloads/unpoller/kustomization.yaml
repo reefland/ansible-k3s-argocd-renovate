@@ -19,11 +19,11 @@ configMapGenerator:
 
 # Create a Read-Only Unifi Console Admin, enter credentials below
 # Don't base64 encode secret values here
-secretGenerator:
-- name: unpoller-secret
-  literals:
-  - unifi-user=<USERNAME_HERE>
-  - unifi-pass=<PASSWORD_HERE>
+#secretGenerator:
+#- name: unpoller-secret
+#  literals:
+#  - unifi-user=<USERNAME_HERE>
+#  - unifi-pass=<PASSWORD_HERE>
 
 # Set namespace where Prometheus is located
 # Set label Prometheus uses for PodMonitor auto-discovery

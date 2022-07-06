@@ -7,43 +7,73 @@ NOTE: You will need to create a Read-Only admin account that is allowed to log i
 [Return to Application List](../)
 
 * Kustomize based ArgoCD application deployment
-* Deployed as a Deployment with configMapGenerator and secretGenerator
+* Deployed as a Deployment with configMapGenerator and secretGenerator (or see instructions to create secrets manually)
 
 Review `unpoller-exporter/kustomization.yaml`
 
 * Set the initial image version
 
-```yaml
-images:
-  - name: golift/unifi-poller
-    newTag: 2.1.3
-```
+  ```yaml
+  images:
+    - name: golift/unifi-poller
+      newTag: 2.1.3
+  ```
 
 * Review configMapGenerator file referenced in `./base/conf/up.conf`
   * This is only used to define how to reach Unifi Controller application
-  * No changed to this file should be needed
+  * No changes to this file should be needed
 
-```yaml
-generatorOptions:
-  disableNameSuffixHash: true
+  ```yaml
+  generatorOptions:
+    disableNameSuffixHash: true
 
-configMapGenerator:
-- name: unpoller-config-file
-  files:
-  - ./base/conf/up.conf
-```
+  configMapGenerator:
+  - name: unpoller-config-file
+    files:
+    - ./base/conf/up.conf
+  ```
 
-* Define the Read-Only ID and Password that Unpoller should log into Unifi Network Controller
+* Define the Read-Only ID and Password that Unpoller can log into Unifi Network Controller with:
 
-```yaml
-# Create a Read-Only Unifi Console Admin, enter credentials below
-# Don't base64 encode secret values here
-secretGenerator:
-- name: unpoller-secret
-  literals:
-  - unifi-user=<USERNAME_HERE>
-  - unifi-pass=<PASSWORD_HERE>
-```
+  * OPTION 1 - You can uncomment and define the secrets within `unpoller-exporter/kustomization.yaml` however, if you plan to add this file to ArgoCD or a code repository such as git this is not recommended instead see other options below.
+
+    ```yaml
+    # Create a Read-Only Unifi Console Admin, enter credentials below
+    # Don't base64 encode secret values here
+    secretGenerator:
+    - name: unpoller-secret
+      literals:
+      - unifi-user=<USERNAME_HERE>
+      - unifi-pass=<PASSWORD_HERE>
+    ```
+
+  * OPTION 2 - You can create a secrets file directly and apply this to the cluster to prevent your secret from being committed to the repository:
+
+    ```shell
+    $ kubectl -n unifi create secret generic unpoller-secret \
+      --from-literal=unifi-user=<USERNAME_HERE> \
+      --from-literal=unifi-pass=<PASSWORD_HERE> \
+      --dry-run=client -o yaml > unpoller-secret.yaml
+
+      # No output expected
+    ```
+
+    Manually apply secret to cluster:
+
+    ```shell
+    $ kubectl create -f unpoller-secret.yaml 
+    secret/unpoller-secret created
+    ```
+
+  * OPTION 3 - Convert secret created above into a Sealed Secret which is safe for code repository and ArgoCD:
+
+    ```shell
+    $ kubeseal --controller-namespace=sealed-secrets --format=yaml < unpoller-secret.yaml > unpoller-secret-sealed.yaml
+
+    # No output expected
+    ```
+
+    This sealed secret can be added to your code repository the way you handle your other sealed secrets or applied directly.
 
 * Set namespace where Prometheus is located
 * Set the Prometheus Auto-Discovery label used

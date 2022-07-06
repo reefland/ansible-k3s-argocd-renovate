@@ -12,11 +12,11 @@ configMapGenerator:
   - broker-endpoint="tcp://mosquitto.mosquitto:1883"
 
 # Don't base64 encode secret values here
-secretGenerator:
-- name: node-exporter-secret
-  literals:
-  - mqtt-user=<USERNAME_HERE>
-  - mqtt-pass=<PASSWORD_HERE>
+#secretGenerator:
+#- name: node-exporter-secret
+#  literals:
+#  - mqtt-user=<USERNAME_HERE>
+#  - mqtt-pass=<PASSWORD_HERE>
 
 # Set namespace where Prometheus is located
 # Set label Prometheus uses for ServiceMonitor auto-discovery

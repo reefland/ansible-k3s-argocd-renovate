@@ -19,15 +19,44 @@ images:
 
 * Set MQTT Username and password (not base64 encoded)
 
-```yaml
-# Don't base64 encode secret values here
-secretGenerator:
-- name: node-exporter-secret
-  literals:
-  - mqtt-user=<USERNAME_HERE>
-  - mqtt-pass=<PASSWORD_HERE>
+  * OPTION 1 - You can uncomment and define the secrets within `mosquitto-exporter/kustomization.yaml` however, if you plan to add this file to ArgoCD or a code repository such as git this is not recommended instead see other options below.
 
-```
+    ```yaml
+    # Don't base64 encode secret values here
+    secretGenerator:
+    - name: node-exporter-secret
+      literals:
+      - mqtt-user=<USERNAME_HERE>
+      - mqtt-pass=<PASSWORD_HERE>
+    ```
+
+  * OPTION 2 - You can create a secrets file directly and apply this to the cluster to prevent your secret from being committed to the repository:
+
+    ```shell
+    $ kubectl -n mosquitto create secret generic node-exporter-secret \
+      --from-literal=mqtt-user=<USERNAME_HERE> \
+      --from-literal=mqtt-pass=<PASSWORD_HERE> \
+      --dry-run=client -o yaml > node-exporter-secret.yaml
+
+      # No output expected
+    ```
+
+    Manually apply secret to cluster:
+
+    ```shell
+    $ kubectl create -f node-exporter-secret.yaml 
+    secret/node-exporter-secret created
+    ```
+
+  * OPTION 3 - Convert secret created above into a Sealed Secret which is safe for code repository and ArgoCD:
+
+    ```shell
+    $ kubeseal --controller-namespace=sealed-secrets --format=yaml < node-exporter-secret.yaml > node-exporter-secret-sealed.yaml
+
+    # No output expected
+    ```
+
+    This sealed secret can be added to your code repository the way you handle your other sealed secrets or applied directly.
 
 * Set namespace where Prometheus is located
 * Set the Prometheus Auto-Discovery label used
