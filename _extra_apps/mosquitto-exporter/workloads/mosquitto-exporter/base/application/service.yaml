@@ -14,7 +14,7 @@ spec:
     app.kubernetes.io/name: mosquitto-exporter
 
   ports:
-  -  port:  9234
-     targetPort:  9234
-     protocol:  TCP
-     name:  metrics
+    - port: 9234
+      targetPort: 9234
+      protocol: TCP
+      name: metrics

@@ -6,6 +6,7 @@ metadata:
 spec:
   serviceName: unifi-controller
   replicas: 1
+  selector: {}
   template:
     spec:
       containers:
@@ -46,10 +47,10 @@ spec:
             cpu: "512m"
             memory: "2048Mi"
         env:
-        - name: PUID
-          value: "1002"
-        - name: PGID
-          value: "998"
+          - name: PUID
+            value: "1002"
+          - name: PGID
+            value: "998"
         volumeMounts:
           - name: unifi-data
             mountPath: /config

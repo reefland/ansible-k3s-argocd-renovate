@@ -5,11 +5,11 @@ metadata:
   name: mosquitto
 spec:
   ports:
-  -  port:  1883
-     targetPort:  default
-     protocol:  TCP
-     name:  default
-  -  port:  9100
-     targetPort:  websocket
-     protocol:  TCP
-     name:  websocket
+  - port:  1883
+    targetPort: default
+    protocol:  TCP
+    name:  default
+  - port:  9100
+    targetPort: websocket
+    protocol:  TCP
+    name:  websocket

@@ -29,4 +29,3 @@ spec:
     - name: unifi-disc-l2
       port: 1900
       protocol: UDP
-  

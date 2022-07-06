@@ -12,5 +12,5 @@ spec:
       match: Host(`goldilocks.example.com`)
       priority: 10
       services:
-      - name: goldilocks-dashboard
-        port: 80
+        - name: goldilocks-dashboard
+          port: 80

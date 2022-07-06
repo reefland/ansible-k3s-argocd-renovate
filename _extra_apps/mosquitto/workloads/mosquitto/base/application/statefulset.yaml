@@ -6,6 +6,7 @@ metadata:
 spec:
   serviceName: mosquitto
   replicas: 1
+  selector: {}
   template:
     spec:
       containers:
@@ -26,14 +27,14 @@ spec:
             protocol: TCP
             
         volumeMounts:
-            - name: mosquitto-config
-              mountPath: /mosquitto/config/mosquitto.conf
-              subPath: mosquitto.conf
-            - name: mosquitto-password
-              mountPath: /mosquitto/config/passwd.txt
-              subPath: passwd.txt
-            - name: mosquitto-data
-              mountPath: /mosquitto/data/
+          - name: mosquitto-config
+            mountPath: /mosquitto/config/mosquitto.conf
+            subPath: mosquitto.conf
+          - name: mosquitto-password
+            mountPath: /mosquitto/config/passwd.txt
+            subPath: passwd.txt
+          - name: mosquitto-data
+            mountPath: /mosquitto/data/
 
       volumes:
         - name: mosquitto-config
