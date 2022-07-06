@@ -12,11 +12,11 @@
 
 ---
 
-## Review ``vars/secrets/main.yml`` for Traefik Authenticated Users
+## Review `vars/secrets/main.yml` for Traefik Authenticated Users
 
 ### Dashboard Authentication
 
-If you plan on using the Traefik dashboard and wish to require authentication. Then define the users who can access in file `vars/k3s_traefik_api_secrets.yml`:
+If you plan on using the Traefik dashboard and wish to require authentication. Then define the users who can access in file `vars/secrets/main.yml`:
 
 ```yaml
 # Define encoded Traefik users allowed to use the Traefik Dashboard (if enabled)
