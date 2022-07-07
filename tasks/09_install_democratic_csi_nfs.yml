@@ -75,6 +75,8 @@
 
   - name: Check-in Any New or Modified Files
     include_tasks: "checkin_argocd_repo_files.yml"
+    vars:
+      commit_message: "- Democratic CSI NFS"  # Keep under 30 chars
 
   when:
     - inventory_hostname == groups['k3s_control'][0]
