@@ -24,7 +24,6 @@
     ansible.builtin.include_tasks: "process_app_to_deploy.yml"
     loop:
       - { enabled: true, name: "argocd/git_repo" }
-      - { enabled: "{{install.sealed_secrets.enabled|default(false)|bool}}", name: "sealed-secrets" }
     when:
       - deploy_app.enabled == true
     loop_control:
