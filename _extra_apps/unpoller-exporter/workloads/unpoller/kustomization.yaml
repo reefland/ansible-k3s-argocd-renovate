@@ -13,9 +13,9 @@ generatorOptions:
   disableNameSuffixHash: true
 
 configMapGenerator:
-- name: unpoller-config-file
-  files:
-  - ./base/conf/up.conf
+  - name: unpoller-config-file
+    files:
+      - ./base/conf/up.conf
 
 # Create a Read-Only Unifi Console Admin, enter credentials below
 # Don't base64 encode secret values here
@@ -28,23 +28,23 @@ configMapGenerator:
 # Set namespace where Prometheus is located
 # Set label Prometheus uses for PodMonitor auto-discovery
 patches:
-- patch: |-
-    - op: replace
-      path: /metadata/namespace
-      value: monitoring
-    - op: replace
-      path: /metadata/labels/release
-      value: kube-prometheus-stack
-  target:
-    kind: PodMonitor
+  - patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: monitoring
+      - op: replace
+        path: /metadata/labels/release
+        value: kube-prometheus-stack
+    target:
+      kind: PodMonitor
 
-- patch: |-
-    - op: replace
-      path: /metadata/namespace
-      value: monitoring
-  target:
-    kind: ConfigMap
-    name: unpollerdashboard-*
+  - patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: monitoring
+    target:
+      kind: ConfigMap
+      name: unpollerdashboard-*
   
 commonLabels:
   app: unpoller
