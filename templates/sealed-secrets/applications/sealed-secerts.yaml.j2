@@ -25,8 +25,12 @@ spec:
         namespace: {{install.sealed_secrets.namespace}}
         keyrenewperiod: "720h30m"     # Specifiy in hours and minutes, not days.
         resources:
-          limits: {}
-          requests: {}
+          requests:
+            cpu: "25m"
+            memory: "12Mi"
+          limits:
+            cpu: "50m"
+            memory: "32Mi"
         metrics:
           ## Prometheus Operator ServiceMonitor configuration
           serviceMonitor:
