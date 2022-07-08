@@ -9,7 +9,7 @@ images:
 configMapGenerator:
 - name: node-exporter-configmap
   literals:
-  - broker-endpoint="tcp://mosquitto.mosquitto:1883"
+    - broker-endpoint="tcp://mosquitto.mosquitto:1883"
 
 # Don't base64 encode secret values here
 #secretGenerator:
