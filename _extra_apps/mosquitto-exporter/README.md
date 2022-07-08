@@ -23,11 +23,11 @@ images:
 
     ```yaml
     # Don't base64 encode secret values here
-    secretGenerator:
-    - name: node-exporter-secret
-      literals:
-      - mqtt-user=<USERNAME_HERE>
-      - mqtt-pass=<PASSWORD_HERE>
+    #secretGenerator:
+    #- name: node-exporter-secret
+    #  literals:
+    #  - mqtt-user=<USERNAME_HERE>
+    #  - mqtt-pass=<PASSWORD_HERE>
     ```
 
   * OPTION 2 - You can create a secrets file directly and apply this to the cluster to prevent your secret from being committed to the repository:
