@@ -28,7 +28,7 @@ argo-cd:
 #        enabled: true
 #        namespace: {{install.prometheus_operator.namespace}}
 #        additionalLabels:
-#           release: {{prometheus_op.release_name}}
+#          release: {{prometheus_op.release_name}}
 
 ###[ Dex Server Settings ]#####################################################
 # used to delegate authentication to external identity provider
@@ -55,7 +55,7 @@ argo-cd:
 #        enabled: true
 #        namespace: {{install.prometheus_operator.namespace}}
 #        additionalLabels:
-#           release: {{prometheus_op.release_name}}
+#          release: {{prometheus_op.release_name}}
 
       # -- Resource limits and requests for redis-exporter sidecar
 #      resources:
@@ -78,6 +78,7 @@ argo-cd:
     extraArgs:
       - --insecure
       - --rootpath={{install.argocd.dashboard.path}}
+      - --enable-gzip
 
     resources:
       limits:
@@ -105,17 +106,17 @@ argo-cd:
 #        enabled: true
 #        namespace: {{install.prometheus_operator.namespace}}
 #        additionalLabels:
-#           release: {{prometheus_op.release_name}}
+#          release: {{prometheus_op.release_name}}
 
 ###[ ArgoCD Repo Server Settings ]#############################################
   repoServer:
     name: repo-server
     resources:
       limits:
-        cpu: 150m
-        memory: 512Mi
+        cpu: 250m
+        memory: 1024Mi
       requests:
-        cpu: 100m
+        cpu: 15m
         memory: 512Mi
 
     ## Repo server metrics service configuration
@@ -125,7 +126,7 @@ argo-cd:
 #        enabled: true
 #        namespace: {{install.prometheus_operator.namespace}}
 #        additionalLabels:
-#           release: {{prometheus_op.release_name}}
+#          release: {{prometheus_op.release_name}}
 
 ###[ ApplicationSet Controller Settings ]######################################
   applicationSet:
@@ -139,7 +140,7 @@ argo-cd:
 #        enabled: true
 #        namespace: {{install.prometheus_operator.namespace}}
 #        additionalLabels:
-#           release: {{prometheus_op.release_name}}
+#          release: {{prometheus_op.release_name}}
 
     resources:
       limits:
@@ -161,7 +162,7 @@ argo-cd:
 #        enabled: true
 #        namespace: {{install.prometheus_operator.namespace}}
 #        additionalLabels:
-#           release: {{prometheus_op.release_name}}
+#          release: {{prometheus_op.release_name}}
 
     resources:
       limits:
