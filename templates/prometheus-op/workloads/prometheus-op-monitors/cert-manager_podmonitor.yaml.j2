@@ -15,7 +15,7 @@ spec:
       app.kubernetes.io/name: cert-manager
   namespaceSelector:
     matchNames:
-    - {{install.cert_manager.namespace}}
+      - {{install.cert_manager.namespace}}
   podMetricsEndpoints:
-  - port: http-metrics
-    path: /metrics
+    - port: http-metrics
+      path: /metrics
