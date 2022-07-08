@@ -1,8 +1,17 @@
 # Custom Alerts for Prometheus Alertmanager
 
-This is a collection of alerts to be added to AlertManger. Many of them I cherry picked from [Awesome Prometheus Alerts](https://awesome-prometheus-alerts.grep.to/), some of them needed to be tweaked.
+This is a collection of alerts to be added to Prometheus Alertmanger. Many of them I cherry picked from [Awesome Prometheus Alerts](https://awesome-prometheus-alerts.grep.to/), some of them needed to be tweaked.
 
 [Return to Application List](../)
+
+Custom Alerts can be added to the following applications, details below.
+
+* [Node Exporter Alerts](#node-alerts)
+* [ArgoCS Sync Alerts](#argocd-sync-alerts)
+* [Traefik Ingres Controller Alerts](#traefik-ingress-alerts)
+* [Longhorn Cluster Storage Alerts](#longhorn-cluster-storage-alerts)
+* [Cert-Manager Certificate Alerts](#cert-manager-certificate-alerts)
+* [Sealed Secrets Controller Alerts](#sealed-secrets-controller-alerts)
 
 ---
 
@@ -103,5 +112,14 @@ Example Alert sent to Slack Channel:
 
 Example Alert sent to Slack Channel:
 ![Cert-Manager Absent](cert-manager_custom_alert.png)
+
+---
+
+## Sealed Secrets Controller Alerts
+
+| Alert Description             | Condition              | Duration to Trigger  |
+|---                            | ---                    |---                   |
+| Higher Number of Unseal Errors| Non Zero Value         | 5 minutes            |
+| Sealed Secret Not Synced      | Synced Not True        | 5 minutes            |
 
 [Return to Application List](../)
