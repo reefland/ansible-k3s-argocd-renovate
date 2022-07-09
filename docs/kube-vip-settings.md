@@ -78,14 +78,16 @@ k3s_control:
   hosts:
     k3s01.example.com:                  # Master 1
       vip_interface: "enp0s3"
-      vip_endpoint_ip: "192.168.10.220"
-      vip_lb_ip_range: "cidr-global: 192.168.10.221/30"   # 4 Addresses
 
     k3s02.example.com:                  # Master 2
       vip_interface: "enp01sf0"
 
     k3s03.example.com:                  # Master 3
       vip_interface: "eth0"
+
+  vars:
+    vip_endpoint_ip: "192.168.10.220"
+    vip_lb_ip_range: "cidr-global: 192.168.10.221/30"   # 4 Addresses
 ```
 
 ### Define the Kube-vip API Load Balancer IP address
@@ -98,5 +100,19 @@ k3s_control:
 * You must define a variable named `vip_lb_ip_range` which contains the range of IP address range to use for the Load Balancer IP pool.  For simplicity a CIDR range is used above. Other methods can be used.
   * This variable must be defined and accessible to primary cluster host(master #1). Can be defined in the Ansible inventory file, host_var or group_var location.
 * Using the example `192.168.10.221/30` the CIDR range `/30` will use 4 addresses starting from `192.168.10.221` so `.222`, `.223`, `.224` will be assigned to the pool.  If you change this to a `/29` then 8 address will be used, a `/28` is 16 addresses, etc.
+
+---
+
+Once the Kube-vip API Load Balancer is in place this can be confirmed with `cluster-info`:
+
+```shell
+$ kubectl cluster-info
+
+Kubernetes control plane is running at https://192.168.10.220:6443
+CoreDNS is running at https://192.168.10.220:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+Metrics-server is running at https://192.168.10.220:6443/api/v1/namespaces/kube-system/services/https:metrics-server:https/proxy
+```
+
+* The API Server, CoreDNS and Metrics Server are bound the the shared VIP address and will failover to other master cluster nodes.
 
 [Back to README.md](../README.md)
