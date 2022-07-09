@@ -8,6 +8,7 @@
 * ArgoCD requires a Git repository (GitHub) to store its configuration.
   * A Private repository is recommended and supported by default.
   * This should be a empty repository dedicated for ArgoCD's usage.
+* See ArgoCD Project [FAQ](https://github.com/argoproj/argo-cd/blob/master/docs/faq.md)
 
 ### Initial Empty Repository
 
@@ -157,6 +158,21 @@ Once Traefik has been deployed the ArgoCD Dashboard URL path will resemble: `htt
 The following shows the contents of the ArgoCD dashboard when only ArgoCD and Renovate are installed.
 
 ![ArgoCD Initial Dashboard](../images/argocd_initial_install.png)
+
+---
+
+### Update ArgoCD CLI Executable
+
+While renovate will take care of upgrading ArgoCD application, there is nothing that takes care of keeping the `argocd` CLI utility updated.  To update the installed CLI to the version matched ArgoCD controller, you can just run the role with a single tag:
+
+```shell
+$ ansible-playbook -i k3s_test.yml k3s-argocd.yml --tags="update_argocd_cli"
+
+...
+TASK [k3s-argocd : Install ArgoCD CLI Executable]*********************************************
+Saturday 09 July 2022  15:07:28 -0400 (0:00:00.061)       0:00:02.404 ********* 
+changed: [testlinux.example.com]
+```
 
 ---
 

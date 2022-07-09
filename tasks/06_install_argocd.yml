@@ -128,3 +128,19 @@
     - install.argocd.enabled|default(false)|bool == true
   tags:
     - install_argocd
+
+# Install ArgoCD CLI on all Control Nodes
+- name: Install ArgoCD CLI Executable
+  ansible.builtin.shell: |
+    VERSION=$(kubectl get pods -n {{install.argocd.namespace}} -o jsonpath="{.items[*].spec.containers[*].image}" | tr -s '[[:space:]]' '\n' | grep argocd | uniq | cut -d ":" -f 2)
+    echo "Fetch ArgoCD ${VERSION}"
+    
+    curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/download/$VERSION/argocd-linux-amd64
+    
+    install -m 755 argocd /usr/local/bin/argocd
+  when: 
+    - inventory_hostname in groups['k3s_control']
+    - install.argocd.enabled|default(false)|bool == true
+  tags:
+    - install_argocd
+    - update_argocd_cli
