@@ -323,6 +323,11 @@ The following tags are not run by default but can be used to install this additi
 * `install_democratic_csi_nfs`
 * `install_prometheus_operator`
 
+Other handy tags for specific routines:
+
+* `update_kubeseal_cli` - will just update the `kubeseal` CLI to be version matched to the Sealed Secrets controller deployed.
+* `update_argocd_cli` - will just update the `argocd` CLI to be version matched to ArgoCD controller deployed.
+
 ---
 
 ## Grafana Dashboards
