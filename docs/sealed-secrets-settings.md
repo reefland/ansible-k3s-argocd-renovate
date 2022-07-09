@@ -265,6 +265,21 @@ kubectl get secrets sealed-secrets-key -n sealed-secrets -o jsonpath='{.data.tls
 
 ---
 
+### Update Kubeseal Executable
+
+While renovate will take care of upgrading Sealed Secrets application, there is nothing that takes care of keeping the `kubeseal` CLI utility updated.  To update the installed CLI to the version matched Sealed Secrets controller, you can just run the role with a single tag:
+
+```shell
+$ ansible-playbook -i k3s_test.yml k3s-argocd.yml --tags="update_kubeseal_cli"
+
+...
+TASK [k3s-argocd : Install KubeSeal Executable]*********************************************
+Saturday 09 July 2022  14:36:55 -0400 (0:00:00.058)       0:00:04.169 ********* 
+changed: [testlinux.example.com]
+```
+
+---
+
 ## Troubleshooting Sealed Secrets
 
 ### Reusing Sealed Secrets from Another Cluster
