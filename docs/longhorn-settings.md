@@ -39,6 +39,12 @@ The Longhorn Settings are in variable namespace `install.longhorn`.
       namespace: "longhorn-system"
   ```
 
+* Define ArgoCD Project to associate Longhorn with:
+
+  ```yaml
+      argocd_project: "storage"     # ArgoCD Project to associate this with
+  ```
+
 ---
 
 ### ZFS Zvol for Longhorn

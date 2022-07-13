@@ -280,6 +280,12 @@ The democratic-csi Settings are in variable namespace `install.democratic_csi`.
     namespace: "democratic-csi"
   ```
 
+* Define ArgoCD Project to associate democratic-csi with:
+
+  ```yaml
+    argocd_project: "storage"     # ArgoCD Project to associate this with
+  ```
+
 ### TrueNAS Connectivity Settings
 
 * Set http protocol settings to connect to TrueNAS (http or https), port number (80, 443), and if insecure connections are allowed:
