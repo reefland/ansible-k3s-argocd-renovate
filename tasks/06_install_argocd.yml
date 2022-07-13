@@ -68,6 +68,8 @@
       release_namespace: "{{install.argocd.namespace}}"
       chart_ref: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd"
       wait: yes
+    when:
+      - '"update_argocd_files" not in ansible_run_tags'
 
   - name: Create root ArgoCD Application
     kubernetes.core.k8s:
@@ -128,6 +130,7 @@
     - install.argocd.enabled|default(false)|bool == true
   tags:
     - install_argocd
+    - update_argocd_files
 
 # Install ArgoCD CLI on all Control Nodes
 - name: Install ArgoCD CLI Executable

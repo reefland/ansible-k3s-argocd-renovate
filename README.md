@@ -327,6 +327,7 @@ Other handy tags for specific routines:
 
 * `update_kubeseal_cli` - will just update the `kubeseal` CLI to be version matched to the Sealed Secrets controller deployed.
 * `update_argocd_cli` - will just update the `argocd` CLI to be version matched to ArgoCD controller deployed.
+* `update_argocd_files` - will process ArgoCD repository files like `install_argocd` does, but will not attempt to try and run Helm install on ArgoCD which would likely error out as it should not be managed by Helm anymore.
 
 ---
 
