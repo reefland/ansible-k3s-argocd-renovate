@@ -127,6 +127,14 @@ The Sealed Secrets Settings are in variable namespace `install.sealed_secrets`.
       namespace: "sealed-secrets"
   ```
 
+> Define ArgoCD Project to associate with:
+
+* This defines which ArgoCD application Sealed Secrets will be associated with.
+
+  ```yaml
+      argocd_project: "security"     # ArgoCD Project to associate this with
+  ```
+
 > Determine if existing secrets (unsealed) should be replaced by Sealed Secrets:
 
 * If you use this Ansible Role to create and operate the kubernetes cluster without Sealed Secrets enabled, and then enable Sealed Secrets at a later point any attempt to re-run role tasks again, you may see some failures when the task(s) process secrets already deployed

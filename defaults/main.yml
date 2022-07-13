@@ -120,7 +120,8 @@ install:
     # Select release to use:  https://github.com/cert-manager/cert-manager/releases
     install_version: "{{cert_manager_install_version|default('v1.8.2')}}"
 
-    namespace: "cert-manager"
+    namespace: "cert-manager"      # Add resources to this namespace
+    argocd_project: "security"     # ArgoCD Project to associate this with
 
   ###[ Let's Encrypt Certificate Configuration ]###################################################
   lets_encrypt:
@@ -146,7 +147,8 @@ install:
     # Select release to use: https://artifacthub.io/packages/helm/bitnami-labs/sealed-secrets
     install_version: "{{sealed_secret_install_version|default('v2.3.0')}}"
 
-    namespace: "sealed-secrets"                       # Add resources to this namespace
+    namespace: "sealed-secrets"    # Add resources to this namespace
+    argocd_project: "security"     # ArgoCD Project to associate this with
 
     # If a non-Sealed Secret (unsealed secret) already exists, by default it can NOT be replaced
     # by Sealed Secret version as it will fail with "Resource already exists and is not managed
@@ -238,7 +240,6 @@ install:
     install_version: "{{longhorn_install_version|default('v1.3.0')}}"
 
     namespace: "longhorn-system"   # Add resources to this namespace
-
     argocd_project: "storage"      # ArgoCD Project to associate this with
 
     # Longhorn Dashboard
@@ -303,9 +304,8 @@ install:
     # Select Release to use: https://github.com/democratic-csi/charts/releases
     install_version: "{{democratic_csi_install_version|default('0.13.1')}}"
 
-    namespace: "democratic-csi"
-
-    argocd_project: "storage"      # ArgoCD Project to associate this with
+    namespace: "democratic-csi"   # Add resources to this namespace
+    argocd_project: "storage"     # ArgoCD Project to associate this with
     
     truenas:
       # Define secrets in vars/secrets/main.yml

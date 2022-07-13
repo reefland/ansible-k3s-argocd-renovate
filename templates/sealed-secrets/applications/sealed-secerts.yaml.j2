@@ -11,7 +11,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "-2"  # Lower the number the sooner to deploy
     
 spec:
-  project: default
+  project: {{install.sealed_secrets.argocd_project|default("default")}}
   source:
     chart: sealed-secrets
     repoURL: https://bitnami-labs.github.io/sealed-secrets

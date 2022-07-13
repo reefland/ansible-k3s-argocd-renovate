@@ -21,13 +21,25 @@ There should not be a need to update any settings for Cert Manager. The Cert-man
 
  Available version number can be found [here](https://artifacthub.io/packages/helm/cert-manager/cert-manager).
 
-```yaml
-install:
-  cert_manager:
-    # Select release to use:  https://github.com/cert-manager/cert-manager/releases
-    install_version: "{{cert_manager_install_version|default('v1.7.1')}}"
+* Pin which version of democratic-csi to install. This value should be defined in the inventory file or group_vars file or can be updated directly here:
 
-    namespace: "cert-manager"
-```
+  ```yaml
+  install:
+    cert_manager:
+      # Select release to use:  https://github.com/cert-manager/cert-manager/releases
+      install_version: "{{cert_manager_install_version|default('v1.7.1')}}"
+  ```
+
+* Define the namespace to install Cert Manager into:
+
+  ```yaml
+      namespace: "cert-manager"      # Add resources to this namespace
+  ```
+
+* Define ArgoCD Project to associate Cert Manager with:
+
+  ```yaml
+      argocd_project: "security"     # ArgoCD Project to associate this with
+  ```
 
 [Back to README.md](../README.md)
