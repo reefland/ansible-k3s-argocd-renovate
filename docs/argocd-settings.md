@@ -273,4 +273,16 @@ The application / objects deployed via this Ansible process are assigned the fol
 |  5              | Longhorn Distributed Cluster Storage          |
 |  7              | Longhorn Custom Config (snapshots & backups)  |
 
+---
+
+## ArgoCD Application Projects
+
+ArgoCD allows applications to be grouped together into projects.  This is a better practice than leaving all applications within the `default` project.  The `default` project allows any application manifest to access any namespace, any source repository, can pretty much do anything. Individual projects can define limits on destination namespaces and source repositories that can be used for applications using the project. See [ArgoCD website](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#projects) for more information on Projects.
+
+The project files are stored in the git repository under `/applications/projects/<project-name>-project.yaml`
+
+| Project Name  | Applications Assigned to Project |
+|     :---:     | :---                             |
+| Storage       | Longhorn <br/> Longhorn config (snapshot and backup schedules)<br/> democratic-csi (NFS and iSCSI)  |
+
 [Back to README.md](../README.md)

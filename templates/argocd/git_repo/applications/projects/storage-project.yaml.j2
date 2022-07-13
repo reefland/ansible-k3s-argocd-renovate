@@ -1,0 +1,20 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: storage
+  namespace: argocd
+spec:
+  description: Project for Storage Applications
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  destinations:
+    - namespace: {{install.longhorn.namespace}}
+      server: https://kubernetes.default.svc
+    - namespace: {{install.democratic_csi.namespace}}
+      server: https://kubernetes.default.svc
+  sourceRepos:
+    - 'https://charts.longhorn.io'
+    - 'https://democratic-csi.github.io/charts/'
+    - '{{install.argocd.repository.url}}.git'

@@ -11,7 +11,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "5"  # Lower the number the sooner to deploy
     
 spec:
-  project: default
+  project: {{install.longhorn.argocd_project|default("default")}}
   source:
     chart: longhorn
     repoURL: https://charts.longhorn.io

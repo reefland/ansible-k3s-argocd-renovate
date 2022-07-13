@@ -239,6 +239,8 @@ install:
 
     namespace: "longhorn-system"   # Add resources to this namespace
 
+    argocd_project: "storage"      # ArgoCD Project to associate this with
+
     # Longhorn Dashboard
     dashboard:
       create_route: true           # Create Ingress Route to make accessible 
@@ -302,6 +304,8 @@ install:
     install_version: "{{democratic_csi_install_version|default('0.13.1')}}"
 
     namespace: "democratic-csi"
+
+    argocd_project: "storage"      # ArgoCD Project to associate this with
     
     truenas:
       # Define secrets in vars/secrets/main.yml
