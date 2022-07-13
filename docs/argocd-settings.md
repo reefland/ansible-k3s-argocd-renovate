@@ -109,13 +109,13 @@ The ArgoCD Settings are in variable namespace `install.argocd`.
       install_version: "{{argocd_install_version|default('4.5.10')}}"
   ```
 
-* Define the namespace to install ArgoCD into.
+* Define the namespace to install ArgoCD into:
 
   ```yaml
       namespace: "argocd"
   ```
 
-* Define Repository Connection Settings
+* Define Repository Connection Settings:
 
   ```yaml
       repository:
@@ -131,7 +131,7 @@ The ArgoCD Settings are in variable namespace `install.argocd`.
   * The `ARGOCD_REPO_USERNAME_SECRET` and `ARGOCD_REPO_PASSWORD_SECRET` values should be defined in `vars/secrets/main.yaml` file.
     * Be sure to to use `ansible-vault` to encrypt your secrets.
 
-* Define ArgoCD Dashboard settings
+* Define ArgoCD Dashboard settings:
 
   ```yaml
     # Default Dashboard URL:  https://k3s.{{ansible_domain}}/argocd/
@@ -279,10 +279,12 @@ The application / objects deployed via this Ansible process are assigned the fol
 
 ArgoCD allows applications to be grouped together into projects.  This is a better practice than leaving all applications within the `default` project.  The `default` project allows any application manifest to access any namespace, any source repository, can pretty much do anything. Individual projects can define limits on destination namespaces and source repositories that can be used for applications using the project. See [ArgoCD website](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#projects) for more information on Projects.
 
-The project files are stored in the git repository under `/applications/projects/<project-name>-project.yaml`
+* The project files are stored in the git repository under `/applications/projects/<project-name>-project.yaml`
+* Can can easily create more projects and assign your own applications to projects
 
 | Project Name  | Applications Assigned to Project |
 |     :---:     | :---                             |
-| Storage       | Longhorn <br/> Longhorn config (snapshot and backup schedules)<br/> democratic-csi (NFS and iSCSI)  |
+| security      | Sealed Secrets<br>App Secrets (secrets that are sealed)<br>Cert-manager |
+| storage       | Longhorn <br/> Longhorn config (snapshot and backup schedules)<br/> democratic-csi (NFS and iSCSI)  |
 
 [Back to README.md](../README.md)
