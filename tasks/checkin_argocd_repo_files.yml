@@ -37,4 +37,4 @@
         - push
 
   when:
-    - git_status.stdout.find("nothing to commit") == -1
+    - '("nothing to commit" not in git_status.stdout) or ("Untracked files" in git_status.stdout)' 
