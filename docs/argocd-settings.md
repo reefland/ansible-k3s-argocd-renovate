@@ -205,6 +205,26 @@ You should now see the ArgoCD login page.  The default credentials if you did no
 
 ---
 
+### Login with ArgoCD CLI
+
+This can be used to log into ArgoCD from a cluster node.
+
+```shell
+$ ARGOIP=$(kubectl get svc argocd-server -n argocd -o jsonpath='{.spec.clusterIP}')
+
+$ argocd login --plaintext ${ARGOIP} --username admin --password password
+
+'admin:login' logged in successfully
+Context '10.43.101.179' updated
+```
+
+The default credentials if you did not change them:
+
+* Username: `admin`
+* Password: `password`
+
+---
+
 ### Monitor ArgoCD Repository Logs
 
 The ArgoCD repository server might provide additional troubleshooting information:
