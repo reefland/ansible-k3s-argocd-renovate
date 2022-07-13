@@ -35,6 +35,12 @@ The Kube-vip Settings are in variable namespace `install.kube_vip`.
     install_version: "{{kube_vip_install_version|default('v0.4.2')}}"
   ```
 
+* Define ArgoCD Project to associate Kube-vip with:
+
+  ```yml
+    argocd_project: "infrastructure"          # ArgoCD Project to associate this with
+  ```
+
 ---
 
 ## Review `defaults/main.yml` for Kube-VIP Cloud Provider LB Settings

@@ -1,0 +1,16 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: infrastructure
+  namespace: argocd
+spec:
+  description: Project for Infrastructure Applications
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  destinations:
+    - namespace: kube-system
+      server: https://kubernetes.default.svc
+  sourceRepos:
+    - '{{install.argocd.repository.url}}.git'

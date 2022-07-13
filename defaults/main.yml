@@ -183,6 +183,8 @@ install:
     # Select release to use: https://github.com/kube-vip/kube-vip/releases
     install_version: "{{kube_vip_install_version|default('v0.4.4')}}"
 
+    argocd_project: "infrastructure"          # ArgoCD Project to associate this with
+
     # To use Kube-VIP Cloud Provider to enable using an address pool with Kube-VIP
     lb:
       # When enabled, you must define variable "vip_lb_ip_range" at host or group level within 

@@ -282,9 +282,10 @@ ArgoCD allows applications to be grouped together into projects.  This is a bett
 * The project files are stored in the git repository under `/applications/projects/<project-name>-project.yaml`
 * Can can easily create more projects and assign your own applications to projects
 
-| Project Name  | Applications Assigned to Project |
-|     :---:     | :---                             |
-| security      | Sealed Secrets<br>App Secrets (secrets that are sealed)<br>Cert-manager |
-| storage       | Longhorn <br/> Longhorn config (snapshot and backup schedules)<br/> democratic-csi (NFS and iSCSI)  |
+| Project Name   | Applications Assigned to Project | Description / Comments |
+|     :---:      | :---                             | :---                   |
+| infrastructure      | Kube-vip<br>Kube-vip Cloud Provider | Kubernetes infrastructure services such as Load Balancer providers. |
+| security       | Sealed Secrets<br>App Secrets (secrets that are sealed)<br>Cert-manager | Applications used to provide secuity features such as secrets and certificates. |
+| storage        | Longhorn <br/> Longhorn config (snapshot and backup schedules)<br/> democratic-csi (NFS and iSCSI)  | Kubernetes applications which provide storage services to the cluster such as NFS, iSCSI, block, etc.|
 
 [Back to README.md](../README.md)
