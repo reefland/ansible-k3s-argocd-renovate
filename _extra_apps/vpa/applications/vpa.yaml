@@ -12,7 +12,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "12"  # Lower the number the sooner to deploy
 spec:
-  project: default
+  project: monitoring
   source:
     chart: vpa
     repoURL: https://charts.fairwinds.com/stable

@@ -411,15 +411,15 @@ install:
 
           permissions:
             mode: '"0777"'
-            user_id_num: 0          # 0 = root, needs User UID not a name (API needs a number)
-            group_id_num: 0         # 0 = wheel, needs Group GUID not a name (API needs a number)
+            user_id_num: 0        # 0 = root, needs User UID not a name (API needs a number)
+            group_id_num: 0       # 0 = wheel, needs Group GUID not a name (API needs a number)
 
       # Creates a test claim manifest file
       test_claim:
-        enabled: true               # true = attempt nfs storage claim
-        mode: "ReadWriteOnce"       # storage claim access mode
-        size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
-        remove: true                # true = remove claim when test is completed (false leaves it alone)
+        enabled: true             # true = attempt nfs storage claim
+        mode: "ReadWriteOnce"     # storage claim access mode
+        size: "1Mi"               # size of claim to request ("1Mi" is 1 Mebibytes)
+        remove: true              # true = remove claim when test is completed (false leaves it alone)
 
   ###[ Prometheus Operator Installation Settings ]#################################################
   # This is not installed by default.  Can be installed later once the cluster is stable.
@@ -427,7 +427,8 @@ install:
     # Select release to use:  https://github.com/prometheus-community/helm-charts/releases
     install_version: "{{prometheus_op_install_version|default('36.2.0')}}"
 
-    namespace: "monitoring"
+    namespace: "monitoring"       # Add resources to this namespace
+    argocd_project: "monitoring"  # ArgoCD Project to associate this with
 
     prometheus:
       retention: "21d"            # How long to retain data

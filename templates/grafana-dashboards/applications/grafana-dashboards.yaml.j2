@@ -10,14 +10,14 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "17"  # Lower the number the sooner to deploy
 spec:
-  project: default
+  project: {{install.prometheus_operator.argocd_project|default("default")}}
 
   source:
-    repoURL:  {{install.argocd.repository.url}}.git
+    repoURL: {{install.argocd.repository.url}}.git
     targetRevision: HEAD
     path: workloads/grafana-dashboards
   destination:
-    server:  https://kubernetes.default.svc
+    server: https://kubernetes.default.svc
     namespace: {{install.prometheus_operator.namespace}}
 
   syncPolicy:

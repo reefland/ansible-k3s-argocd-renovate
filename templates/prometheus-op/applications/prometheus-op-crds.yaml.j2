@@ -11,7 +11,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "10"  # Lower the number the sooner to deploy
     
 spec:
-  project: default
+  project: {{install.prometheus_operator.argocd_project|default("default")}}
   source:
     repoURL: https://github.com/prometheus-community/helm-charts.git
     path: charts/kube-prometheus-stack/crds/

@@ -1,0 +1,20 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: monitoring
+  namespace: argocd
+spec:
+  description: Project for Monitoring Applications
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  destinations:
+    - namespace: {{install.prometheus_operator.namespace}}
+      server: https://kubernetes.default.svc
+    - namespace: kube-system
+      server: https://kubernetes.default.svc
+  sourceRepos:
+    - 'https://prometheus-community.github.io/helm-charts'
+    - 'https://github.com/prometheus-community/helm-charts.git'
+    - '{{install.argocd.repository.url}}.git'

@@ -10,7 +10,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "10"  # Lower the number the sooner to deploy
 spec:
-  project: default
+  project: monitoring
 
   source:
     repoURL: https://github.com/reefland/k3s-argocd.git
