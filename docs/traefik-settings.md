@@ -58,8 +58,18 @@ The Traefik Settings are in variable namespace `install.traefik`.
 
         # Select release to use: https://github.com/traefik/traefik-helm-chart/tags
         install_version: "{{traefik_install_version|default('v10.19.4')}}"
+  ```
 
+* The namespace Helm will use to install Traefik:
+
+  ```yml
         namespace: "traefik"                      # Add resources to this namespace
+  ```
+
+* Define ArgoCD Project to associate Traefik with:
+
+  ```yaml
+        argocd_project: "ingress"                 # ArgoCD Project to associate this with
   ```
 
 * Define if Traefik dashboard will be used and how it will be accessed.
