@@ -290,4 +290,8 @@ ArgoCD allows applications to be grouped together into projects.  This is a bett
 | security       | Sealed Secrets<br>App Secrets (secrets that are sealed)<br>Cert-manager<br>Let's Encrypt Certs | Applications used to provide secuity features such as secrets and certificates. |
 | storage        | Longhorn <br/> Longhorn config (snapshot and backup schedules)<br/> democratic-csi (NFS and iSCSI)  | Kubernetes applications which provide storage services to the cluster such as NFS, iSCSI, block, etc.|
 
+ArgoCD Projects can be reviewed within ArgoCD via Settings > Projects:
+
+![ArgoCD project listing under settings](../images/argocd_project_listing.png)
+
 [Back to README.md](../README.md)
