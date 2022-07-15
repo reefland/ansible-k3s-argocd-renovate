@@ -24,6 +24,12 @@ The Prometheus Operator Settings are in variable namespace `install.prometheus_o
     namespace: "monitoring"
   ```
 
+* Define ArgoCD Project to associate Prometheus with:
+
+  ```yaml
+      argocd_project: "monitoring"     # ArgoCD Project to associate this with
+  ```
+
 ---
 
 ## Review `defaults/main.yml` for Prometheus Settings
