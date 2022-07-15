@@ -10,7 +10,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "3"  # Lower the number the sooner to deploy
 spec:
-  project: default
+  project: {{install.traefik.argocd_project|default("default")}}
 
   source:
     repoURL: {{install.argocd.repository.url}}.git

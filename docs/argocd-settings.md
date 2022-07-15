@@ -285,7 +285,8 @@ ArgoCD allows applications to be grouped together into projects.  This is a bett
 | Project Name   | Applications Assigned to Project | Description / Comments |
 |     :---:      | :---                             | :---                   |
 | infrastructure      | Kube-vip<br>Kube-vip Cloud Provider | Kubernetes infrastructure services such as Load Balancer providers. |
-| security       | Sealed Secrets<br>App Secrets (secrets that are sealed)<br>Cert-manager | Applications used to provide secuity features such as secrets and certificates. |
+| ingress        | Traefik<br>Traefik config        | Traefik ingress rules, middlewares, basic authentication, certificates |
+| security       | Sealed Secrets<br>App Secrets (secrets that are sealed)<br>Cert-manager<br>Let's Encrypt Certs | Applications used to provide secuity features such as secrets and certificates. |
 | storage        | Longhorn <br/> Longhorn config (snapshot and backup schedules)<br/> democratic-csi (NFS and iSCSI)  | Kubernetes applications which provide storage services to the cluster such as NFS, iSCSI, block, etc.|
 
 [Back to README.md](../README.md)
