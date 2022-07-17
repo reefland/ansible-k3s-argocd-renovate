@@ -124,8 +124,9 @@ spec:
                   resources:
                     requests:
                       storage: {{install.prometheus_operator.prometheus.storage_claim.claim_size}}
-
+            # whichever retention hits first triggers cleanup
             retention: {{install.prometheus_operator.prometheus.retention}}
+            retentionSize: {{install.prometheus_operator.prometheus.retention_size}}
 {% if install.prometheus_operator.prometheus.dashboard.path is defined %}
             externalUrl: {{install.prometheus_operator.prometheus.dashboard.path}}
 {% endif %}

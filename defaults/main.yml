@@ -430,8 +430,9 @@ install:
     namespace: "monitoring"       # Add resources to this namespace
     argocd_project: "monitoring"  # ArgoCD Project to associate this with
 
-    prometheus:
+    prometheus:                   # Whichever retention hits first triggers cleanup
       retention: "21d"            # How long to retain data
+      retention_size: "40GB"      # What size to limit data (keep smaller than storage_claim.claim_size [see below])
 
       storage_claim:              # Define where and how data is stored
         access_mode: "ReadWriteOnce"
