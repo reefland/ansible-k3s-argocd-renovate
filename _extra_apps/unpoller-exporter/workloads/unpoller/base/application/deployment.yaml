@@ -50,4 +50,4 @@ spec:
       volumes:
         - name: unpoller-config
           configMap:
-            name: unpoller-config-fil
+            name: unpoller-config-file
