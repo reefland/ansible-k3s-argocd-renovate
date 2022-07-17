@@ -6,7 +6,7 @@ metadata:
   namespace: monitoring
   labels:
     name: unpoller-prometheus-podmonitor
-    release: kube-stack-prometheus
+    release: kube-prometheus-stack
 spec:
   selector:
     matchLabels:
