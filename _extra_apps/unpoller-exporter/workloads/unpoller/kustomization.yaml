@@ -25,8 +25,8 @@ configMapGenerator:
 #  - unifi-user=<USERNAME_HERE>
 #  - unifi-pass=<PASSWORD_HERE>
 
-# Set namespace where Prometheus is located
-# Set label Prometheus uses for PodMonitor auto-discovery
+# Patched below set the namespace where Prometheus is located and 
+# set the release label Prometheus uses for PodMonitor auto-discovery
 patches:
   - patch: |-
       - op: replace
