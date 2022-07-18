@@ -110,6 +110,8 @@ patches:
 Once configured correctly, the unpoller container logs will resemble something like:
 
 ```log
+$ kubectl logs -n unifi -l app=unpoller
+
 2022/06/19 22:26:36 [INFO] Prometheus exported at http://0.0.0.0:9130/ - namespace: unifipoller
 2022/06/19 22:26:54 [INFO] UniFi Measurements Exported. Site: 1, Client: 26, UAP: 2, USG/UDM: 0, USW: 4, DPI Site/Client: 0/0, Desc: 167, Metric: 1372, Err: 0, 0s: 349, Req/Total: 44.2ms / 50ms
 2022/06/19 22:27:24 [INFO] UniFi Measurements Exported. Site: 1, Client: 26, UAP: 2, USG/UDM: 0, USW: 4, DPI Site/Client: 0/0, Desc: 167, Metric: 1372, Err: 0, 0s: 350, Req/Total: 41.8ms / 49.3ms
