@@ -120,6 +120,15 @@ Once configured correctly, the unpoller container logs will resemble something l
 
 ---
 
+Grafana Dashboard for Unifi Controller USW Insights - traffic per port / Unpoller: [11312](https://grafana.com/grafana/dashboards/11312)
+
+This will be automatically installed as a configMap Dashboard for Grafana as part of the Unpoller Exporter deployment.
+
+![Grafana Dashboard for Unifi](grafana_dashboard_11312_port_summary.png)
+
+POE usage on a port:
+![Grafana Dashboard POE Usage](grafana_dashboard_11312_POE_usage.png)
+
 Grafana Dashboard for Unifi Controller UAP Insights / Unpoller: [11314](https://grafana.com/grafana/dashboards/11314)
 
 This will be automatically installed as a configMap Dashboard for Grafana as part of the Unpoller Exporter deployment.
