@@ -14,6 +14,9 @@ generatorOptions:
     grafana_dashboard: 
 
 configMapGenerator:
+  - name: unpollerdashboard-network-sites-11311
+    files: [ unpollerdashboard-network-sites-11311.json ]
+
   - name: unpollerdashboard-usw-insights-11312
     files: [ unpollerdashboard-usw-insights-11312.json ]
     
