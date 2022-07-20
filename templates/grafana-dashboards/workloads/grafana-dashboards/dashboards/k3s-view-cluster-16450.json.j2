@@ -2301,6 +2301,7 @@
           "uid": "${DS_PROMETHEUS}"
         },
         "definition": "label_values(kube_node_info, kubelet_version)",
+        "description": "Kubernetes Version",
         "hide": 2,
         "includeAll": false,
         "multi": false,
@@ -2310,7 +2311,7 @@
           "query": "label_values(kube_node_info, kubelet_version)",
           "refId": "StandardVariableQuery"
         },
-        "refresh": 1,
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
