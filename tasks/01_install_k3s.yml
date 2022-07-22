@@ -74,8 +74,7 @@
       install_k3s_exec_options: "{{install_k3s_exec_options + ' ' + k3s.cli_disable_loadbalancer_options|join(' ')}}"
     when:
       - inventory_hostname in groups['k3s_control']
-      - install.metallb.enabled|default(false)|bool == true or 
-        install.kube_vip.lb.enabled|default(false)|bool == true
+      - install.kube_vip.lb.enabled|default(false)|bool == true
 
   - name: Merge in containerd options to exec options if containerd is enabled
     set_fact:
@@ -97,6 +96,8 @@
     ansible.builtin.shell:
       cmd: "{{ install.k3s.cli_options|join(' ')}} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options}}\" /home/{{install.os.non_root_user.name}}/k3s_install.sh > /home/{{install.os.non_root_user.name}}/k3s_install.log"
       chdir: "/home/{{install.os.non_root_user.name}}"
+    notify:
+      - Restart k3s Service
 
   tags:
     - install_k3s
