@@ -1,12 +1,10 @@
 ---
 name: Question
 about: Ask a question to the maintainer
-title: ""
-labels: kind/question
-assignees: ""
+title: ''
+labels: question
+assignees: reefland
 ---
-
-# Details
 
 **Ask your question:**
 

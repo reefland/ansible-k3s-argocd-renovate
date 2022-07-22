@@ -1,25 +1,28 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ""
-labels: kind/bug
-assignees: ""
+title: ''
+labels: bug
+assignees: reefland
+
 ---
 
-# Details
+**Describe the bug**
+A clear and concise description of what the bug is.
 
-**What steps did you take and what happened:**
+**To Reproduce**
+Steps to reproduce the behavior:
 
-<!-- Note: This should be a clear and concise description of what the bug is. -->
+1. Go to '...'
+2. Click on '....'
+3. Scroll down to '....'
+4. See error
 
-**What did you expect to happen:**
+**Expected behavior**
+A clear and concise description of what you expected to happen.
 
-<!-- Note: Describe in as mush detail what you expect to happen. -->
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
 
-**Anything else you would like to add:**
-
-<!-- Note: Miscellaneous information that will assist in solving the issue. -->
-
-**Additional Information:**
-
-<!-- Note: Anything to give further context to the bug report. -->
+**Additional context**
+Add any other context about the problem here.

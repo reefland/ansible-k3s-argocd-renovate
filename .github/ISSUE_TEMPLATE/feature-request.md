@@ -1,21 +1,20 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: ""
-labels: kind/enhancement
-assignees: ""
+title: ''
+labels: enhancement
+assignees: reefland
+
 ---
 
-# Details
+**Is your feature request related to a problem? Please describe.**
+A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
-**Describe the solution you'd like:**
+**Describe the solution you'd like**
+A clear and concise description of what you want to happen.
 
-<!-- Note: A clear and concise description of what you want to happen. -->
+**Describe alternatives you've considered**
+A clear and concise description of any alternative solutions or features you've considered.
 
-**Anything else you would like to add:**
-
-<!-- Note: Miscellaneous information that will assist in solving the issue. -->
-
-**Additional Information:**
-
-<!-- Note: Anything to give further context to the requested new feature. -->
+**Additional context**
+Add any other context or screenshots about the feature request here.
