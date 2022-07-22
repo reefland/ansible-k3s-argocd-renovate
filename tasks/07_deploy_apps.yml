@@ -17,13 +17,14 @@
   - name: Process Deployable Enabled Applications
     include_tasks: "process_app_to_deploy.yml"
     loop:
-      - { enabled: true,  name: "cert-manager"}
-      - { enabled: true,  name: "lets-encrypt"}
-      - { enabled: "{{install.kube_vip.enabled|default(false)|bool}}",        name: "kube-vip"}
-      - { enabled: "{{install.kube_vip.lb.enabled|default(false)|bool}}",     name: "kube-vip-cloud-provider"}
-      - { enabled: "{{install.traefik.enabled|default(false)|bool}}",         name: "traefik"}
-      - { enabled: "{{install.longhorn.enabled|default(false)|bool}}",        name: "longhorn"}
-      - { enabled: "{{install.sealed_secrets.enabled|default(false)|bool}}",  name: "sealed-secrets" }
+      - { enabled: true, name: "cert-manager" }
+      - { enabled: true, name: "lets-encrypt" }
+      - { enabled: "{{install.upgrade_controller.enabled|default(false)|bool}}", name: "upgrade-controller" }
+      - { enabled: "{{install.kube_vip.enabled|default(false)|bool}}",           name: "kube-vip" }
+      - { enabled: "{{install.kube_vip.lb.enabled|default(false)|bool}}",        name: "kube-vip-cloud-provider" }
+      - { enabled: "{{install.traefik.enabled|default(false)|bool}}",            name: "traefik" }
+      - { enabled: "{{install.longhorn.enabled|default(false)|bool}}",           name: "longhorn" }
+      - { enabled: "{{install.sealed_secrets.enabled|default(false)|bool}}",     name: "sealed-secrets" }
     when:
       - deploy_app.enabled == true
     loop_control:

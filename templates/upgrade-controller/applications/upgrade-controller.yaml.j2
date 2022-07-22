@@ -1,0 +1,37 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: {{install.argocd.namespace}}
+  name: upgrade-controller
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"  # Lower the number the sooner to deploy
+spec:
+  project: system-upgrade
+
+  # system-upgrade-controller dynamically mucks with CRD
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: plans.upgrade.cattle.io
+      jsonPointers:
+        - /spec/versions
+
+  source:
+    repoURL: '{{install.argocd.repository.url}}.git'
+    targetRevision: HEAD
+    path: workloads/upgrade-controller/
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: system-upgrade
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true

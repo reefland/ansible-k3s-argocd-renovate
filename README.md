@@ -2,7 +2,7 @@
 
 ![current version tag](https://img.shields.io/github/v/release/reefland/ansible-k3s-argocd-renovate?display_name=tag&include_prereleases)
 
-An Ansible role to provide an automated _K3s Lightweight Distribution of Kubernetes_ initial deployment. The goal is to have Anisble build just enough Kubernetes on each cluster node to get ArgoCD running.  Anisble will then be used to render various application manifest files that ArgoCD will deploy.  Once the initial deployment is successful you do not need Ansible to maintain the cluster applications - ArgoCD will be using an "App of Apps" pattern along with Renovate will handle this.  (Ansible can be reused in the future to upgrade K3s to a newer version).
+An Ansible role to provide an automated _K3s Lightweight Distribution of Kubernetes_ initial deployment. The goal is to have Anisble build just enough Kubernetes on each cluster node to get ArgoCD running.  Anisble will then be used to render various application manifest files that ArgoCD will deploy.  Once the initial deployment is successful you do not need Ansible to maintain the cluster applications - ArgoCD will be using an "App of Apps" pattern along with Renovate will handle this.  
 
 The following enhancements are part of this Ansible role:
 
@@ -17,6 +17,9 @@ The following enhancements are part of this Ansible role:
   * This process updates the deployment manifest files which ArgoCD detects and will deploy the upgraded application for you.
   * ArgoCD and Renovate work together to help keep your application versions current and prevent configuration drift.
 * [Cert-manager](https://cert-manager.io/) with [Let's Encrypt](https://letsencrypt.org/) **wildcard certificates** for your domains generated against Let's Encrypt staging or prod (Cloudflare DNS validator).
+* [K3s System Upgrade Controller](https://github.com/rancher/system-upgrade-controller) to perform rolling upgrades to newer Kubernetes releases.  
+  * Renovate will create the Pull Request for your review and approval.
+  * Once approved, within minutes the controller will start to upgrade the master nodes one by one and then the worker nodes.
 
 Optionally Installed:
 
@@ -58,7 +61,7 @@ Optionally Installed:
 
 * Ubuntu 20.04.4 based [ZFS on Root](https://github.com/reefland/ansible-zfs_on_root) installation
 * TrueNAS Core 12.x
-* K3s v1.23.3 / v1.23.4+k3s1 / v1.23.5+k3s1
+* K3s v1.23.x - v1.24.x
 
 ---
 
@@ -101,6 +104,7 @@ Each of these links provide useful documentation details:
 * Review [ArgoCD Configuration Settings](docs/argocd-settings.md)
 * Review [Renovate Configuration Settings](docs/renovate-settings.md)
 * Review [Sealed Secrets Configuration Settings](docs/sealed-secrets-settings.md)
+* Review [System Upgrade Controller Configuration Settings](docs/upgrade-controller-settings.md)
 * Review [CertManager Configuration](docs/cert-manager.md)
 * Review [Let's Encrypt Configuration](docs/lets-encrypt-settings.md)
 * Review [Kube-vip API Load Balancer Settings](docs/kube-vip-settings.md)
@@ -134,6 +138,8 @@ k3s_control:
     vip_endpoint_ip: "192.168.10.220"
     vip_lb_ip_range: "cidr-global: 192.168.10.221/30"   # 4 Addresses pool
     traefik_lb_ip: "192.168.10.221"           # must be within cidr ip_range
+    k3s_labels:
+      - "k3s-upgrade=true"
 
 k3s_workers:
   hosts:
@@ -143,6 +149,7 @@ k3s_workers:
     k3s_labels:
       - "kubernetes.io/role=worker"
       - "node-type=worker"
+      - "k3s-upgrade=true"
 
 k3s:
   children:
@@ -156,6 +163,7 @@ k3s:
     renovate_install_version: "32.99.1"
     cert_manager_install_version: "v1.8.2"
     sealed_secret_install_version: "v2.3.0"
+    system_upgrade_controller_install_version: "v0.9.1"
     kube_vip_install_version: "v0.4.4"
     kube_vip_cloud_provider_install_version: "v0.0.2"
     traefik_install_version: "v10.22.0"
@@ -226,6 +234,7 @@ For simplicity I show the variables within the inventory file.  You can place th
     k3s_labels:
       - "kubernetes.io/role=worker"
       - "node-type=worker"
+      - "k3s-upgrade=true"
   ```
 
 * `K3S_TOKEN` is a secret required for nodes to be able to join the cluster.  The value of the secret can be anything you like.  The variable needs to be scoped to the installation group.  
@@ -258,6 +267,7 @@ The idea behind pinning specific versions of software is so that an installation
 * `renovate_install_version` pins the Renovate Helm [Release](https://github.com/renovatebot/helm-charts/releases) (not application version)
 * `cert_manager_install_version` pins the Cert-manager Helm [Release](https://github.com/cert-manager/cert-manager/releases)
 * `sealed_secret_install_version` pins the Sealed Secrets Helm [Release](https://github.com/bitnami-labs/sealed-secrets/releases)
+* `system_upgrade_controller_install_version` pins the application [Release](https://github.com/rancher/system-upgrade-controller/releases) version
 * `kube_vip_install_version` pins the Application Container Tag [Release](https://github.com/kube-vip/kube-vip/releases)
 * `kube_vip_cloud_provider_install_version` pins the Application Container Tag [Release](https://github.com/kube-vip/kube-vip-cloud-provider/releases)
 * `traefik_install_version` pings the Traefik Helm [Release](https://github.com/traefik/traefik-helm-chart/tags) version.
@@ -357,3 +367,9 @@ Additional Dashboards will also be deployed as ConfigMaps (modified from default
   * [API Server](./images/dashboard_dotdc-apiserver-1.png) - [Screen Shot #2](./images/dashboard_dotdc-apiserver-2.png)
   * [CoreDNS](./images/dashboard_dotdc-coredns-1.png) - [Screen Shot #2](./images/dashboard_dotdc-coredns-2.png)
 * Several from Kubernetes-Mixin (Deployed by Kube-Prometheus-Stack)
+
+---
+
+## Upgrading K3s Kubernetes
+
+The [K3s System Upgrade Controller](https://github.com/rancher/system-upgrade-controller) is deployed to the `system-upgrade` namespace and `system-upgrade` ArgoCD project.  It is used to perform rolling upgrades to newer Kubernetes releases when available.  See [Configuration Settings](docs/upgrade-controller-settings.md) for more details.

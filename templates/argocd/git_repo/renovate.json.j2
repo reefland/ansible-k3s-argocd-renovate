@@ -3,14 +3,33 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base"],
   "argocd": {
-  	"fileMatch": ["applications/.+\\.yaml$"]
+    "fileMatch": ["applications/.+\\.yaml$", "workloads/.+\\.yaml$"]
   },
   "regexManagers": [
     {
       "description": "Update Democratic-csi docker image references",
-      "fileMatch": ["^applications\\/democratic_csi_.*\\.yaml$"],
+      "fileMatch": ["^applications\\/democratic_csi_.*\\.ya?l$"],
       "matchStrings": ["image: (?<depName>.*?):(?<currentValue>.*?)\\s+"],
       "datasourceTemplate": "docker"
-  }]
+    },
+    {
+      "description": "Process various dependencies",
+      "fileMatch": ["workloads/.+\\.ya?ml$"],
+      "matchStrings": [
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\n.*?\"(?<currentValue>.*)\"\n"
+      ],
+      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    },
+    {
+      "description": "Process raw GitHub URLs",
+      "fileMatch": ["workloads/.+\\.ya?ml$"],
+      "matchStrings": [
+        "https:\\/\\/raw.githubusercontent.com\\/(?<depName>[\\w\\d\\-_]+\\/[\\w\\d\\-_]+)\\/(?<currentValue>[\\w\\d\\.\\-_]+)\\/.*"
+      ],
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver"
+    }
+  ]
 }
 {% endraw %}

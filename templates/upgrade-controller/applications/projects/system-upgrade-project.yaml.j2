@@ -1,0 +1,17 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{install.upgrade_controller.argocd_project}}
+  namespace: {{install.argocd.namespace}}
+spec:
+  description: Project for K3S System Upgrades
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  destinations:
+    - namespace: {{install.upgrade_controller.namespace}}
+      server: https://kubernetes.default.svc
+  sourceRepos:
+    - 'https://github.com/rancher/system-upgrade-controller.git'
+    - '{{install.argocd.repository.url}}.git'
