@@ -166,7 +166,7 @@ install:
 
     # if not enabled, then a new private key will be used each time Sealed Secrets is installed,
     # this is the default behavior.
-    use_pre_generated_private_key: false
+    use_pre_generated_private_key: "{{use_pre_generated_private_key|default(false)}}"
 
   ###[ Kube-VIP Configuration Settings ]###########################################################
   # Kube-VIP provides HA Load Balancer for the API service and optionally LoadBalancer services
@@ -227,6 +227,34 @@ install:
 
       # Define secrets in vars/secrets/main.yml
       allowed_users: "{{TRAEFIK_DASHBOARD_USERS_SECRET}}"    # Encoded users and passwords for basic authentication
+
+  ###[ System Upgrade Controller Settings ]########################################################
+  upgrade_controller:
+    # The upgrade controller will work in coordination with renovate to provide rolling upgrades
+    # to the nodes in your cluster.
+    enabled: true
+
+    # Select release to use: https://github.com/rancher/system-upgrade-controller/releases
+    install_version: "{{system_upgrade_controller_install_version|default('v0.9.1')}}"
+
+    namespace: "system-upgrade"               # Add resources to this namespace
+    argocd_project: "system-upgrade"          # ArgoCD Project to associate this with
+
+    control_node_upgrade_plan: |
+      #cordon: true
+      drain:
+        force: true
+        deleteLocalData: true
+        ignoreDaemonSets: true
+        skipWaitForDeleteTimeout: 60 # honor pod disruption budgets up to 60 seconds per pod then moves on
+
+    worker_node_upgrade_plan: |
+      #cordon: true
+      drain:
+        force: true
+        deleteLocalData: true
+        ignoreDaemonSets: true
+        skipWaitForDeleteTimeout: 60 # honor pod disruption budgets up to 60 seconds per pod then moves on
 
   ###[ Longhorn Installation Settings ]############################################################
   longhorn:
