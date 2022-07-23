@@ -15,7 +15,26 @@ spec:
   source:
     chart: goldilocks
     repoURL: https://charts.fairwinds.com/stable
-    targetRevision: 6.1.2
+    targetRevision: 6.1.4
+    helm:
+      values: |
+        controller:
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 25m
+              memory: 128Mi
+        dashboard:
+          replicaCount: 1
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 25m
+              memory: 64Mi
 
   destination:
     server: https://kubernetes.default.svc
