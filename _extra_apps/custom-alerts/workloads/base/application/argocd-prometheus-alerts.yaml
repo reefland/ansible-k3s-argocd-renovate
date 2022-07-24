@@ -17,13 +17,15 @@ spec:
             severity: warning
           annotations:                                          # Annotations added to triggered alert
             summary: "'{{ $labels.name }}' Application has sync status as '{{ $labels.sync_status }}'"
-        - alert: ArgoAppSyncFailed                              # Name of the alerting-rule
-          expr: argocd_app_sync_total{phase!="Succeeded"} == 1  # Triggered when argocd-application is not succeeded
-          for: 1m                                               # Duration for which expression should evaluate to true
+
+        - alert: ArgoAppStatusIssue                             # Name of the alerting-rule
+          expr: argocd_app_info{health_status!="Healthy"}       # Triggered when argocd-application is not Healthy
+          for: 2m                                               # Duration for which expression should evaluate to true
           labels:                                               # Labels added to triggered alert
             severity: warning
           annotations:                                          # Annotations added to triggered alert
-            summary: "'{{ $labels.name }}' Application has sync phase as '{{ $labels.phase }}'"
+            summary: "'{{ $labels.name }}' Application has Health Status '{{ $labels.health_status }}'"
+
         - alert: ArgoAppMissing                                 # Name of the alerting-rule
           expr: absent(argocd_app_info)                         # Triggered when argocd-application info is not found
           for: 15m
