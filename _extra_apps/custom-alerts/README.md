@@ -6,12 +6,24 @@ This is a collection of alerts to be added to Prometheus Alertmanger. Many of th
 
 Custom Alerts can be added to the following applications, details below.
 
+* [Prometheus Self Alerts](#prometheus-self-alerts)
 * [Node Exporter Alerts](#node-alerts)
 * [ArgoCS Sync Alerts](#argocd-sync-alerts)
 * [Traefik Ingres Controller Alerts](#traefik-ingress-alerts)
 * [Longhorn Cluster Storage Alerts](#longhorn-cluster-storage-alerts)
 * [Cert-Manager Certificate Alerts](#cert-manager-certificate-alerts)
 * [Sealed Secrets Controller Alerts](#sealed-secrets-controller-alerts)
+
+---
+
+## Prometheus Self Alerts
+
+These alerts override existing default alerts that have non-operator names and thus would not fire correctrly.
+
+| Alert Description           | Condition           | Duration to Trigger |
+|---                          | ---                 |---                  |
+| Prometheus Missing / Down   | Job Absent          | Instantly           |
+| Alertmanager Missing / Down | Job Absent          | Instantly           |
 
 ---
 
@@ -30,6 +42,7 @@ These alerts cover each node in the cluster.
 | Host Components too Hot | More than 75 Celsius | 5 minutes          |
 | Host Network Interface Saturated | More than 80% | 5 minutes        |
 | Host Clock Skew         | +/- 0.05 seconds    | 2 minutes           |
+| Host ZFS Pool Unexpected State   | Not "on-line" | Instantly        |
 
 Example Alert sent to Slack Channel:
 ![Node too Hot Example Alert](node_too_hot_custom_alert.png)
