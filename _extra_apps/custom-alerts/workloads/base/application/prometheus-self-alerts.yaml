@@ -1,0 +1,30 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: prometheus-alerts                                 
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack                              # Required label key and value
+spec:
+  groups:
+    # Modified From: https://awesome-prometheus-alerts.grep.to/rules
+    - name: PrometheusAlerts
+      rules:
+        - alert: PrometheusJobMissing
+          expr: absent(up{job=~".*prometheus.*prometheus.*"})
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: Prometheus job missing (instance {{ $labels.instance }})
+            description: "A Prometheus job has disappeared\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+        - alert: PrometheusAlertmanagerJobMissing
+          expr: absent(up{job=~".*alertmanager$"})
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: Prometheus AlertManager job missing (instance {{ $labels.instance }})
+            description: "A Prometheus AlertManager job has disappeared\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
