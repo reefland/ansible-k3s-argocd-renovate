@@ -99,3 +99,14 @@ spec:
           annotations:
             summary: Host clock skew (instance {{ $labels.instance }})
             description: "Clock skew detected. Clock is out of sync. Ensure NTP is configured correctly on this host.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+    - name: zfs-alerts
+      rules:
+        - alert: ZFSPoolUnexpectedState
+          expr: 'node_zfs_zpool_state{state!="online"} > 0'
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            summary: ZFS pool issue on (instance {{ $labels.instance }})
+            description: "A ZFS zpool \"{{ $labels.zpool }}\" on \"{{ $labels.instance }}\" is in a unexpected state: {{ $labels.state }}."
+
