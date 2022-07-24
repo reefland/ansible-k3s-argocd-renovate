@@ -46,7 +46,7 @@ spec:
       kind: Rule
       services:
       - kind: Service
-        name: {{prometheus_op.release_name}}-alertmanager
+        name: prometheus-alertmanager
         port: 9093
       middlewares:
       - name: alertmanager-stripprefix
