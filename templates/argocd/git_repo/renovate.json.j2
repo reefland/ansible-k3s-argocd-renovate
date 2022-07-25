@@ -3,10 +3,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base"],
   "argocd": {
-    "fileMatch": ["applications/.+\\.ya?l$", "workloads/.+\\.ya?l$"]
-  },
-  "kubernetes": {
-    "fileMatch": ["applications/.+\\.ya?l$", "workloads/.+\\.ya?l$"]
+    "fileMatch": ["applications/.+\\.yaml$", "workloads/.+\\.yaml$"]
   },
   "regexManagers": [
     {
