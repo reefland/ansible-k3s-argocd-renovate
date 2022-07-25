@@ -53,10 +53,10 @@ spec:
               - sourceLabels: [__name__]
                 action: drop
                 regex: 'container_spec.*'
-              # Drop cgroup metrics with no pod.
-              - sourceLabels: [id, pod]
-                action: drop
-                regex: '.+;'
+              # Drop cgroup metrics with no pod - Breaks networking metrics
+              #- sourceLabels: [id, pod]
+              #  action: drop
+              #  regex: '.+;'
               # Change instance IP to node name
               - action: replace
                 sourceLabels:
