@@ -1,0 +1,20 @@
+name: Question
+description: Ask a question to the maintainer
+title: "Question Title HERE"
+labels: [question]
+assignees:
+  - reefland
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to ask a question!
+
+  - type: textarea
+    id: desc
+    attributes:
+      label: Ask your question
+      description: Give a clear and concise query of what you want to ask.
+    validations:
+      required: true
