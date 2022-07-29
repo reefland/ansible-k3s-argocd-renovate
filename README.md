@@ -59,7 +59,8 @@ Optionally Installed:
 
 ## Environments Tested
 
-* Ubuntu 20.04.4 based [ZFS on Root](https://github.com/reefland/ansible-zfs_on_root) installation
+* Ubuntu 20.04.x LTS / 22.04 LTS
+  * Based [ZFS on Root](https://github.com/reefland/ansible-zfs_on_root) installation
 * TrueNAS Core 12.x
 * K3s v1.23.x - v1.24.x
 

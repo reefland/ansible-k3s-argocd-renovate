@@ -44,6 +44,8 @@ These alerts cover each node in the cluster.
 | Host Clock Skew         | +/- 0.05 seconds    | 2 minutes           |
 | Host ZFS Pool Unexpected State   | Not "on-line" | Instantly        |
 
+* NOTE: ZFS Pool Status metrics require older ZFS versions.  Recent ZFS version removed the metrics that node-exporter used to scrape metrics - [See GitHub Issue](https://github.com/prometheus/node_exporter/issues/2068).
+
 Example Alert sent to Slack Channel:
 ![Node too Hot Example Alert](node_too_hot_custom_alert.png)
 
