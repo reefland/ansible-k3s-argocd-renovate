@@ -259,7 +259,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "sum (container_memory_working_set_bytes{id=\"/\",node=~\"^$Node$\"}) / sum (machine_memory_bytes{node=~\"^$Node$\"}) * 100",
+          "expr": "sum(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / sum(node_memory_MemTotal_bytes) * 100",
           "format": "time_series",
           "interval": "10s",
           "intervalFactor": 1,
@@ -718,7 +718,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "sum (container_memory_working_set_bytes{id=\"/\",node=~\"^$Node$\"})",
+          "expr": "sum(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)",
           "format": "table",
           "interval": "10s",
           "intervalFactor": 1,
@@ -1096,8 +1096,8 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
@@ -1191,8 +1191,8 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
@@ -1768,8 +1768,8 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
@@ -1839,7 +1839,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "sum (container_memory_working_set_bytes{id=\"/\",node=~\"^$Node$\",namespace=~\"$Namespace\"}) by (instance)",
+          "expr": "sum(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) by (instance)",
           "format": "time_series",
           "interval": "10s",
           "intervalFactor": 4,
@@ -2351,7 +2351,7 @@
   "timezone": "browser",
   "title": "Kubernetes / Views / K3s Cluster",
   "uid": "1bI4P-xiz",
-  "version": 3,
+  "version": 4,
   "weekStart": ""
 }
 {% endraw %}
