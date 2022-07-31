@@ -12,20 +12,6 @@
     when:
       - install.os.remove_packages.enabled|default(false)|bool == true 
 
-  - name: Install Kubernetes packages for Ansible
-    apt:
-      name: "{{k3s.packages}}"
-      state: present
-    register: result
-    retries: 10             # Sometimes unattended upgrades is running
-    delay: 10
-    until: result is success
-
-  - name: Install Kubernetes pip3 packages for Ansible
-    pip:
-      name: "{{k3s.packages_pip}}"
-      state: present
-
   - name: Download k3s install script
     get_url:
       url: "{{k3s.url}}"

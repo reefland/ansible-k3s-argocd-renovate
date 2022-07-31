@@ -1,6 +1,24 @@
 ---
-# Try to fail early if required values are undefined.
+# Make sure required packages are installed
+- name: Check required Ansible Software Block
+  block:
+  - name: Install Kubernetes packages for Ansible
+    apt:
+      name: "{{k3s.packages}}"
+      state: present
+    register: result
+    retries: 10             # Sometimes unattended upgrades is running
+    delay: 10
+    until: result is success
 
+  - name: Install Kubernetes pip3 packages for Ansible
+    pip:
+      name: "{{k3s.packages_pip}}"
+      state: present
+  tags:
+    - always
+
+# Try to fail early if required values are undefined.
 - name: Sanity Check Variable Block
   block:
     - name: Variable vip_endpoint_ip is undefined check
