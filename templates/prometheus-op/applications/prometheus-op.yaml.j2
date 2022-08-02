@@ -180,6 +180,10 @@ spec:
 {% if install.prometheus_operator.prometheus.dashboard.path is defined %}
             externalUrl: {{install.prometheus_operator.prometheus.dashboard.path}}
 {% endif %}
+            additionalScrapeConfigsSecret:
+              enabled: true
+              name: additional-scrape-configs
+              key: prometheus-additional-scrape-configs.yaml
 
         # Graphana values
         # Reference: https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml

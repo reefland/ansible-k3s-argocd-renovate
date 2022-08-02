@@ -21,6 +21,11 @@
       kubectl get nodes --selector=node-role.kubernetes.io/control-plane=true -o jsonpath='{.items[*].status.addresses[?(@.type=="InternalIP")].address}'
     register: controlPlaneIPs
 
+  - name: Determine InternalIP's for Worker nodes
+    command: >
+      kubectl get nodes --selector=node-role.kubernetes.io/role=worker -o jsonpath='{.items[*].status.addresses[?(@.type=="InternalIP")].address}'
+    register: workerNodeIPs
+
   - name: Clone Remote ArgoCD Repository
     ansible.builtin.git:
       repo: "{{install.argocd.repository.url|urlsplit('scheme')}}://{{install.argocd.repository.username}}:{{install.argocd.repository.password}}@{{install.argocd.repository.url|urlsplit('hostname')}}{{install.argocd.repository.url|urlsplit('path')}}"
@@ -49,6 +54,7 @@
     ansible.builtin.include_tasks: process_secret.yml
     loop:
       - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-auth_secret.yaml", delete_src: "yes", enabled: "{{install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool}}" }
+      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-additional-scrape-configs_secret.yaml", delete_src: "yes", enabled: true }
       - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-alertmanager-auth_secret.yaml", delete_src: "yes", enabled: "{{install.prometheus_operator.alertmanager.dashboard.enable_basic_auth|default(false)|bool}}" }
       - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-alertmanager-config_secret.yaml", delete_src: "yes", enabled: true }
       - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-grafana-auth_secret.yaml", delete_src: "yes", enabled: "{{install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool}}" }
@@ -118,3 +124,34 @@
   meta: flush_handlers
   tags:
     - install_prometheus_operator
+
+### [ ZFS Exporter Block ]#########################################################################
+# ZFS Exporter will expose ZFS Metrics to Prometheus
+
+- name: Install or Upgrade ZFS Exporter
+  block:
+  - name: Install or Upgrade ZFS Exporter
+    ansible.builtin.shell: |
+      VERSION={{install.prometheus_operator.exporters.zfs_exporter.install_version}}
+      echo "Fetch ZFS Exporter ${VERSION}"
+      
+      wget {{prometheus_op.zfs_exporter.url}}/${VERSION}/zfs_exporter-$(echo ${VERSION}|cut -c2-).linux-amd64.tar.gz -O zfs_exporter.tar.gz
+      
+      tar -xvzf zfs_exporter.tar.gz
+
+      install -m 755 zfs_exporter-$(echo ${VERSION}|cut -c2-).linux-amd64/zfs_exporter {{prometheus_op.zfs_exporter.bin}}
+
+  - name: Install ZFS Exporter Systemd Service
+    template: 
+      src=systemd/zfs-exporter.service.j2
+      dest=/lib/systemd/system/zfs-exporter.service
+      mode=644
+    notify:
+      - Restart zfs-exporter service
+
+  when:
+    - install.prometheus_operator.exporters.zfs_exporter.enabled|default(false)|bool == true
+  tags:
+    - never
+    - install_prometheus_operator
+    - update_zfs_exporter

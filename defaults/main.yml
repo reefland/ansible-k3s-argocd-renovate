@@ -482,6 +482,13 @@ install:
         # Define secrets in vars/secrets/main.yml
         # Encoded users and passwords for basic authentication
         allowed_users: "{{PROMETHEUS_DASHBOARD_USERS_SECRET}}"
+    
+    exporters:
+      # Install ZFS Exporter for ZFS Monitoring
+      zfs_exporter:
+        enabled: "{{zfs_exporter_enabled|default(true)}}"
+        # Select Release to use: https://github.com/pdf/zfs_exporter/releases
+        install_version: "{{zfs_exporter_install_version|default('v2.2.5')}}"
 
     grafana:
       storage_claim:              # Define where and how data is stored

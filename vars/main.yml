@@ -155,3 +155,10 @@ prometheus_op:
     - lm-sensors                          # For Hardware temperature monitoring
 
   release_name: "kube-prometheus-stack"   # To find name of services
+
+  # Project URL
+  zfs_exporter:
+    url: "https://github.com/pdf/zfs_exporter/releases/download"
+    bin: "/usr/local/bin/zfs_exporter"
+    IP: "{{hostvars[inventory_hostname]['ansible_default_ipv4']['address']}}"
+    port: "9134"

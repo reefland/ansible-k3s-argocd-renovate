@@ -16,3 +16,9 @@
     daemon_reload: yes
     state: restarted
     name: rsyslog
+
+- name: Restart zfs-exporter service
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    state: restarted
+    name: zfs-exporter

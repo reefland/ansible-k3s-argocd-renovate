@@ -170,7 +170,8 @@ k3s:
     traefik_install_version: "v10.22.0"
     longhorn_install_version: "v1.3.0"
     democratic_csi_install_version: "0.13.1"
-    prometheus_op_install_version: "36.2.0"
+    prometheus_op_install_version: "38.0.3"
+    zfs_exporter_install_version: "v2.2.5"
 
     #[ Unique Per Cluster Settings ]############################################
     democratic_csi_parent_dataset: "main/k8s"
@@ -275,6 +276,7 @@ The idea behind pinning specific versions of software is so that an installation
 * `longhorn_install_version` pins the Longhorn Helm [Release](https://github.com/longhorn/longhorn/releases) version.
 * `democratic_csi_install_version` pins the Democratic CSI iSCSI and/or NFS Provisioner Helm [Release](https://github.com/democratic-csi/charts/releases) version.
 * `prometheus_op_install_version` pins the Kube Prometheus Stack Helm [Release](https://github.com/prometheus-community/helm-charts/releases) version
+* `zfs_exporter_install_version:` pins the ZFS Exporter used for ZFS File System Monitoring [Release](https://github.com/pdf/zfs_exporter/releases)
 
 ---
 
@@ -339,6 +341,7 @@ Other handy tags for specific routines:
 * `update_kubeseal_cli` - will just update the `kubeseal` CLI to be version matched to the Sealed Secrets controller deployed.
 * `update_argocd_cli` - will just update the `argocd` CLI to be version matched to ArgoCD controller deployed.
 * `update_argocd_files` - will process ArgoCD repository files like `install_argocd` does, but will not attempt to try and run Helm install on ArgoCD which would likely error out as it should not be managed by Helm anymore.
+* `update_zfs_exporter` - will just update the `zfs_exporter` utility deployed to nodes for ZFS filesystem monitoring to the version specified in inventory variable.
 
 ---
 

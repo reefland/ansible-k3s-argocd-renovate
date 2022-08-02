@@ -15,7 +15,7 @@ The Prometheus Operator Settings are in variable namespace `install.prometheus_o
 
   ```yml
   prometheus_operator:
-    install_version: "34.7.1"
+    install_version: "38.0.3"
   ```
 
 * The namespace Helm will use to install Kube Prometheus Stack:
@@ -102,6 +102,12 @@ NOTE: by default, any users defined in the Traefik Dashboard allowed user list i
 
 * If you need to restrict access to the Prometheus Web Interface to different set of users or require different passwords, then update the file as needed.
 * As stated in the comments this is not a shared Kubernetes secrets with Traefik. Once deployed a change in one will not be reflected in the other.  This is just to make initial setup easier.
+
+### Review `defaults/main.yml` for Prometheus Exporters
+
+Prometheus exporters are utilities that reside outside of Kubernetes that expose metrics that we wish to import into Prometheus.
+
+* Review [Prometheus Exporter Settings](prometheus-exporters-settings.md) for more details.
 
 ---
 
