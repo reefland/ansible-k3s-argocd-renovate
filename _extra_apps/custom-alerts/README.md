@@ -8,6 +8,7 @@ Custom Alerts can be added to the following applications, details below.
 
 * [Prometheus Self Alerts](#prometheus-self-alerts)
 * [Node Exporter Alerts](#node-alerts)
+* [Node ZFS Alerts](#node-zfs-alerts)
 * [ArgoCS Sync Alerts](#argocd-sync-alerts)
 * [Traefik Ingres Controller Alerts](#traefik-ingress-alerts)
 * [Longhorn Cluster Storage Alerts](#longhorn-cluster-storage-alerts)
@@ -35,19 +36,29 @@ These alerts cover each node in the cluster.
 |---                      | ---                 |---                  |
 | Host Out of Memory      | Less than 10%       | 5 minutes           |
 | Host Under Memory Pressure | High Page Fault Count | 5 minutes      |
-| Host out of Disk Space  | Less than 10% left  | 5 minutes           |
+| Host Out of Disk Space  | Less than 10% left  | 5 minutes           |
 | Host Disk almost Full   | Less than 20% left  | 5 minutes           |
 | Host High CPU Load      | More than 80% Avg   | 5 minutes           |
 | Host OOM Kill Detected  | More than zero      | Within Past 5 minutes |
 | Host Components too Hot | More than 75 Celsius | 5 minutes          |
 | Host Network Interface Saturated | More than 80% | 5 minutes        |
 | Host Clock Skew         | +/- 0.05 seconds    | 2 minutes           |
-| Host ZFS Pool Unexpected State   | Not "on-line" | Instantly        |
-
-* NOTE: ZFS Pool Status metrics require older ZFS versions.  Recent ZFS version removed the metrics that node-exporter used to scrape metrics - [See GitHub Issue](https://github.com/prometheus/node_exporter/issues/2068).
 
 Example Alert sent to Slack Channel:
 ![Node too Hot Example Alert](node_too_hot_custom_alert.png)
+
+---
+
+## Node ZFS Alerts
+
+These alerts cover each node in the cluster.
+
+| Alert Description              | Condition    | Duration to Trigger |
+|---                             | ---          |---                  |
+| Host ZFS Pool Unexpected State | Not "online" | 1 minute            |
+
+* NOTE: ZFS Pool Status metrics require `zfs_exporter` (See [Prometheus Exporters](../../docs/prometheus-exporters-settings.md))
+  * Recent ZFS version removed the metrics that `node-exporter` used to scrape metrics - [See GitHub Issue](https://github.com/prometheus/node_exporter/issues/2068).
 
 ---
 

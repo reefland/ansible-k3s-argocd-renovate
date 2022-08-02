@@ -7,3 +7,4 @@ resources:
   - traefik-prometheus-alerts.yaml
   - cert-manager-prometheus-alerts.yaml
   - sealed-secrets-prometheus-alerts.yaml
+  - node-zfs-alerts.yaml

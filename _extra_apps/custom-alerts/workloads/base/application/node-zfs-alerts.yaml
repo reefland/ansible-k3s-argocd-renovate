@@ -1,0 +1,22 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: node-zfs-alerts                                 
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack                              # Required label key and value
+spec:
+  groups:
+    - name: node-zfs-alerts                                     # Name of the prometheus rule group
+      rules:
+        - alert: ZFSPoolUnexpectedState
+          expr: 'zfs_pool_health > 0'
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: ZFS pool issue on (instance {{ $labels.instance }})
+            description: >
+              A ZFS zpool \"{{ $labels.pool }}\" on \"{{ $labels.instance }}\" is in a unexpected state: {{ $labels.state }}.
+              Health status codes [0: ONLINE, 1: DEGRADED, 2: FAULTED, 3: OFFLINE, 4: UNAVAIL, 5: REMOVED, 6: SUSPENDED].
