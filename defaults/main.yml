@@ -453,7 +453,9 @@ install:
   # This is not installed by default.  Can be installed later once the cluster is stable.
   prometheus_operator:
     # Select release to use:  https://github.com/prometheus-community/helm-charts/releases
-    install_version: "{{prometheus_op_install_version|default('36.2.0')}}"
+    install_version: "{{prometheus_op_install_version|default('39.4.0')}}"
+    # Select CRD release to use: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+    crd_version: "{{prometheus_op_crd_version|default('v0.58.0')}}"
 
     namespace: "monitoring"       # Add resources to this namespace
     argocd_project: "monitoring"  # ArgoCD Project to associate this with
