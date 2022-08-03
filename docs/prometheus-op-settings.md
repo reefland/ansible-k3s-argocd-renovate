@@ -18,7 +18,7 @@ The Prometheus Operator Settings are in variable namespace `install.prometheus_o
     install_version: "39.4.0"
   ```
 
-* The Kubernetes Custom Resource Definitions (CRD) for Kube Prometheus Stack are maintained by the [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator) Project and is assigned a different version number than the Kube Prometheus Stack Helm Chart.  These two versions need to be instep with each other.  Luckily renovate will monitor and upgrade both as they become available.  This page should state the version of the CRD to use: [https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+* The Kubernetes Custom Resource Definitions (CRD) for Kube Prometheus Stack are maintained by the [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator) Project and is assigned a different version number than the Kube Prometheus Stack Helm Chart.  These two versions need to be instep with each other.  Luckily renovate will monitor and upgrade both as they become available.  This page should state the version of the CRD to use: [https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack#upgrading-chart)
 
   ```yml
     crd_version: "v0.58.0"

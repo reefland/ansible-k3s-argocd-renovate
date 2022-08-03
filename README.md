@@ -53,7 +53,7 @@ Optionally Installed:
 * **Let's Encrypt** configuration requires you to define your challenge credentials and list domains for certificate generation
 * **Kube-vip** Load Balancer section will require you to specify a range of IP addresses available for use and a VIP address for the API Load Balancer
 * **Longhorn** Distributed storage is intended to be the default storage class, the `local-path` StorageClass is not installed
-* **Sealed Secrets** can be used to provide truly encrypted secrets considered safe to be committed to public git repositories.
+* **Sealed Secrets** can be used to provide truly encrypted secrets considered safe to be committed to public git repositories
 
 ---
 
@@ -171,6 +171,7 @@ k3s:
     longhorn_install_version: "v1.3.0"
     democratic_csi_install_version: "0.13.1"
     prometheus_op_install_version: "38.0.3"
+    prometheus_op_crd_version: "v0.58.0"
     zfs_exporter_install_version: "v2.2.5"
 
     #[ Unique Per Cluster Settings ]############################################
@@ -276,6 +277,7 @@ The idea behind pinning specific versions of software is so that an installation
 * `longhorn_install_version` pins the Longhorn Helm [Release](https://github.com/longhorn/longhorn/releases) version.
 * `democratic_csi_install_version` pins the Democratic CSI iSCSI and/or NFS Provisioner Helm [Release](https://github.com/democratic-csi/charts/releases) version.
 * `prometheus_op_install_version` pins the Kube Prometheus Stack Helm [Release](https://github.com/prometheus-community/helm-charts/releases) version
+* `prometheus_op_crd_version` pins the Prometheus Operator CRD [Release](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack#upgrading-chart) that Kube Prometheus Stack requires
 * `zfs_exporter_install_version:` pins the ZFS Exporter used for ZFS File System Monitoring [Release](https://github.com/pdf/zfs_exporter/releases)
 
 ---

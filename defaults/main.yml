@@ -454,7 +454,7 @@ install:
   prometheus_operator:
     # Select release to use:  https://github.com/prometheus-community/helm-charts/releases
     install_version: "{{prometheus_op_install_version|default('39.4.0')}}"
-    # Select CRD release to use: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+    # Select CRD release to use: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack#upgrading-chart
     crd_version: "{{prometheus_op_crd_version|default('v0.58.0')}}"
 
     namespace: "monitoring"       # Add resources to this namespace
