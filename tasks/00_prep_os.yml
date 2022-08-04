@@ -20,6 +20,15 @@
       validate: "visudo -cf %s"
     when:
       - install.os.allow_passwordless_sudo|default(false)|bool == true
+
+  - name: Configure node sysctl updates
+    sysctl:
+      name: "{{ item.key }}"
+      value: "{{ item.value }}"
+      state: "present"
+      reload: True
+    with_dict: "{{ install.os.sysctl_updates }}"
+
   tags:
     - prep_os
 
