@@ -5,6 +5,7 @@
 ## Important Notes
 
 * ArgoCD will be used to deploy & monitor changes to deployed applications.
+  * ArgoCD can send alerts and notifications to Slack, Email, Teams, etc.
 * ArgoCD requires a Git repository (GitHub) to store its configuration.
   * A Private repository is recommended and supported by default.
   * This should be a empty repository dedicated for ArgoCD's usage.
@@ -76,10 +77,15 @@ ARGOCD_REPO_USERNAME_SECRET: "oauth"
 
 # Github Personal Access Token
 ARGOCD_REPO_PASSWORD_SECRET: "<token-value>"
+
+# ArgoCD Slack Token for Notifications 
+ARGOCD_NOTIFICATIONS_SLACK_TOKEN_SECRET: "xoxb-....."
 ```
 
 * `ARGOCD_REPO_USERNAME_SECRET` typically is just any non-empty value and is not actually used in authentication.
 * `ARGOCD_REPO_PASSWORD_SECRET` is the value of the Personal Access Token.
+* `ARGOCD_NOTIFICATIONS_SLACK_TOKEN_SECRET` can be used to hold the value of the authentication token used for Slack Notifications.
+  * Feel free to add additionals secrets for connecting to Microsoft Teams, or Gmail, etc. You can name the secrets as you wish.
 
 **Be sure to encrypt all the secrets above when completed:**
 
@@ -146,6 +152,69 @@ The ArgoCD Settings are in variable namespace `install.argocd`.
   * The `initial_password` is `password`.
     * If you have access to `htpasswd` utility you can set a different initial password.
     * You should change the password upon first login to the dashboard.
+
+---
+
+* Define ArgoCD Notification settings:
+
+  * See ArgoCD Notifications Project [Documentation](https://argocd-notifications.readthedocs.io/en/stable/services/overview/) for details and ideas
+
+  ```yaml
+    # ArgoCD Notifications
+    notifications:
+      # Added to secret: argocd-notifications-secret
+      # Reference slack tokens, email credentials, etc.
+      # Define secrets in vars/secrets/main.yml
+      secret_contents: |
+        slack-token: "{{ARGOCD_NOTIFICATIONS_SLACK_TOKEN_SECRET|default('UNDEFINED_SLACK_TOKEN')}}"
+  ```
+
+  * The `secret_contents` is used to load secrets from the Ansible vault file into the ArgoCD notification controller secret.
+    * A secret named `argocd-notifications-secret` will be created by this Ansible script and populated with values you specify.
+      * If Sealed Secrets is enabled, then this will be encrypted and processed by the Sealed Secrets controller.
+    * This secret can be used to hold all notification secrets for Gmail, MS Teams, Telegram, etc.
+    * Should be one `key` and one `value` per line, the `key` can then be referenced in the ConfigMap (see below) by putting a dollar-sign (`$`) in-front of it such as `$slack-token`
+
+  ```yaml
+      # Reference secrets from above with "$<key-name> such as $slack-token"
+      configmap_contents: |
+        ## For more information: https://argocd-notifications.readthedocs.io/en/stable/subscriptions/
+        subscriptions: 
+          # Where to send notifications:
+          - recipients:
+              # Slack Channel:
+              - slack:argocd 
+            triggers:
+              # What to send notifications about:
+              - on-created
+              - on-deleted
+              - on-deployed
+              - on-health-degraded
+              - on-sync-failed
+              - on-sync-running
+              - on-sync-status-unknown
+              - on-sync-succeeded
+        notifiers:
+          # How to send notifications:
+          service.slack: |
+                token: $slack-token
+                username: ArgoCD
+                icon: "https://cncf-branding.netlify.app/img/projects/argo/icon/color/argo-icon-color.png"
+  ```
+
+  * The `configmap_contents` is used to populate a portion of Notification Controller configMap.
+    * A configMap named `argocd-notifications-cm` will be created by Helm / ArgoCD deployment based on the values defined in this section and the templates and triggers defined in the `values.yaml` installation file.
+    * The `subscriptions` block will define the `recipients` (where notifications go) and `triggers` (conditions required to send notification)
+      * Additional `recipients` can be added for other Slack channels
+      * Additional `recipients` can be added for Gmail, Microsoft Teams, etc which would reference the respective `notifiers` entry.
+    * The `notifiers` block defines how to send notifications.
+      * The `service.slack` can be reused to send to multiple slack channels (defined in `recipients`)
+        * Additional entries can be added to customize the `username` to Post as or the Icon to use with the `username`
+      * Additional `notifiers` can be added to define how to connect to Gmail, Microsoft Teams, etc.
+
+Example ArgoCD Slack Notification from Noritifcation Controller
+
+![Example ArgoCD Slack Notification](../images/argocd_notification_controller_slack.png)
 
 ---
 
@@ -223,6 +292,17 @@ The default credentials if you did not change them:
 * Username: `admin`
 * Password: `password`
 
+If ArgoCD Ingress is working, then you can use that for a simpler login method:
+
+```shell
+$ argocd login k3s.example.com --grpc-web-root-path /argocd
+
+Username: admin
+Password: 
+'admin:login' logged in successfully
+Context 'k3s.example.com/argocd' updated
+```
+
 ---
 
 ### Monitor ArgoCD Repository Logs
@@ -231,6 +311,18 @@ The ArgoCD repository server might provide additional troubleshooting informatio
 
 ```shell
 kubectl logs pod/argocd-repo-server-b884f4bc5-nsr8q -n argocd
+```
+
+* Adjust the pod name to match whatever your instance shows.
+
+---
+
+### Monitor ArgoCD Notification Logs
+
+The ArgoCD notifications controller might provide additional troubleshooting information while setting up additional notifications:
+
+```shell
+kubectl logs argocd-notifications-controller-6bdccc96b5-hk6dw -n argocd
 ```
 
 * Adjust the pod name to match whatever your instance shows.

@@ -56,6 +56,7 @@
     loop:
       - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/argocd_admin_secret.yaml", delete_src: "yes", process: "yes" }
       - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/argocd_secret.yaml", delete_src: "yes", process: "yes" }
+      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/argocd_notification_secret.yaml", delete_src: "yes", process: "yes" }
       - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/renovate_secret.yaml", delete_src: "yes", process: "yes" }
     loop_control:
       loop_var: deploy_secret

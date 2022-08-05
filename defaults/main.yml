@@ -19,6 +19,11 @@ install:
       packages:
         - "snapd"                             # Remove Snapd Demon, we don't need it.
 
+    # Updated to /etc/sysctl.conf
+    sysctl_updates:
+      fs.inotify.max_user_instances: 8192
+      fs.inotify.max_user_watches: 524288
+
     # Send all logs to a centralized logging server. This will be the 1st server defined
     # within the "k3s_control" group. All other cluster members will send logs to this system.
     # All logs from k3s hosts will be stored under: /var/log/central/<hostname>.log
@@ -98,6 +103,39 @@ install:
       # $ARGO_PWD=password
       # htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'
       initial_password: "$2a$10$qsjuZNhoJR7UHv/v/CryaOe0wewDzzH.wP.j1YAVLqgBXWZImdQ/u"
+
+    # ArgoCD Notifications
+    notifications:
+      # Added to secret: argocd-notifications-secret
+      # Reference slack tokens, email credentials, etc.
+      # Define secrets in vars/secrets/main.yml
+      secret_contents: |
+        slack-token: "{{ARGOCD_NOTIFICATIONS_SLACK_TOKEN_SECRET|default('UNDEFINED_SLACK_TOKEN')}}"
+
+      # Reference secrets from above with "$<key-name> such as $slack-token"
+      configmap_contents: |
+        ## For more information: https://argocd-notifications.readthedocs.io/en/stable/subscriptions/
+        subscriptions: 
+          # Where to send notifications:
+          - recipients:
+              # Slack Channel:
+              - slack:argocd 
+            triggers:
+              # What to send notifications about:
+              - on-created
+              - on-deleted
+              - on-deployed
+              - on-health-degraded
+              - on-sync-failed
+              - on-sync-running
+              - on-sync-status-unknown
+              - on-sync-succeeded
+        notifiers:
+          # How to send notifications:
+          service.slack: |
+                token: $slack-token
+                username: ArgoCD
+                icon: "https://cncf-branding.netlify.app/img/projects/argo/icon/color/argo-icon-color.png"
 
   ###[ Renovate Configuration Settings ]###########################################################
   # Renovate will monitor manifests deployed to ArgoCD repositories for updates and open a PR
