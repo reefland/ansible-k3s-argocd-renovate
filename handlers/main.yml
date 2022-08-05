@@ -20,5 +20,6 @@
 - name: Restart zfs-exporter service
   ansible.builtin.systemd:
     daemon_reload: yes
+    enabled: yes
     state: restarted
     name: zfs-exporter
