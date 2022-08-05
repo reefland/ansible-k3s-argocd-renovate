@@ -140,6 +140,8 @@
       tar -xvzf zfs_exporter.tar.gz
 
       install -m 755 zfs_exporter-$(echo ${VERSION}|cut -c2-).linux-amd64/zfs_exporter {{prometheus_op.zfs_exporter.bin}}
+    notify:
+      - Restart zfs-exporter service
 
   - name: Install ZFS Exporter Systemd Service
     template: 
