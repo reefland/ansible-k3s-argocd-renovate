@@ -12,6 +12,8 @@ metadata:
     
 spec:
   project:  {{install.democratic_csi.argocd_project|default("default")}}
+  revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
+
   source:
     chart: democratic-csi
     repoURL: https://democratic-csi.github.io/charts/

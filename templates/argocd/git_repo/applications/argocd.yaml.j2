@@ -12,6 +12,7 @@ metadata:
     
 spec:
   project: default
+  revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
 
   source:
     repoURL: {{install.argocd.repository.url}}.git

@@ -104,6 +104,12 @@ install:
       # htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'
       initial_password: "$2a$10$qsjuZNhoJR7UHv/v/CryaOe0wewDzzH.wP.j1YAVLqgBXWZImdQ/u"
 
+    # By default Kubernetes tracks 10 revisions of your deployments, statefulsets, etc.
+    # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#clean-up-policy
+    # Setting to zero deletes all history and disables the ability to rollback to a previous version.
+    # This value will be the default applied to all deployments by this Ansible script.
+    revision_History_Limit: "3"
+
     # ArgoCD Notifications
     notifications:
       # Added to secret: argocd-notifications-secret
@@ -129,7 +135,7 @@ install:
               - on-sync-failed
               - on-sync-running
               - on-sync-status-unknown
-              - on-sync-succeeded
+              # - on-sync-succeeded
         notifiers:
           # How to send notifications:
           service.slack: |

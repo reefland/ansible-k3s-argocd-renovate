@@ -12,6 +12,8 @@ metadata:
     
 spec:
   project: {{install.prometheus_operator.argocd_project|default("default")}}
+  revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
+
   source:
     chart: kube-prometheus-stack
     repoURL: https://prometheus-community.github.io/helm-charts

@@ -12,6 +12,8 @@ metadata:
     
 spec:
   project: {{install.longhorn.argocd_project|default("default")}}
+  revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
+
   source:
     chart: longhorn
     repoURL: https://charts.longhorn.io

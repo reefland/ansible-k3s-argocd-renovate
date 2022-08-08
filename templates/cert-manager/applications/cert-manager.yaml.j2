@@ -11,6 +11,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "-1"  # Lower the number the sooner to deploy
 spec:
   project: {{install.cert_manager.argocd_project|default("default")}}
+  revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
 
   source:
     repoURL: {{install.argocd.repository.url}}.git

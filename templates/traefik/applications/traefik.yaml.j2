@@ -11,6 +11,8 @@ metadata:
     argocd.argoproj.io/sync-wave: "1"  # Lower the number the sooner to deploy
 spec:
   project: {{install.traefik.argocd_project|default("default")}}
+  revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
+
   source:
     chart: traefik
     repoURL: https://helm.traefik.io/traefik
