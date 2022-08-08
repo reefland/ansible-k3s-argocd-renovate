@@ -21,17 +21,21 @@ spec:
       values: |
         deployment:
           kind: DaemonSet
+
         # We will define our own Ingress Route
         ingressRoute:
           dashboard:
             enabled: false
-        globalArguments: []
+
+        globalArguments:
+          - "--global.sendanonymoususage=false"
+          - "--global.checknewversion=false"
+
         additionalArguments:
           - "--api.dashboard=true"
+          - "--log.level=INFO"
           - "--serversTransport.insecureSkipVerify=true"
           - "--providers.kubernetesingress.ingressendpoint.publishedservice={{install.traefik.namespace}}/traefik"
-        #  - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
-        #  - "--entryPoints.web.http.redirections.entryPoint.scheme=https"
 
         ports:
           traefik:
@@ -44,6 +48,7 @@ spec:
             expose: true
             exposedPort: 80
             protocol: TCP
+            redirectTo: websecure
           websecure:
             port: 8443
             expose: true
