@@ -93,6 +93,32 @@ ansible-vault encrypt vars/secrets/main.yml
 
 Lastly make sure `use_pre_generated_private_key` is set to `true` in `defaults/main.yml` (see below) otherwise set this to `false`.
 
+NOTE: The pregenerated key still expires within 30 days.  Trying to use it to see a new installation after it expires will fail as seen below.
+
+```shell
+fatal: [testlinux.rich-durso.us]: FAILED! => changed=true 
+cmd: kubeseal --controller-name sealed-secrets --scope strict --format=yaml --controller-namespace sealed-secrets < "/home/kube/argocd/init_git_repo/workloads/secrets/argocd_admin_secret.yaml" > "/home/kube/argocd/init_git_repo/workloads/secrets/argocd_admin_secret-sealed.yaml"
+delta: '0:00:00.049207'
+end: '2022-08-08 19:35:39.534637'
+msg: non-zero return code
+rc: 1
+start: '2022-08-08 19:35:39.485430'
+stderr: 'error: failed to encrypt using an expired certificate on July 5, 2022'
+stderr_lines: <omitted>
+stdout: ''
+stdout_lines: <omitted>
+
+
+$ kubectl get secrets -n sealed-secrets sealed-secrets-key --show-labels
+NAME                 TYPE                DATA   AGE   LABELS
+sealed-secrets-key   kubernetes.io/tls   2      39m   sealedsecrets.bitnami.com/sealed-secrets-key=active
+
+
+$ kubectl delete secret sealed-secrets-key -n sealed-secrets
+```
+
+The pregenerated key had to be deleted.  You can experiment with adjusting the expiration with `-days 365` perhaps.
+
 ---
 
 ## Review `defaults/main.yml` for Sealed Secrets Settings
