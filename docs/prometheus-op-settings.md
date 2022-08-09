@@ -72,42 +72,16 @@ Prometheus Specific Settings are in variable namespace `install.prometheus_opera
 
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
         path: "/prometheus"       # URI Path for Ingress Route
-
-        # Define secrets in vars/secrets/main.yml
-        # Encoded users and passwords for basic authentication
-        allowed_users: "{{PROMETHEUS_DASHBOARD_USERS_SECRET}}"
   ```
 
 * The `ingress_name` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes.
-* The `allowed_users` maps to which users are allowed to access the Prometheus Web Interface.
 
 The Prometheus Web Interface URL path will resemble: `https://k3s.example.com/prometheus/`
 
 ![Prometheus Web Interface](../images/prometheus_web_interface.png)
 
-* By default basic authentication for the Prometheus Web Interface is enabled.  Individual users allowed to access the dashboard are defined in `var/secrets/main.yml` as follows:
-
-```yaml
-###[ Prometheus Dashboard Users ]##################################################################
-# Define encoded Prometheus Operator users allowed to use the Prometheus Web Interface (if enabled)
-# Multiple users can be listed below, one per line (indented by 2 spaces)
-# Created with "htpasswd" utility and then base64 encode that output such as:
-# $ htpasswd -nb [user] [password] | base64
-
-# Example of unique users from other dashboards:
-# PROMETHEUS_DASHBOARD_USERS: |
-#  dHJhZWZpa2FkbTokMnkkMTAkbHl3NWdYcXpvbFJCOUY4M0RHa2dMZW52YWJTcmpxUk9XbXNGUmZKa2ZQSlhBbzNDSmJHY08K
-
-# Use same users currently defined by Traefik dashboard:
-# NOTE: They do not share a common K8s secret. This will place the same information in two different
-#       secrets.
-PROMETHEUS_DASHBOARD_USERS_SECRET: "{{TRAEFIK_DASHBOARD_USERS_SECRET}}"
-```
-
-NOTE: by default, any users defined in the Traefik Dashboard allowed user list is allowed to log into the Prometheus Web Interface.
-
-* If you need to restrict access to the Prometheus Web Interface to different set of users or require different passwords, then update the file as needed.
-* As stated in the comments this is not a shared Kubernetes secrets with Traefik. Once deployed a change in one will not be reflected in the other.  This is just to make initial setup easier.
+* By default basic authentication for the Prometheus Web Interface is enabled
+* Any users defined in the Traefik Dashboard allowed user list is allowed to log into the Prometheus Web Interface
 
 ### Review `defaults/main.yml` for Prometheus Exporters
 
@@ -154,16 +128,10 @@ Prometheus exporters are utilities that reside outside of Kubernetes that expose
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/grafana/
         path: "/grafana"          # URI Path for Ingress Route
 
-        # Disabled by default as Grafana has its own login page
-        # Define secrets in vars/secrets/main.yml
-        # Encoded users and passwords for basic authentication
-        allowed_users: "{{GRAFANA_DASHBOARD_USERS_SECRET}}"
-
         # See vars/secret/main.yml for default Grafana Admin & Password values
   ```
 
 * The `ingress_name` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes.
-* The `enable_basic_auth` is set to false as Grafana already requires its own authentication by default.
 
 ### Review `vars/secrets/main.yml` for Grafana Default Admin Settings
 
@@ -229,43 +197,16 @@ Alertmanager specific settings are in variable namespace `install.prometheus_ope
 
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/alertmanager/
         path: "/alertmanager"     # URI Path for Ingress Route
-
-        # Encoded users and passwords for basic authentication
-        allowed_users: "{{prometheus_operator.alertmanager.dashboard_users}}"
   ```
 
 * The `ingress_name` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes.
-* The `allowed_users` maps to which users are allowed to access the Alertmanager Web Interface.
 
 The Alertmanager Web Interface URL path will resemble: `https://k3s.example.com/alertmanager/`
 
 ![Alertmanager Web Interface](../images/alertmanger_web_interface.png)
 
-* By default basic authentication for the Alertmanager Web Interface is enabled.  Individual users allowed to access the dashboard are defined in `var/secrets/main.yml` as follows:
-
-```yaml
-# Define encoded AlertManager users allowed to use the AlertManager Dashboard (if enabled)
-# Multiple users can be listed below, one per line (indented by 2 spaces)
-# Created with "htpasswd" utility and then base64 encode that output such as:
-# $ htpasswd -nb [user] [password] | base64
-
-# Example of unique users from other dashboards:
-#ALERTMANAGER_DASHBOARD_USERS: |
-#  dHJhZWZpa2FkbTokMnkkMTAkbHl3NWdYcXpvbFJCOUY4M0RHa2dMZW52YWJTcmpxUk9XbXNGUmZKa2ZQSlhBbzNDSmJHY08K
-
-# Use same users currently defined by Traefik dashboard:
-# NOTE: They do not share a common K8s secret. This will place the same information in two different
-#       secrets.
-ALERTMANAGER_DASHBOARD_USERS_SECRET: "{{TRAEFIK_DASHBOARD_USERS_SECRET}}"
-
-# Slack Webhook API URL used with AlertManager
-VAULT_SLACK_CONFIG_API_URL_SECRET: 'https://hooks.slack.com/services/<token>'
-```
-
-NOTE: by default, any users defined in the Traefik Dashboard allowed user list is allowed to log into the Alertmanager Web Interface.
-
-* If you need to restrict access to the Alertmanager Web Interface to different set of users or require different passwords, then update the file as needed.
-* As stated in the comments this is not a shared Kubernetes secrets with Traefik. Once deployed a change in one will not be reflected in the other.  This is just to make initial setup easier.
+* By default basic authentication for the Alertmanager Web Interface is enabled
+* Any users defined in the Traefik Dashboard allowed user list is allowed to log into the Alertmanager Web Interface
 
 ---
 
@@ -460,11 +401,9 @@ Should you need to remove Prometheus Operator:
 /workloads/grafana-dashboards/*
 /workloads/prometheus-op-monitors/*
 /namespaces/monitoring.yaml
-/secrets/prometheus-alertmanager-auth_secret-sealed.yaml
 /secrets/prometheus-alertmanager-config_secret-sealed.yaml
 /secrets/prometheus-auth_secret-sealed.yaml
 /secrets/prometheus-grafana-admin_secret-sealed.yaml
-/secrets/prometheus-grafana-auth_secret-sealed.yaml
 ```
 
 Once changes are committed to the repository, upon ArgoCD's next sync cycle all removed assets will be undeployed from the cluster.

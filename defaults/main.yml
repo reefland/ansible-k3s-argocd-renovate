@@ -197,7 +197,7 @@ install:
     # If a non-Sealed Secret (unsealed secret) already exists, by default it can NOT be replaced
     # by Sealed Secret version as it will fail with "Resource already exists and is not managed
     # by Sealed Secret" message. if replace_unsealed_secrets is "true" then the existing secret
-    # will be annotated as managed by Sealed Secrets which will allow the non-Seale dSecret to be
+    # will be annotated as managed by Sealed Secrets which will allow the non-Sealed Secret to be
     # replaced.
     replace_unsealed_secrets: true
 
@@ -329,9 +329,6 @@ install:
 
       # Default Dashboard URL:  https://k3s.{{ansible_domain}}/longhorn/
       path: "/longhorn"            # URI Path for Ingress Route
-
-      # Define secrets in vars/secrets/main.yml
-      allowed_users: "{{LONGHORN_DASHBOARD_USERS_SECRET}}"
 
     # Define where ZFS Zvol should be created for Longhorn storage
     zfs:                           # Combined "rpool/longhorn"
@@ -525,10 +522,6 @@ install:
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
         path: "/prometheus"       # URI Path for Ingress Route
 
-        # Define secrets in vars/secrets/main.yml
-        # Encoded users and passwords for basic authentication
-        allowed_users: "{{PROMETHEUS_DASHBOARD_USERS_SECRET}}"
-    
     exporters:
       # Install ZFS Exporter for ZFS Monitoring
       zfs_exporter:
@@ -560,11 +553,6 @@ install:
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/grafana/
         path: "/grafana"          # URI Path for Ingress Route
 
-        # Disabled by default as Grafana has its own login page
-        # Define secrets in vars/secrets/main.yml
-        # Encoded users and passwords for basic authentication
-        allowed_users: "{{GRAFANA_DASHBOARD_USERS_SECRET}}"
-
         # See vars/secret/main.yml for default Grafana Admin & Password values
 
     alertmanager:
@@ -585,10 +573,6 @@ install:
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/alertmanager/
         path: "/alertmanager"     # URI Path for Ingress Route
 
-        # Define secrets in vars/secrets/main.yml
-        # Encoded users and passwords for basic authentication
-        allowed_users: "{{ALERTMANAGER_DASHBOARD_USERS_SECRET}}"
-      
       # Configuration Values for Alertmanager Notifications
       config_values: |
         global:

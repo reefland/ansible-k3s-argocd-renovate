@@ -1,15 +1,5 @@
 ---
 {% if install.traefik.dashboard.create_route|default(false)|bool == true%}
-{% if install.traefik.dashboard.enable_basic_auth|default(false)|bool == true%}
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: dashboard-basic-auth
-  namespace: {{install.traefik.namespace}}
-spec:
-  basicAuth:
-    secret: traefik-authsecret
-{% endif %}
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
@@ -22,9 +12,11 @@ spec:
   routes:
     - match: Host(`{{install.traefik.dashboard.ingress_name|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.traefik.dashboard.path|default("/dashboard")}}`) || PathPrefix(`/api`))
       kind: Rule
-{% if install.traefik.dashboard.enable_basic_auth|default(false)|bool == true%}
       middlewares:
-        - name: dashboard-basic-auth
+        - name: compress
+          namespace: {{install.traefik.namespace}}
+{% if install.traefik.dashboard.enable_basic_auth|default(false)|bool == true%}
+        - name: traefik-basic-auth
           namespace: {{install.traefik.namespace}}
 {% endif %}
       services:

@@ -53,11 +53,8 @@
   - name: Apply Prometheus Operator Config Secrets
     ansible.builtin.include_tasks: process_secret.yml
     loop:
-      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-auth_secret.yaml", delete_src: "yes", enabled: "{{install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool}}" }
       - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-additional-scrape-configs_secret.yaml", delete_src: "yes", enabled: true }
-      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-alertmanager-auth_secret.yaml", delete_src: "yes", enabled: "{{install.prometheus_operator.alertmanager.dashboard.enable_basic_auth|default(false)|bool}}" }
       - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-alertmanager-config_secret.yaml", delete_src: "yes", enabled: true }
-      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-grafana-auth_secret.yaml", delete_src: "yes", enabled: "{{install.prometheus_operator.grafana.dashboard.enable_basic_auth|default(false)|bool}}" }
       - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-grafana-admin_secret.yaml", delete_src: "yes", enabled: true }
     loop_control:
       loop_var: deploy_secret

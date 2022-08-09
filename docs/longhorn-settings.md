@@ -152,35 +152,16 @@ Longhorn will automatically create backups of volumes at the recurring job sched
 
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/longhorn/
         path: "/longhorn"            # URI Path for Ingress Route
-
-        # Define secrets in vars/secrets/main.yml
-        allowed_users: "{{LONGHORN_DASHBOARD_USERS_SECRET}}"
   ```
 
 * The `ingress_name` should reference the DNS which points to the Traefik Load Balancer IP address used for all Traefik ingress routes. If a name is not provided it will default to hostname `k3s` and use the domain of the Kubernetes Linux host.
-* The `allowed_users` maps to which users are allowed to access the Longhorn Dashboard (see more below).
 
 The Longhorn Dashboard URL path will resemble: `https://k3s.example.com/longhorn/` (trailing slash is required.)
 
 ![Longhorn Storage Dashboard](../images/longhorn-dashboard.png)
 
-* By default basic authentication for the dashboard is enabled.  Individual users allowed to access the dashboard are defined in `var/secrets/main.yml` as follows:
-
-```yaml
-###[ Longhorn Dashboard Users ]####################################################################
-# See Traefik Dashboard Users above for details on how to create dashboard users.
-
-#LONGHORN_DASHBOARD_USERS_SECRET: |
-#  dHJhZWZpa2FkbTokMnkkMTAkbHl3NWdYcXpvbFJCOUY4M0RHa2dMZW52YWJTcmpxUk9XbXNGUmZKa2ZQSlhBbzNDSmJHY08K
-
-# NOTE: Kubernetes secrets do not span namespaces. This will be an isolated user list from Traefik
-LONGHORN_DASHBOARD_USERS_SECRET: "{{TRAEFIK_DASHBOARD_USERS_SECRET}}"   # Same as Traefik Accounts
-```
-
-NOTE: by default, any users defined in the Traefik Dashboard allowed user list is allowed to log into the Longhorn dashboard.
-
-* If you need to restrict access to the dashboard to different set of users or require different passwords, then update the file as needed.
-* As stated in the comments this is not a shared Kubernetes secrets with Traefik. Once deployed a change in one will not be reflected in the other.  This is just to make initial setup easier.
+* By default basic authentication for the dashboard is enabled
+* Any users defined in the Traefik Dashboard allowed user list is allowed to log into the Longhorn dashboard
 
 ---
 

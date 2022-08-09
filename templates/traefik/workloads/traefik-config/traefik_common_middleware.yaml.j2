@@ -1,0 +1,38 @@
+# Traefik Configuration: "--providers.kubernetescrd.allowCrossNamespace=true"
+# Allows for common middlewares to be shared across namespaces
+
+---
+# Middleware will compress stream back to client with GZIP.
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: compress
+  namespace: {{install.traefik.namespace}}
+spec:
+  compress: {}
+
+---
+# Shared Basic Authentication
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: traefik-basic-auth
+  namespace: {{install.traefik.namespace}}
+spec:
+  basicAuth:
+    secret: traefik-authsecret
+
+---
+# Enable X Forwarded HTTPS Protocol
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: x-forward-https-headers
+  namespace: {{install.traefik.namespace}}
+spec:
+  headers:
+    customRequestHeaders:
+      X-Forwarded-Proto: "https"

@@ -1,25 +1,3 @@
-{% if install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool == true%}
-# Secret moved to prometheus_secret.yaml
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: prometheus-basic-auth
-  namespace: {{install.prometheus_operator.namespace}}
-spec:
-  basicAuth:
-    secret: prometheus-authsecret
-{% endif %}
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: svc-prometheus-headers
-  namespace: {{install.prometheus_operator.namespace}}
-spec:
-  headers:
-    customRequestHeaders:
-      X-Forwarded-Proto: "https"
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
@@ -44,12 +22,16 @@ spec:
     - match: Host(`{{install.prometheus_operator.prometheus.dashboard.ingress_name|default(ansible_fqdn)|lower}}`) && (PathPrefix(`{{install.prometheus_operator.prometheus.dashboard.path|default("/prometheus")}}`))
       kind: Rule
       services:
-      - kind: Service
-        name: prometheus-prometheus
-        port: 9090
+        - kind: Service
+          name: prometheus-prometheus
+          port: 9090
       middlewares:
-      - name: prometheus-stripprefix
-      - name: svc-prometheus-headers
+        - name: prometheus-stripprefix
+        - name: compress
+          namespace: {{install.traefik.namespace}}
+        - name: x-forward-https-headers
+          namespace: {{install.traefik.namespace}}
 {% if install.prometheus_operator.prometheus.dashboard.enable_basic_auth|default(false)|bool == true%}
-      - name: prometheus-basic-auth
+        - name: traefik-basic-auth
+          namespace: {{install.traefik.namespace}}
 {% endif %}

@@ -36,6 +36,7 @@ spec:
           - "--log.level=INFO"
           - "--serversTransport.insecureSkipVerify=true"
           - "--providers.kubernetesingress.ingressendpoint.publishedservice={{install.traefik.namespace}}/traefik"
+          - "--providers.kubernetescrd.allowCrossNamespace=true"
 
         ports:
           traefik:

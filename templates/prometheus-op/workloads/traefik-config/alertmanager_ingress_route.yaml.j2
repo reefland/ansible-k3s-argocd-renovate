@@ -1,26 +1,3 @@
-{% if install.prometheus_operator.alertmanager.dashboard.enable_basic_auth|default(false)|bool == true%}
-# Secret moved to prometheus-alertmanager_secret.yaml
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: alertmanager-basic-auth
-  namespace: {{install.prometheus_operator.namespace}}
-spec:
-  basicAuth:
-    secret: alertmanager-authsecret
-{% endif %}
-
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: svc-alertmanager-headers
-  namespace: {{install.prometheus_operator.namespace}}
-spec:
-  headers:
-    customRequestHeaders:
-      X-Forwarded-Proto: "https"
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
@@ -45,12 +22,16 @@ spec:
     - match: Host(`{{install.prometheus_operator.alertmanager.dashboard.ingress_name|default("k3s.{{ansible_domain}}")|lower}}`) && (PathPrefix(`{{install.prometheus_operator.alertmanager.dashboard.path|default("/alertmanager")}}`))
       kind: Rule
       services:
-      - kind: Service
-        name: prometheus-alertmanager
-        port: 9093
+        - kind: Service
+          name: prometheus-alertmanager
+          port: 9093
       middlewares:
-      - name: alertmanager-stripprefix
-      - name: svc-alertmanager-headers
+        - name: alertmanager-stripprefix
+        - name: compress
+          namespace: {{install.traefik.namespace}}
+        - name: x-forward-https-headers
+          namespace: {{install.traefik.namespace}}
 {% if install.prometheus_operator.alertmanager.dashboard.enable_basic_auth|default(false)|bool == true%}
-      - name: alertmanager-basic-auth
+        - name: traefik-basic-auth
+          namespace: {{install.traefik.namespace}}
 {% endif %}

@@ -1,31 +1,6 @@
 ---
 {% if install.longhorn.dashboard.create_route|default(false)|bool == true%}
-{% if install.longhorn.dashboard.enable_basic_auth|default(false)|bool == true%}
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: longhorn-dashboard-basic-auth
-  namespace: {{install.longhorn.namespace}}
-spec:
-  basicAuth:
-    secret: longhorn-authsecret
-{% endif %}
 
----
-# Traefik 2.x ingress controller does not set the WebSocket headers
-# https://longhorn.io/kb/troubleshooting-traefik-2.x-as-ingress-controller/
-
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: svc-longhorn-headers
-  namespace: {{install.longhorn.namespace}}
-spec:
-  headers:
-    customRequestHeaders:
-      X-Forwarded-Proto: "https"
-
----
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
@@ -55,11 +30,12 @@ spec:
           port: 80
       middlewares:
         - name: longhorn-stripprefix
-          namespace: {{install.longhorn.namespace}}
-        - name: svc-longhorn-headers
-          namespace: {{install.longhorn.namespace}}
+        - name: compress
+          namespace: {{install.traefik.namespace}}
+        - name: x-forward-https-headers
+          namespace: {{install.traefik.namespace}}
 {% if install.longhorn.dashboard.enable_basic_auth|default(false)|bool == true %}
-        - name: longhorn-dashboard-basic-auth
-          namespace: {{install.longhorn.namespace}}
+        - name: traefik-basic-auth
+          namespace: {{install.traefik.namespace}}
 {% endif %}
 {% endif %}
