@@ -170,7 +170,7 @@ k3s:
     traefik_install_version: "v10.22.0"
     longhorn_install_version: "v1.3.0"
     democratic_csi_install_version: "0.13.4"
-    prometheus_op_install_version: "38.0.3"
+    prometheus_op_install_version: "39.5.0"
     prometheus_op_crd_version: "v0.58.0"
     zfs_exporter_install_version: "v2.2.5"
 
