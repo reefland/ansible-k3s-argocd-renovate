@@ -7,7 +7,10 @@
     "github>{{argocd_repo_url|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}//.github/renovate/semanticCommits.json5"
   ],
   "argocd": {
-    "fileMatch": ["applications/.+\\.yaml$", "workloads/.+\\.yaml$"]
+    "fileMatch": [
+      "applications/.+\\.yaml$",
+      "workloads/.+\\.yaml$"
+      ]
   },
   "regexManagers": [
     {
@@ -18,16 +21,23 @@
     },
     {
       "description": "Process various dependencies",
-      "fileMatch": ["workloads/.+\\.ya?ml$"],
+      "fileMatch": [
+        "applications/.+\\.ya?ml$",
+        "workloads/.+\\.ya?ml$"
+      ],
       "matchStrings": [
         "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\n.*?\"(?<currentValue>.*)\"\n"
       ],
       {% raw -%}"datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
-      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"{% endraw %}
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+      {% endraw %}
     },
     {
       "description": "Process raw GitHub URLs",
-      "fileMatch": ["workloads/.+\\.ya?ml$"],
+      "fileMatch": [
+        "applications/.+\\.ya?ml$",
+        "workloads/.+\\.ya?ml$"
+      ],
       "matchStrings": [
         "https:\\/\\/raw.githubusercontent.com\\/(?<depName>[\\w\\d\\-_]+\\/[\\w\\d\\-_]+)\\/(?<currentValue>[\\w\\d\\.\\-_]+)\\/.*"
       ],
