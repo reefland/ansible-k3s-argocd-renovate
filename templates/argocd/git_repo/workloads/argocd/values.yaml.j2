@@ -166,10 +166,10 @@ argo-cd:
 #          release: {{prometheus_op.release_name}}
 
     resources:
-      limits:
+      requests:
         cpu: 15m
         memory: 128Mi
-      requests:
+      limits:
         cpu: 50m
         memory: 256Mi
 
