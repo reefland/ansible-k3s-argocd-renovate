@@ -58,6 +58,24 @@ _NOTE: The `repo` (Full control of private repositories) is required which force
 
 ## Create GitHub Repository for ArgoCD
 
+### Option 1 - Create Empty Repository from Template
+
+I provide an empty template repository you can easily copy.  This repository includes GitHub workflows for a linter and renovate configuration validator.
+
+Visit URL: [https://github.com/reefland/k3s-argocd-template](https://github.com/reefland/k3s-argocd-template):
+
+![Clone GitHub Repository Template](../images/github_clone_empty_repository.png)
+
+* Click `[ Use this template ]` button.
+
+![Select Repository Type](../images/github_clone_empty_repository_private.png)
+
+* Select Private Repository, click `[ Create repository from template ]`
+* Once created adjust `README.md` to your needs
+  * NOTE: You will need to fix the URLs for the badges to point to your repository if you wish to keep them
+
+### Option 2 - Create Your Own
+
 Create a new GitHub repository.  A private repository is recommended.
 
 * NOTE: The repository cannot be completely empty or the clone will fail; enable the option to `Add a README file`.
@@ -302,6 +320,27 @@ Password:
 'admin:login' logged in successfully
 Context 'k3s.example.com/argocd' updated
 ```
+
+#### Check if Applications Stuck in OutOfSync
+
+Upon the initial cluster deployment, it can take some time for Traefik and Cert-Manager to settle in.  A chicken and egg race condition has been observed where the Traefik configuration is unable to progress preventing Traefik ingress from working.  The following shows a simple fix:
+
+```shell
+$ argocd app list | grep -v Synced
+
+NAME             CLUSTER                         NAMESPACE  PROJECT   STATUS     HEALTH   SYNCPOLICY  CONDITIONS  REPO                                             PATH                                TARGET
+traefik-config   https://kubernetes.default.svc  traefik    ingress   OutOfSync  Healthy  Auto-Prune  SyncError   https://github.com/reefland/k3s-argocd-test.git  workloads/traefik-config/           HEAD
+```
+
+The ArgoCD application `traefik-config` is stuck in status `OutOfSync`.  For the application to sync again:
+
+```shell
+$ argocd app sync traefik-config
+
+... lots of sync information will scroll by...
+```
+
+* That should resolve the issue and Traefik ingress for all the dashboards will deploy.
 
 ---
 
