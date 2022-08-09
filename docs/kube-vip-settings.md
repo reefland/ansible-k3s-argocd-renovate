@@ -32,7 +32,7 @@ The Kube-vip Settings are in variable namespace `install.kube_vip`.
 
   ```yml
     # Select release to use: https://github.com/kube-vip/kube-vip/releases
-    install_version: "{{kube_vip_install_version|default('v0.4.2')}}"
+    install_version: "{{kube_vip_install_version|default('v0.5.0')}}"
   ```
 
 * Define ArgoCD Project to associate Kube-vip with:
@@ -67,7 +67,7 @@ The Kube-vip Settings are in variable namespace `install.kube_vip`.
 
   ```yaml
         # Select release to use: https://github.com/kube-vip/kube-vip-cloud-provider/releases
-        install_version: "{{kube_vip_cloud_provider_install_version|default('v0.0.2')}}
+        install_version: "{{kube_vip_cloud_provider_install_version|default('v0.0.3')}}
   ```
 
 ---
