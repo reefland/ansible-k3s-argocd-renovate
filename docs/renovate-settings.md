@@ -25,7 +25,7 @@ The Renovate Settings are in variable namespace `install.renovate`.
 
     renovate:
       # Select Release to install: https://github.com/renovatebot/helm-charts/releases
-      install_version: "{{renovate_install_version|default('32.45.5')}}"
+      install_version: "{{renovate_install_version|default('32.152.0')}}"
   ```
 
 * Define the namespace to install Renovate into.
@@ -64,9 +64,17 @@ Renovate can be customized to perform additional functionality.  The renovate ru
 ```json
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base"],
+  "extends": [
+    "config:base",
+    ":semanticCommits",
+    "github>{{argocd_repo_url|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}//.github/renovate/labels.json5",
+    "github>{{argocd_repo_url|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}//.github/renovate/semanticCommits.json5"
+  ],
   "argocd": {
-  	"fileMatch": ["applications/.+\\.yaml$"]
+    "fileMatch": [
+      "applications/.+\\.yaml$",
+      "workloads/.+\\.yaml$"
+      ]
   },
   "regexManagers": [
     {
@@ -74,7 +82,32 @@ Renovate can be customized to perform additional functionality.  The renovate ru
       "fileMatch": ["^applications\\/democratic_csi_.*\\.yaml$"],
       "matchStrings": ["image: (?<depName>.*?):(?<currentValue>.*?)\\s+"],
       "datasourceTemplate": "docker"
-  }]
+    },
+    {
+      "description": "Process various dependencies",
+      "fileMatch": [
+        "applications/.+\\.ya?ml$",
+        "workloads/.+\\.ya?ml$"
+      ],
+      "matchStrings": [
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\n.*?\"(?<currentValue>.*)\"\n"
+      ],
+      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    },
+    {
+      "description": "Process raw GitHub URLs",
+      "fileMatch": [
+        "applications/.+\\.ya?ml$",
+        "workloads/.+\\.ya?ml$"
+      ],
+      "matchStrings": [
+        "https:\\/\\/raw.githubusercontent.com\\/(?<depName>[\\w\\d\\-_]+\\/[\\w\\d\\-_]+)\\/(?<currentValue>[\\w\\d\\.\\-_]+)\\/.*"
+      ],
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver"
+    }
+  ]
 }
 ```
 

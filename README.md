@@ -161,7 +161,7 @@ k3s:
     # Install versions are optional, lets you pin newer versions than defaults
     k3s_install_version: "v1.23.5+k3s1"
     argocd_install_version: "4.10.5"
-    renovate_install_version: "32.99.1"
+    renovate_install_version: "32.152.0"
     cert_manager_install_version: "v1.8.2"
     sealed_secret_install_version: "v2.3.0"
     system_upgrade_controller_install_version: "v0.9.1"
