@@ -1,7 +1,11 @@
-{% raw -%}
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base"],
+  "extends": [
+    "config:base",
+    ":semanticCommits",
+    "github>{{argocd_repo_url|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}/.github/renovate/labels.json5",
+    "github>{{argocd_repo_url|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}/.github/renovate/semanticCommits.json5"
+  ],
   "argocd": {
     "fileMatch": ["applications/.+\\.yaml$", "workloads/.+\\.yaml$"]
   },
@@ -18,8 +22,8 @@
       "matchStrings": [
         "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\n.*?\"(?<currentValue>.*)\"\n"
       ],
-      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
-      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+      {% raw -%}"datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"{% endraw %}
     },
     {
       "description": "Process raw GitHub URLs",
@@ -32,4 +36,3 @@
     }
   ]
 }
-{% endraw %}
