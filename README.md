@@ -163,7 +163,7 @@ k3s:
     argocd_install_version: "4.10.5"
     renovate_install_version: "32.152.0"
     cert_manager_install_version: "v1.8.2"
-    sealed_secret_install_version: "v2.3.0"
+    sealed_secret_install_version: "v2.6.0"
     system_upgrade_controller_install_version: "v0.9.1"
     kube_vip_install_version: "v0.5.0"
     kube_vip_cloud_provider_install_version: "v0.0.3"
