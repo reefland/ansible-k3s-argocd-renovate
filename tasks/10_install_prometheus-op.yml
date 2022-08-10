@@ -43,6 +43,8 @@
     loop_control:
       loop_var: deploy_app
       label: "{{deploy_app}}"
+    notify:
+      - Restart k3s Service
 
   - name: Create Namespace to Apply Secret to   # ArgoCD will have a copy namespace file
     kubernetes.core.k8s:
