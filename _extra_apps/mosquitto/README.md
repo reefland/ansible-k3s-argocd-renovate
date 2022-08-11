@@ -6,6 +6,7 @@
 * Deployed as a Statefulset with a small 10mi Longhorn Persistent Storage Volume for data
 
 Review files in `mosquitto/workloads/mosquitto/base/application` to populate the two ConfigMaps:
+
 * `configmap-config.yaml` creates the `mosquitto.conf` configuration file
 * `configmap-passwd.yaml` creates the encoded User & Password authentication file
 

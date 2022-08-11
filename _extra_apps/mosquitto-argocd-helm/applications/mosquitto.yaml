@@ -1,0 +1,122 @@
+# References:
+# https://github.com/k8s-at-home/charts/tree/master/charts/stable/mosquitto
+# https://github.com/k8s-at-home/charts/blob/master/charts/stable/mosquitto/values.yaml
+# https://github.com/k8s-at-home/library-charts/blob/main/charts/stable/common/values.yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argocd
+  name: mosquitto-mqtt
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"  # Lower the number the sooner to deploy
+spec:
+  project: home-assistant
+  revisionHistoryLimit: 3
+  
+  source:
+    chart: mosquitto
+    repoURL: https://k8s-at-home.com/charts/
+    targetRevision: 4.8.2
+    helm:
+      values: |
+        controller:
+          enabled: true
+          # Valid options are deployment, daemonset or statefulset
+          type: statefulset
+          revisionHistoryLimit: 3
+
+        env:
+          TZ: "America/New York"
+
+        service:
+          main:
+            enabled: true
+            ports:
+              http:
+                enabled: false
+              mqtt:
+                enabled: true
+                port: 1883
+            type: LoadBalancer
+            loadBalancerIP: 192.168.10.222
+
+        resources:
+          requests:
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+            
+        auth:
+          enabled: true
+
+        configmap:
+          mosquitto-pass-file:
+            enabled: true
+            data:
+              password.conf: |
+                # The password file.
+                # Use the `mosquitto_passwd` utility.
+                password_file /mosquitto/configinc/passwd.txt
+                
+          mosquitto-passwords:
+            enabled: true
+            data:
+              passwd.txt: |
+                mqtt-user:$6$ZLO [EXAMPLE] Qeow==
+
+        persistence:
+          data:
+            enabled: true
+            mountPath: /mosquitto/data
+            type: pvc
+            accessMode: ReadWriteOnce
+            size: 10Mi
+            retain: true
+            # existingClaim:
+            # volumeName:
+
+          configinc:
+            enabled: true
+            mountPath: /mosquitto/configinc
+            medium: Memory
+            type: emptyDir
+            sizeLimit: 1Mi
+
+          mosquitto-pass-file:
+            enabled: true
+            type: configMap
+            name: mosquitto-mqtt-mosquitto-pass-file
+            mountPath: /mosquitto/configinc/password.conf
+            subPath: password.conf
+            readOnly: true
+
+          mosquitto-passwords:
+            enabled: true
+            type: configMap
+            name: mosquitto-mqtt-mosquitto-passwords
+            mountPath: /mosquitto/configinc/passwd.txt
+            subPath: passwd.txt
+            readOnly: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: mosquitto
+
+  # Allow changes to number of replicas (down to zero)
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jsonPointers:
+        - /spec/replicas
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true

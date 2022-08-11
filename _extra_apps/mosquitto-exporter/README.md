@@ -58,6 +58,19 @@ images:
 
     This sealed secret can be added to your code repository the way you handle your other sealed secrets or applied directly.
 
+---
+
+* Set the `broker-endpoint` to find the Mosquitto Broker
+  * Kustomize version uses `tcp://mosquitto.mosquitto:1883`
+  * Helm version uses `tcp://mosquitto-mqtt.mosquitto:1883`
+
+```yaml
+configMapGenerator:
+- name: node-exporter-configmap
+  literals:
+    - broker-endpoint="tcp://mosquitto.mosquitto:1883"
+```
+
 * Set namespace where Prometheus is located
 * Set the Prometheus Auto-Discovery label used
 
@@ -89,7 +102,7 @@ Review `mosquitto-exporter/applications/mosquitto-exporter.yaml`
 
 ---
 
-Grafana Dashboard for Mosquitto MQTT: `11542`
+Based on Grafana Dashboard for Mosquitto MQTT: `11542`. Several enhancements over the base dashboard have been made.
 
 This will be automatically installed as a configMap Dashboard for Grafana as part of the Mosquitto Exporter deployment.
 
