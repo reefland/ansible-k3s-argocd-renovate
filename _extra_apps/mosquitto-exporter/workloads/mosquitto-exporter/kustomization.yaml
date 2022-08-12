@@ -7,13 +7,13 @@ images:
     newTag: 0.8.0
 
 configMapGenerator:
-- name: node-exporter-configmap
+- name: mosquitto-exporter-configmap
   literals:
     - broker-endpoint="tcp://mosquitto.mosquitto:1883"
 
 # Don't base64 encode secret values here
 #secretGenerator:
-#- name: node-exporter-secret
+#- name: mosquitto-exporter-secret
 #  literals:
 #  - mqtt-user=<USERNAME_HERE>
 #  - mqtt-pass=<PASSWORD_HERE>

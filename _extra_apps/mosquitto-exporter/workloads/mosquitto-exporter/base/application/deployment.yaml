@@ -46,15 +46,15 @@ spec:
           - name: MQTT_USER
             valueFrom:
               secretKeyRef:
-                name: node-exporter-secret
+                name: mosquitto-exporter-secret
                 key: mqtt-user
           - name: MQTT_PASS
             valueFrom:
               secretKeyRef:
-                name: node-exporter-secret
+                name: mosquitto-exporter-secret
                 key: mqtt-pass
           - name: BROKER_ENDPOINT
             valueFrom:
               configMapKeyRef:
-                name: node-exporter-configmap
+                name: mosquitto-exporter-configmap
                 key: broker-endpoint

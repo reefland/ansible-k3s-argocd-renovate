@@ -24,7 +24,7 @@ images:
     ```yaml
     # Don't base64 encode secret values here
     #secretGenerator:
-    #- name: node-exporter-secret
+    #- name: mosquitto-exporter-secret
     #  literals:
     #  - mqtt-user=<USERNAME_HERE>
     #  - mqtt-pass=<PASSWORD_HERE>
@@ -33,10 +33,10 @@ images:
   * OPTION 2 - You can create a secrets file directly and apply this to the cluster to prevent your secret from being committed to the repository:
 
     ```shell
-    $ kubectl -n mosquitto create secret generic node-exporter-secret \
+    $ kubectl -n mosquitto create secret generic mosquitto-exporter-secret \
       --from-literal=mqtt-user=<USERNAME_HERE> \
       --from-literal=mqtt-pass=<PASSWORD_HERE> \
-      --dry-run=client -o yaml > node-exporter-secret.yaml
+      --dry-run=client -o yaml > mosquitto-exporter-secret.yaml
 
       # No output expected
     ```
@@ -44,14 +44,14 @@ images:
     Manually apply secret to cluster:
 
     ```shell
-    $ kubectl create -f node-exporter-secret.yaml 
-    secret/node-exporter-secret created
+    $ kubectl create -f mosquitto-exporter-secret.yaml 
+    secret/mosquitto-exporter-secret created
     ```
 
   * OPTION 3 - Convert secret created above into a Sealed Secret which is safe for code repository and ArgoCD:
 
     ```shell
-    $ kubeseal --controller-namespace=sealed-secrets --format=yaml < node-exporter-secret.yaml > node-exporter-secret-sealed.yaml
+    $ kubeseal --controller-namespace=sealed-secrets --format=yaml < mosquitto-exporter-secret.yaml > mosquitto-exporter-secret-sealed.yaml
 
     # No output expected
     ```
@@ -66,7 +66,7 @@ images:
 
 ```yaml
 configMapGenerator:
-- name: node-exporter-configmap
+- name: mosquitto-exporter-configmap
   literals:
     - broker-endpoint="tcp://mosquitto.mosquitto:1883"
 ```
