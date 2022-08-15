@@ -23,6 +23,10 @@ spec:
     targetRevision: 4.8.2
     helm:
       values: |
+        image:
+          # renovate: datasource=docker depName=eclipse-mosquitto
+          tag: "2.0.14"
+
         controller:
           enabled: true
           # Valid options are deployment, daemonset or statefulset
