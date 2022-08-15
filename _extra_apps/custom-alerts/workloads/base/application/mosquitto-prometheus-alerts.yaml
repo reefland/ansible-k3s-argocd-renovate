@@ -1,0 +1,21 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mosquitto-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+  - name: mosquitto.rules
+    rules:
+    - alert: MosquittoPublishedMessagedAtZeroError
+      annotations:
+        description: Mosquitto MQTT published message rate is at zero for more than 1 minute.
+        summary: Mosquitto MQTT published message rate is at zero for more than 1 minute.
+      expr: broker_publish_messages_sent == 0
+      for: 1m
+      labels:
+        issue: Mosquitto MQTT published message rate is at zero for more than 1 minute.
+        severity: critical

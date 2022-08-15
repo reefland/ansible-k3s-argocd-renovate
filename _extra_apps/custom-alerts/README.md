@@ -14,6 +14,7 @@ Custom Alerts can be added to the following applications, details below.
 * [Longhorn Cluster Storage Alerts](#longhorn-cluster-storage-alerts)
 * [Cert-Manager Certificate Alerts](#cert-manager-certificate-alerts)
 * [Sealed Secrets Controller Alerts](#sealed-secrets-controller-alerts)
+* [Mosquitto MQTT Broker Alerts](#mosquitto-mqtt-alerts)
 
 ---
 
@@ -147,5 +148,11 @@ Example Alert sent to Slack Channel:
 |---                            | ---                    |---                   |
 | Higher Number of Unseal Errors| Non Zero Value         | 5 minutes            |
 | Sealed Secret Not Synced      | Synced Not True        | 5 minutes            |
+
+## Mosquitto MQTT Alerts
+
+| Alert Description             | Condition              | Duration to Trigger  |
+|---                            | ---                    |---                   |
+| Published Message Rate        | Equal Zero             | 1 minute            |
 
 [Return to Application List](../)
