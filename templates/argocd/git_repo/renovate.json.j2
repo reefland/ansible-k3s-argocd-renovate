@@ -3,6 +3,7 @@
   "extends": [
     "config:base",
     ":semanticCommits",
+    ":dependencyDashboard",
     "github>{{argocd_repo_url|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}//.github/renovate/labels.json5",
     "github>{{argocd_repo_url|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}//.github/renovate/semanticCommits.json5"
   ],
