@@ -38,3 +38,4 @@ Each Application uses this directory structure:
 * [Unifi Controller](./unifi-controller/) - Wireless Network Management Software from Ubiquiti
 * [Unpoller-Exporter](./unpoller-exporter/) - Exposes [Unifi Controller](./unifi-controller/) Management Software Metrics as Prometheus Pod Monitor
 * [Vertical Pod Autoscaler (VPA)](./vpa/) - Enables ability to make container resource limit and request recommendations, used with [Goldilocks](./goldilocks/)
+* [Zigbee2MQTT](./zigbee2mqtt-argocd-helm/) - A Zigbee to MQTT ([Mosquitto](./mosquitto/)) Bridge

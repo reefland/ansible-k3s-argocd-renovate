@@ -1,0 +1,217 @@
+# References:
+# https://github.com/k8s-at-home/charts/tree/master/charts/stable/zigbee2mqtt
+# https://github.com/k8s-at-home/charts/blob/master/charts/stable/zigbee2mqtt/values.yaml
+# https://github.com/k8s-at-home/library-charts/blob/main/charts/stable/common/values.yaml
+# https://www.zigbee2mqtt.io/guide/faq/
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argocd
+  name: zigbee2mqtt
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"  # Lower the number the sooner to deploy
+spec:
+  project: home-assistant
+  revisionHistoryLimit: 3
+
+  source:
+    chart: zigbee2mqtt
+    repoURL: https://k8s-at-home.com/charts/
+    targetRevision: 9.4.2
+    helm:
+      values: |
+        image:
+          # renovate: datasource=github-releases depName=Koenkk/zigbee2mqtt
+          tag: "1.27.0"
+
+        controller:
+          enabled: true
+          # Valid options are deployment, daemonset or statefulset
+          type: statefulset
+          revisionHistoryLimit: 3
+
+        env:
+          TZ: "America/New York"
+
+        resources:
+          requests:
+            cpu: "25m"
+            memory: "100Mi"
+          limits:
+            cpu: "50m"
+            memory: "256Mi"
+
+        # Configured for Network Coordinator not USB
+        securityContext:
+          privileged: false
+
+        persistence:
+          data:
+            enabled: true
+            mountPath: /data
+            type: pvc
+            accessMode: ReadWriteOnce
+            size: 100Mi
+            retain: true
+            # existingClaim:
+            # volumeName:
+
+          mosquitto-creds:
+            enabled: true
+            type: secret
+            name: zigbee2mqtt-mqtt-auth-secret
+            mountPath: /data/secret.yaml
+            subPath: secret.yaml
+            readOnly: true
+
+        # -- Affinity constraint rules to place the Pod with MQTT Broker
+        affinity:
+          podAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - mosquitto
+                topologyKey: "kubernetes.io/hostname"
+
+        # -- zigbee2mqtt configuration settings.
+        # This will be copied into the container's persistent storage at first run only.
+        # Further configuration should be done in the application itself!
+
+        config:
+          # These will be applied ONLY on first run
+          # Home Assistant integration (MQTT discovery)
+          homeassistant: true
+          
+          # allow new devices to join
+          # Note: this will be controllable in the UI
+          permit_join: false
+
+          # MQTT settings
+          mqtt:
+            # MQTT base topic for zigbee2mqtt MQTT messages
+            base_topic: zigbee2mqtt
+            
+            # MQTT server URL
+            server: "mqtt://mosquitto-mqtt.mosquitto:1833"
+            
+            # MQTT server authentication, uncomment if required:
+            user: '!secret mqtt-user'
+            password: '!secret mqtt-pass'
+            # client_id: my_id
+
+            # Optional: Include device information to mqtt messages (default: false)
+            include_device_information: true
+
+          # USB / Serial settings / Network Coordinator IP Address
+          serial:
+            port: tcp://192.168.2.8:6638
+
+          advanced:
+            network_key: GENERATE
+            log_output:
+              - console
+            log_level: info
+
+            # (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems)
+            # default: 11
+            channel: 24
+            transmit_power: 9
+
+            # Optional: Add a last_seen attribute to MQTT messages, contains date/time of last Zigbee message
+            # possible values are: disable (default), ISO_8601, ISO_8601_local, epoch (default: disable)
+            last_seen: 'ISO_8601_local'
+
+            homeassistant_discovery_topic: 'homeassistant'
+            homeassistant_status_topic: 'homeassistant/status'
+
+          # Both of these need to be enabled for the webui
+          frontend:
+            port: 8080
+            url: https://zigbee2mqtt.example.com
+
+          experimental:
+            new_api: true
+
+        service:
+          main:
+            enabled: true
+            primary: true
+            type: ClusterIP
+            ports:
+              http:
+                enabled: true
+                port: 8080
+                # If there is more than 1 service, make sure that only 1 service is marked as primary.
+                primary: true
+
+        ingress:
+          main:
+            enabled: true
+            annotations:
+              traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+              traefik.ingress.kubernetes.io/router.middlewares: "traefik-traefik-basic-auth@kubernetescrd"
+            hosts:
+              - host: zigbee2mqtt.example.com
+                paths:
+                  - path: /
+                    pathType: Prefix
+
+        addons:
+          codeserver:
+            enabled: true
+
+            ingress:
+              enabled: true
+              annotations:
+                traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+                traefik.ingress.kubernetes.io/router.middlewares: "traefik-traefik-basic-auth@kubernetescrd,traefik-codeserver-stripprefix@kubernetescrd,traefik-compress@kubernetescrd"
+              hosts:
+                - host: zigbee2mqtt.example.com
+                  paths:
+                    - path: /codeserver
+                      pathType: Prefix
+
+            resources:
+              requests:
+                cpu: "10m"
+                memory: "80Mi"
+            #  limits:
+            #    cpu: "25m"
+            #    memory: "256Mi"
+
+            args:
+              - --auth
+              - none
+              - --user-data-dir
+              - "/data/.vscode"
+              - --extensions-dir
+              - "/config/.vscode"
+
+            volumeMounts:
+              - name: data
+                mountPath: /data
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: mosquitto
+
+  # Allow changes to number of replicas (down to zero)
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jsonPointers:
+        - /spec/replicas
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true
