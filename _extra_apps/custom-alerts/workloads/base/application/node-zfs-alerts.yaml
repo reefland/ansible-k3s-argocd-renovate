@@ -17,6 +17,6 @@ spec:
             severity: critical
           annotations:
             summary: ZFS pool issue on (instance {{ $labels.instance }})
-            description: >
-              A ZFS zpool \"{{ $labels.pool }}\" on \"{{ $labels.instance }}\" is in a unexpected state: {{ $labels.state }}.
+            description: |
+              A ZFS zpool "{{ $labels.pool }}" on "{{ $labels.instance }}" is in a unexpected state, code: "{{ $value }}".
               Health status codes [0: ONLINE, 1: DEGRADED, 2: FAULTED, 3: OFFLINE, 4: UNAVAIL, 5: REMOVED, 6: SUSPENDED].
