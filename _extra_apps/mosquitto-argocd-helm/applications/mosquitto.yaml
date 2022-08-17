@@ -79,7 +79,7 @@ spec:
             mountPath: /mosquitto/data
             type: pvc
             accessMode: ReadWriteOnce
-            size: 10Mi
+            size: 100Mi
             retain: true
             # existingClaim:
             # volumeName:
