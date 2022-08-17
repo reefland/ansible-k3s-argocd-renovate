@@ -149,10 +149,18 @@ Example Alert sent to Slack Channel:
 | Higher Number of Unseal Errors| Non Zero Value         | 5 minutes            |
 | Sealed Secret Not Synced      | Synced Not True        | 5 minutes            |
 
+## Pod Alerts
+
+| Alert Description             | Condition              | Duration to Trigger  |
+|---                            | ---                    |---                   |
+| Pod Restarted                 | More than Once         | Within 10 minutes    |
+
+![Pod Restart Example](pod_restarted_custom_alert.png)
+
 ## Mosquitto MQTT Alerts
 
 | Alert Description             | Condition              | Duration to Trigger  |
 |---                            | ---                    |---                   |
-| Published Message Rate        | Equal Zero             | 1 minute            |
+| Published Message Rate        | Equal Zero             | 1 minute             |
 
 [Return to Application List](../)

@@ -8,4 +8,5 @@ resources:
   - cert-manager-prometheus-alerts.yaml
   - sealed-secrets-prometheus-alerts.yaml
   - node-zfs-alerts.yaml
+  - pod-prometheus-alerts.yaml
   - mosquitto-prometheus-alerts.yaml

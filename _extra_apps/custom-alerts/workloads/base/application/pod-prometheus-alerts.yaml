@@ -1,0 +1,23 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pod-alerts                                 
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack                              # Required label key and value
+spec:
+  groups:
+    - name: PodAlerts                                         # Name of the prometheus rule group
+      rules:
+        # Pod Restarted in past 10 min
+        - alert: PodRestarted
+          expr: sum((increase(kube_pod_container_status_restarts_total[10m])) * on(container, instance, uid) group_left(reason) kube_pod_container_status_last_terminated_reason) by (container,pod,namespace,instance,reason) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Container {{ $labels.container }} within pod {{ $labels.pod }} on instance {{ $labels.instance }} restarted
+            description: | 
+              Container "{{ $labels.container }}" within Pod "{{ $labels.pod }}" in Namespace "{{ $labels.namespace }}" on instance "{{ $labels.instance }}" restarted.
+              Restart reason was "{{ $labels.reason }}" -- (Restarted {{ $value | humanize }} times in 10 minutes)
