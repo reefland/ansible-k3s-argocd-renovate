@@ -6,7 +6,7 @@ bases:
 
 images:
   - name: linuxserver/unifi-controller
-    newTag: 7.1.65
+    newTag: 7.1.68
 
 patches:
   # Set Service to LoadBalancer and Specify IP Address to use
@@ -33,7 +33,7 @@ patches:
   - patch: |-
       - op: replace
         path: /spec/resources/requests/storage
-        value: 5Gi
+        value: 10Gi
     target:
       kind: PersistentVolumeClaim
 
