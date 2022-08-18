@@ -46,6 +46,7 @@ These alerts cover each node in the cluster.
 | Host Clock Skew         | +/- 0.05 seconds    | 2 minutes           |
 
 Example Alert sent to Slack Channel:
+
 ![Node too Hot Example Alert](node_too_hot_custom_alert.png)
 
 ---
@@ -95,6 +96,7 @@ These alerts cover each application deployed.
 | ArgoCD Application Missing    | ArgoCD App not found  | 15 minutes          |
 
 Example Alert sent to Slack Channel:
+
 ![ArgoCD Sync Failed](argocd_custom_alert.png)
 
 ---
@@ -109,6 +111,7 @@ Example Alert sent to Slack Channel:
 | High HTTP 5xx Error Count | 5% of past 3 minute traffic | 1 minute    |
 
 Example Alert sent to Slack Channel:
+
 ![Traefik High HTTP 401 Error Count](traefik_custom_alert.png)
 
 ---
@@ -138,6 +141,7 @@ Example Alert sent to Slack Channel:
 | Lets Encrypt Rate Limit Hit | Unable to Renew Cert   | 5 minutes           |
 
 Example Alert sent to Slack Channel:
+
 ![Cert-Manager Absent](cert-manager_custom_alert.png)
 
 ---
@@ -154,6 +158,8 @@ Example Alert sent to Slack Channel:
 | Alert Description             | Condition              | Duration to Trigger  |
 |---                            | ---                    |---                   |
 | Pod Restarted                 | More than Once         | Within 10 minutes    |
+
+Example Alert sent to Slack Channel:
 
 ![Pod Restart Example](pod_restarted_custom_alert.png)
 
