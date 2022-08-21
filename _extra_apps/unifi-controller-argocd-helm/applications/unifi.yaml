@@ -1,0 +1,94 @@
+
+# References:
+# https://artifacthub.io/packages/helm/k8s-at-home/unifi
+# https://github.com/k8s-at-home/library-charts/blob/main/charts/stable/common/values.yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argocd
+  name: unifi-controller
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"  # Lower the number the sooner to deploy
+spec:
+  project: default
+  revisionHistoryLimit: 3
+
+  source:
+    chart: unifi
+    repoURL: https://k8s-at-home.com/charts/
+    targetRevision: 5.1.2
+    helm:
+      values: |
+        image:
+          # renovate: datasource=docker depName=jacobalberty/unifi
+          tag: "v7.1.68"
+
+        controller:
+          enabled: true
+          # Valid options are deployment, daemonset or statefulset
+          type: statefulset
+          revisionHistoryLimit: 3
+
+        env:
+          TZ: "America/New York"
+          UNIFI_UID: "999"
+          UNIFI_GID: "999"
+          JVM_INIT_HEAP_SIZE: "768M"
+          JVM_MAX_HEAP_SIZE: "1536M"
+
+        ingress:
+          main:
+            enabled: true
+            annotations:
+              traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+              traefik.ingress.kubernetes.io/router.middlewares: "traefik-compress@kubernetescrd"
+            hosts:
+              - host: unifi.example.com
+                paths:
+                  - path: /
+                    pathType: Prefix
+
+        persistence:
+          config:
+            enabled: true
+            type: pvc
+            mountPath: /unifi
+            accessMode: ReadWriteOnce
+            size: 10Gi
+            retain: true
+
+        service:
+          main:
+            enabled: true
+            type: LoadBalancer
+            loadBalancerIP: 192.168.10.242
+
+        resources:
+          limits:
+            cpu: 250m
+            memory: 2048Mi
+          requests:
+            cpu: 75m
+            memory: 1280Mi
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: unifi
+
+  # Allow changes to number of replicas (down to zero)
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jsonPointers:
+        - /spec/replicas
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true

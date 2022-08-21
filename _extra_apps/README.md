@@ -32,10 +32,11 @@ Each Application uses this directory structure:
 * [Custom-Alerts](./custom-alerts/) - Alerts for Prometheus Operator Alertmanager for:
   * Node Hardware, ArgoCD Sync Issues, Traefik Ingress Error codes
 * [Goldilocks](./goldilocks/) - Uses [Vertical Pod Autoscaler (VPA)](./vpa/) to make recommendations on container limit and request recommendations, includes a dashboard.
-* [Mosquitto](./mosquitto/)  [Kustomize Based] - Eclipse Mosquitto is a lightweight MQTT Message Broker
+* [Mosquitto](./mosquitto/) [Kustomize Based] - Eclipse Mosquitto is a lightweight MQTT Message Broker
 * [Mosquitto](./mosquitto-exporter-argocd-helm/) [ArgoCD Helm Application Based] - Eclipse Mosquitto lightweight MQTT Message Broker
 * [Mosquitto-Exporter](./mosquitto-exporter/) - Exposes Mosquitto MQTT Broker Metrics as Prometheus Service Monitor
-* [Unifi Controller](./unifi-controller/) - Wireless Network Management Software from Ubiquiti
+* [Unifi Controller](./unifi-controller/) [Kustomize Based] -Wireless Network Management Software from Ubiquiti
+* [Unifi Controller](./unifi-controller-argocd-helm/) [ArgoCD Helm Application Based] - Wireless Network Management Software from Ubiquiti
 * [Unpoller-Exporter](./unpoller-exporter/) - Exposes [Unifi Controller](./unifi-controller/) Management Software Metrics as Prometheus Pod Monitor
 * [Vertical Pod Autoscaler (VPA)](./vpa/) - Enables ability to make container resource limit and request recommendations, used with [Goldilocks](./goldilocks/)
 * [Zigbee2MQTT](./zigbee2mqtt-argocd-helm/) - A Zigbee to MQTT ([Mosquitto](./mosquitto/)) Bridge
