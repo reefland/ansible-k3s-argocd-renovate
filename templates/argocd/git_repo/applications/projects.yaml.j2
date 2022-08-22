@@ -1,0 +1,32 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: {{install.argocd.namespace}}
+  name: projects
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  # run before the others to create namespaces
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"  # Lower the number the sooner to deploy
+spec:
+  project: default
+  revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
+  
+  source:
+    repoURL: {{install.argocd.repository.url}}.git
+    targetRevision: HEAD
+    path: projects/
+    directory:
+      recurse: true
+
+  destination:
+    server: https://kubernetes.default.svc
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true
