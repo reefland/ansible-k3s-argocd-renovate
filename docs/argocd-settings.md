@@ -410,7 +410,7 @@ The application / objects deployed via this Ansible process are assigned the fol
 
 ArgoCD allows applications to be grouped together into projects.  This is a better practice than leaving all applications within the `default` project.  The `default` project allows any application manifest to access any namespace, any source repository, can pretty much do anything. Individual projects can define limits on destination namespaces and source repositories that can be used for applications using the project. See [ArgoCD website](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#projects) for more information on Projects.
 
-* The project files are stored in the git repository under `/applications/projects/<project-name>-project.yaml`
+* The project files are stored in the git repository under `/projects/<project-name>-project.yaml`
 * Can can easily create more projects and assign your own applications to projects
 
 | Project Name   | Applications Assigned to Project | Description / Comments |
@@ -420,9 +420,14 @@ ArgoCD allows applications to be grouped together into projects.  This is a bett
 | monitoring     | Kube Stack Prometheus<br/>AlertManager<br/>Grafana<br/>Grafana Dashboards | Kubernetes Monitoring Applications such as Prometheus and it's supporting applications |
 | security       | Sealed Secrets<br>App Secrets (secrets that are sealed)<br>Cert-manager<br>Let's Encrypt Certs | Applications used to provide secuity features such as secrets and certificates. |
 | storage        | Longhorn <br/> Longhorn config (snapshot and backup schedules)<br/> democratic-csi (NFS and iSCSI)  | Kubernetes applications which provide storage services to the cluster such as NFS, iSCSI, block, etc.|
+|system-upgrade  | System Upgrade Controller  | K3s System Upgrade Controller
 
-ArgoCD Projects can be reviewed within ArgoCD via Settings > Projects:
+ArgoCD Projects can be reviewed within ArgoCD via `Settings` > `Projects`:
 
 ![ArgoCD project listing under settings](../images/argocd_project_listing.png)
+
+ArgoCD Projects Application:
+
+![ArgoCD projects deployed](../images/argocd_projects_deployed.png)
 
 [Back to README.md](../README.md)
