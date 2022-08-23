@@ -1,7 +1,7 @@
 # References:
-# https://github.com/k8s-at-home/charts/tree/master/charts/stable/mosquitto
-# https://github.com/k8s-at-home/charts/blob/master/charts/stable/mosquitto/values.yaml
-# https://github.com/k8s-at-home/library-charts/blob/main/charts/stable/common/values.yaml
+# https://github.com/reefland/helm-charts/tree/main/charts/apps/mosquitto
+# https://github.com/reefland/helm-charts/blob/main/charts/apps/mosquitto/values.yaml
+# https://github.com/reefland/helm-charts/blob/main/charts/library/common/values.yaml
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -14,18 +14,19 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "12"  # Lower the number the sooner to deploy
 spec:
-  project: home-assistant
+  project: default
   revisionHistoryLimit: 3
   
   source:
     chart: mosquitto
-    repoURL: https://k8s-at-home.com/charts/
+    repoURL: https://reefland.github.io/helm-charts
     targetRevision: 4.8.2
     helm:
       values: |
         image:
+          repository: eclipse-mosquitto
           # renovate: datasource=docker depName=eclipse-mosquitto
-          tag: "2.0.14"
+          tag: "2.0.15"
 
         controller:
           enabled: true
