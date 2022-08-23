@@ -375,8 +375,6 @@ The placeholders look like the following:
 #     serviceMonitor:
 #       enabled: true
 #       namespace: "monitoring"
-#       additionalLabels:
-#         release: kube-prometheus-stack
 ```
 
 You need to uncomment each of them (there will be several of these) and then commit the change to ArgoCD git repository.  ArgoCD will then create all the service monitors.

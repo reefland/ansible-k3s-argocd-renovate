@@ -9,8 +9,5 @@ patches:
     - op: replace
       path: /metadata/namespace
       value: monitoring
-    - op: replace
-      path: /metadata/labels/release
-      value: kube-prometheus-stack
   target:
     kind: PrometheusRule

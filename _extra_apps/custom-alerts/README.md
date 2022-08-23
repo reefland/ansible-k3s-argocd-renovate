@@ -81,8 +81,6 @@ To enable the serviceMonitors, edit the ArgoCD `values.yaml` file in the ArgoCD 
     serviceMonitor:
       enabled: true
       namespace: monitoring
-      additionalLabels:
-        release: kube-prometheus-stack
 ```
 
 * Uncomment for `Application Controller`, `redis-exporter`, `Server metrics`, `Repo server`, `ApplicationSet controller` and `Notifications Controller`.  Save and commit change to the git repository.

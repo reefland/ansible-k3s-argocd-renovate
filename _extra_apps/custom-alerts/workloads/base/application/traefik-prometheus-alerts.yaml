@@ -4,8 +4,6 @@ kind: PrometheusRule
 metadata:
   name: traefik-alerts                                 
   namespace: monitoring
-  labels:
-    release: kube-prometheus-stack                              # Required label key and value
 spec:
   groups:
     - name: NodeAlerts                                         # Name of the prometheus rule group

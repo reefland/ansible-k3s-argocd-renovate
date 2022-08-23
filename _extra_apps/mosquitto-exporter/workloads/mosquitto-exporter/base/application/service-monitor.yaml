@@ -6,7 +6,6 @@ metadata:
   labels:
     app: mosquitto-exporter-metrics
     name: mosquitto-exporter-metrics
-    release: kube-prometheus-stack
 
 spec:
   endpoints:

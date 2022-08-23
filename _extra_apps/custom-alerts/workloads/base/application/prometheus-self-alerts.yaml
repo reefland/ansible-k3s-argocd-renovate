@@ -4,8 +4,6 @@ kind: PrometheusRule
 metadata:
   name: prometheus-alerts                                 
   namespace: monitoring
-  labels:
-    release: kube-prometheus-stack                              # Required label key and value
 spec:
   groups:
     # Modified From: https://awesome-prometheus-alerts.grep.to/rules

@@ -4,8 +4,6 @@ kind: PrometheusRule
 metadata:
   name: node-zfs-alerts                                 
   namespace: monitoring
-  labels:
-    release: kube-prometheus-stack                              # Required label key and value
 spec:
   groups:
     - name: node-zfs-alerts                                     # Name of the prometheus rule group
