@@ -167,4 +167,6 @@ Example Alert sent to Slack Channel:
 |---                            | ---                    |---                   |
 | Published Message Rate        | Equal Zero             | 1 minute             |
 
+![Mosquitto Zero Published Messages](mosquitto_custom_alert.png)
+
 [Return to Application List](../)
