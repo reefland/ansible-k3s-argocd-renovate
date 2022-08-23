@@ -8,7 +8,6 @@ metadata:
   namespace: {{install.prometheus_operator.namespace}}
   labels:
     name: longhorn-prometheus-servicemonitor
-    release: {{prometheus_op.release_name}}
 spec:
   selector:
     matchLabels:

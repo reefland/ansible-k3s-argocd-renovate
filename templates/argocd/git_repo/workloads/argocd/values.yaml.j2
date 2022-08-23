@@ -10,6 +10,7 @@ argo-cd:
 ###[ Application Controller Settings ]#########################################
   controller:
     name: application-controller
+    revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
     clusterAdminAccess:
       enabled: true
     
@@ -27,8 +28,6 @@ argo-cd:
 #      serviceMonitor:
 #        enabled: true
 #        namespace: {{install.prometheus_operator.namespace}}
-#        additionalLabels:
-#          release: {{prometheus_op.release_name}}
 
 ###[ Dex Server Settings ]#####################################################
 # used to delegate authentication to external identity provider
@@ -40,6 +39,7 @@ argo-cd:
   redis:
     enabled: true
     name: redis
+    revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
     resources:
       limits:
         cpu: 200m
@@ -54,8 +54,6 @@ argo-cd:
 #      serviceMonitor:
 #        enabled: true
 #        namespace: {{install.prometheus_operator.namespace}}
-#        additionalLabels:
-#          release: {{prometheus_op.release_name}}
 
       # -- Resource limits and requests for redis-exporter sidecar
 #      resources:
@@ -75,6 +73,7 @@ argo-cd:
 ###[ ArgoCD Server Settings ]##################################################
   server:
     name: server
+    revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
     extraArgs:
       - --insecure
       - --rootpath={{install.argocd.dashboard.path}}
@@ -105,12 +104,11 @@ argo-cd:
 #      serviceMonitor:
 #        enabled: true
 #        namespace: {{install.prometheus_operator.namespace}}
-#        additionalLabels:
-#          release: {{prometheus_op.release_name}}
 
 ###[ ArgoCD Repo Server Settings ]#############################################
   repoServer:
     name: repo-server
+    revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
     resources:
       limits:
         cpu: 300m
@@ -125,13 +123,12 @@ argo-cd:
 #      serviceMonitor:
 #        enabled: true
 #        namespace: {{install.prometheus_operator.namespace}}
-#        additionalLabels:
-#          release: {{prometheus_op.release_name}}
 
 ###[ ApplicationSet Controller Settings ]######################################
   applicationSet:
     enabled: true
     name: applicationset-controller
+    revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
 
     # ApplicationSet controller metrics service configuration
 #    metrics:
@@ -139,8 +136,6 @@ argo-cd:
 #      serviceMonitor:
 #        enabled: true
 #        namespace: {{install.prometheus_operator.namespace}}
-#        additionalLabels:
-#          release: {{prometheus_op.release_name}}
 
     resources:
       limits:
@@ -154,6 +149,7 @@ argo-cd:
   notifications:
     enabled: true
     name: notifications-controller
+    revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
     argocdUrl: {{install.traefik.dashboard.ingress_name|default(ansible_fqdn)|lower}}{{install.argocd.dashboard.path}}
 
     # Notifications Controller metrics service configuration
@@ -162,8 +158,6 @@ argo-cd:
 #      serviceMonitor:
 #        enabled: true
 #        namespace: {{install.prometheus_operator.namespace}}
-#        additionalLabels:
-#          release: {{prometheus_op.release_name}}
 
     resources:
       requests:

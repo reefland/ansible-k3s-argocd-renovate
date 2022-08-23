@@ -38,8 +38,6 @@ spec:
           serviceMonitor:
             enabled: false
             namespace: {{install.prometheus_operator.namespace}}
-            labels:
-              release: {{prometheus_op.release_name}}
           ## Grafana dashboards configuration
           dashboards:
             create: false

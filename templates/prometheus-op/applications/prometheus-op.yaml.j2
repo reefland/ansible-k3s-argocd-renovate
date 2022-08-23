@@ -176,6 +176,12 @@ spec:
                   resources:
                     requests:
                       storage: {{install.prometheus_operator.prometheus.storage_claim.claim_size}}
+            # Allow finding resources in other namespaces
+            ruleSelectorNilUsesHelmValues: false
+            serviceMonitorSelectorNilUsesHelmValues: false
+            podMonitorSelectorNilUsesHelmValues: false
+            probeSelectorNilUsesHelmValues: false
+
             # whichever retention hits first triggers cleanup
             retention: {{install.prometheus_operator.prometheus.retention}}
             retentionSize: {{install.prometheus_operator.prometheus.retention_size}}
