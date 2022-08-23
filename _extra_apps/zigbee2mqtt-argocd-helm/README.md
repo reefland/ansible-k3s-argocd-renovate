@@ -3,7 +3,6 @@
 [Return to Application List](../)
 
 * Kustomize based ArgoCD application deployment
-* References a Kubernetes at Home Chart
 * Deployed as a Statefulset with a 100Mi Longhorn Persistent Storage Volume for data
 
 Review file `zigbee2mqtt-argocd-helm/applications/zigbee2mqtt.yaml`
@@ -115,7 +114,6 @@ NOTE: The configuration section will be written to disk ONLY ONCE as part of ini
 The `codeserver` is an editor you can use to maintain configuration files stored within the pod.
 
 ![CodeServer Example](codeserver_editor.png)
-
 
 * The `ingress` middleware reference points to the Traefik CRD for basic authentication and middleware needed to access the `codeserver` page:
 
