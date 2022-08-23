@@ -34,7 +34,7 @@
 
   # Generate templates and then check into Git repository are defined below
   - name: Process Deployable Enabled Applications
-    include_tasks: "process_app_to_deploy.yml"
+    ansible.builtin.include_tasks: "process_app_to_deploy.yml"
     loop:
       - { enabled: true,  name: "prometheus-op", overwrite_files: "no" }
       - { enabled: true,  name: "grafana-dashboards", overwrite_files: "yes"}
@@ -43,8 +43,6 @@
     loop_control:
       loop_var: deploy_app
       label: "{{deploy_app}}"
-    notify:
-      - Restart k3s Service
 
   - name: Create Namespace to Apply Secret to   # ArgoCD will have a copy namespace file
     kubernetes.core.k8s:
