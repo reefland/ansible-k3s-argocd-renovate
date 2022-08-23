@@ -1,7 +1,7 @@
 # References:
-# https://github.com/k8s-at-home/charts/tree/master/charts/stable/zigbee2mqtt
-# https://github.com/k8s-at-home/charts/blob/master/charts/stable/zigbee2mqtt/values.yaml
-# https://github.com/k8s-at-home/library-charts/blob/main/charts/stable/common/values.yaml
+# https://github.com/reefland/helm-charts/tree/main/charts/apps/zigbee2mqtt
+# https://github.com/reefland/helm-charts/blob/main/charts/apps/zigbee2mqtt/values.yaml
+# https://github.com/reefland/helm-charts/blob/main/charts/library/common/values.yaml
 # https://www.zigbee2mqtt.io/guide/faq/
 ---
 apiVersion: argoproj.io/v1alpha1
@@ -15,16 +15,17 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "12"  # Lower the number the sooner to deploy
 spec:
-  project: home-assistant
+  project: default
   revisionHistoryLimit: 3
 
   source:
     chart: zigbee2mqtt
-    repoURL: https://k8s-at-home.com/charts/
+    repoURL: https://reefland.github.io/helm-charts
     targetRevision: 9.4.2
     helm:
       values: |
         image:
+          repository: koenkk/zigbee2mqtt
           # renovate: datasource=github-releases depName=Koenkk/zigbee2mqtt
           tag: "1.27.0"
 
@@ -40,10 +41,10 @@ spec:
         resources:
           requests:
             cpu: "25m"
-            memory: "100Mi"
+            memory: "150Mi"
           limits:
             cpu: "50m"
-            memory: "256Mi"
+            memory: "300Mi"
 
         # Configured for Network Coordinator not USB
         securityContext:
