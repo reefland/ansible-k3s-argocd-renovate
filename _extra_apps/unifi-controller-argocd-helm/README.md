@@ -5,7 +5,6 @@
 [Return to Application List](../)
 
 * Helm based ArgoCD application deployment
-* References a Kubernetes at Home Chart
 * Much simpler to configure than the Kustomize version
 * Uses 10 GiB Persistent Volume Storage
 
