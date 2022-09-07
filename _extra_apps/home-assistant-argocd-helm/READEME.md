@@ -81,6 +81,28 @@ The `codeserver` is an editor you can use to maintain configuration files using 
 
 ---
 
+## Data Migration
+
+Unfortunately Home Assistant does not allow you to upload or restore a backup within the containerized version of Home Assistant.  It only allows you to create a backup for importing into Home Assistant OS version.
+
+However, you can create a backup from an existing Home Assistant (any verion) download the backup and then manually copy that backup file into the Home Assistant version under Kubernetes.
+
+My Home Assistant created a backup file, when downloaded was named `e8a6c2c4.tar` about 1200 MB in size. I used the following to transfer the backup file into the Pod:
+
+```shell
+tar cf - ./e8a6c2c4.tar | pv -s 1200m | kubectl exec -i -n home-assistant home-assistant-0 -c home-assistant -- sh -c 'cd /config/backups;tar xf -'
+```
+
+* The `tar` commands will stream the contents of `e8a6c2c4.tar` to the next pipe (`pv`)
+* The `pv` provides a progress indicator with estimated transfer size of `1200m` (MB)
+* This is passed to a `kubectl` which creates an interactive shell in container `home-assistant` within pod `home-assistant-0` in namespace `home-assistant`
+* Within the `home-assistant` container a shell is started
+  * Within that shell it will `cd /config/backups` and then extract the streamed data using `tar xf -` command.
+
+You can use any working directory you want to extract and inspect files and place whatever you need into the `/config` directory.  You can use the `CodeServer` sidecar addon to browse and open yaml files.  I personally decided to start with a fresh install and only copied in a selected few yaml files.
+
+---
+
 ## Home Assistant Community Store - HACS
 
 HACS is not part of the Home Assistant configuration and does not install without manual intervention as some utilities like `wget` and `unzip` do not exist within the Home Assistant container.
