@@ -85,7 +85,7 @@ The `codeserver` is an editor you can use to maintain configuration files using 
 
 HACS is not part of the Home Assistant configuration and does not install without manual intervention as some utilities like `wget` and `unzip` do not exist within the Home Assistant container.
 
-Official HACS Download Steps : https://hacs.xyz/docs/setup/download/
+Official HACS Download Steps : [https://hacs.xyz/docs/setup/download/](https://hacs.xyz/docs/setup/download/)
 
 The Home Assistant container is built upon Debian however it is missing `wget` and `unzip` required for the HACS script to run. To add them, access the container shell, you can use the Terminal feature of the CodeServer addon to complete this. Note the utility versions listed below are for Debain 11.
 
@@ -116,4 +116,4 @@ INFO: Installation complete.
 INFO: Remember to restart Home Assistant before you configure it
 ```
 
-Once this has completed, you can proceed to the Initial Configuration: https://hacs.xyz/docs/configuration/basic/
+Once this has completed, you can proceed to the Initial HACS Configuration: [https://hacs.xyz/docs/configuration/basic/](https://hacs.xyz/docs/configuration/basic/)
