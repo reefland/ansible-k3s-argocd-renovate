@@ -1,0 +1,154 @@
+# References:
+# https://github.com/reefland/helm-charts/tree/main/charts/apps/home-assistant
+# https://github.com/reefland/helm-charts/tree/main/charts/apps/home-assistant/values.yaml
+# https://github.com/reefland/helm-charts/blob/main/charts/library/common/values.yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argocd
+  name: home-assistant
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"  # Lower the number the sooner to deploy
+spec:
+  project: default
+  revisionHistoryLimit: 3
+
+  source:
+    chart: home-assistant
+    repoURL: https://reefland.github.io/helm-charts
+    targetRevision: 13.4.2
+    helm:
+      values: |
+        image:
+          repository: ghcr.io/home-assistant/home-assistant
+          # renovate: datasource=docker depName=ghcr.io/home-assistant/home-assistant
+          tag: "2022.8.4"
+
+        controller:
+          enabled: true
+          # Valid options are deployment, daemonset or statefulset
+          type: statefulset
+          revisionHistoryLimit: 3
+
+        env:
+          TZ: "America/New York"
+
+        resources:
+          requests:
+            cpu: "75m"
+            memory: "768Mi"
+          limits:
+            cpu: "250m"
+            memory: "1024Mi"
+
+        persistence:
+          config:
+            enabled: true
+            mountPath: /config
+            type: pvc
+            accessMode: ReadWriteOnce
+            size: 10Gi
+            retain: true
+            storageClass: freenas-iscsi-csi
+            # existingClaim:
+            # volumeName:
+
+        # -- Affinity rules best effort to place the Pod with MQTT Broker when possible
+        affinity:
+          podAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app.kubernetes.io/name
+                        operator: In
+                        values:
+                          - mosquitto
+                  topologyKey: "kubernetes.io/hostname"
+
+        service:
+          main:
+            enabled: true
+            primary: true
+            type: ClusterIP
+            ports:
+              http:
+                enabled: true
+                port: 8123
+                # If there is more than 1 service, make sure that only 1 service is marked as primary.
+                primary: true
+
+        ingress:
+          main:
+            enabled: true
+            annotations:
+              traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+              traefik.ingress.kubernetes.io/router.middlewares: "traefik-x-forward-https-headers@kubernetescrd,traefik-compress@kubernetescrd"
+            hosts:
+              - host: ha.example.com
+                paths:
+                  - path: /
+                    pathType: Prefix
+
+        addons:
+          codeserver:
+            enabled: true
+
+            image:
+              repository: ghcr.io/coder/code-server
+              # renovate: datasource=docker depName=ghcr.io/coder/code-server
+              tag: "4.5.1"
+
+            ingress:
+              enabled: true
+              annotations:
+                traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+                traefik.ingress.kubernetes.io/router.middlewares: "traefik-traefik-basic-auth@kubernetescrd,traefik-codeserver-stripprefix@kubernetescrd,traefik-compress@kubernetescrd"
+              hosts:
+                - host: ha2.example.com
+                  paths:
+                    - path: /codeserver
+                      pathType: Prefix
+
+            resources:
+              requests:
+                cpu: "15m"
+                memory: "80Mi"
+              limits:
+                cpu: "75m"
+                memory: "512Mi"
+
+            args:
+              - --auth
+              - none
+              - --user-data-dir
+              - "/config/.vscode"
+              - --extensions-dir
+              - "/config/.vscode"
+
+            volumeMounts:
+              - name: config
+                mountPath: /config
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: home-assistant
+
+  # Allow changes to number of replicas (down to zero)
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jsonPointers:
+        - /spec/replicas
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true
