@@ -152,6 +152,15 @@ spec:
                 # If there is more than 1 service, make sure that only 1 service is marked as primary.
                 primary: true
 
+        probes:
+          startup:
+            enabled: true
+            spec:
+              initialDelaySeconds: 45
+              timeoutSeconds: 2
+              periodSeconds: 5
+              failureThreshold: 30
+
         ingress:
           main:
             enabled: true
@@ -168,6 +177,11 @@ spec:
           codeserver:
             enabled: true
 
+            image:
+              repository: ghcr.io/coder/code-server
+              # renovate: datasource=docker depName=ghcr.io/coder/code-server
+              tag: "4.5.1"
+
             ingress:
               enabled: true
               annotations:
@@ -181,11 +195,11 @@ spec:
 
             resources:
               requests:
-                cpu: "10m"
+                cpu: "15m"
                 memory: "80Mi"
-            #  limits:
-            #    cpu: "25m"
-            #    memory: "256Mi"
+              limits:
+                cpu: "75m"
+                memory: "512Mi"
 
             args:
               - --auth
