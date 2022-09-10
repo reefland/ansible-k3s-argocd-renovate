@@ -8,6 +8,8 @@ The [K3s System Upgrade Controller](https://github.com/rancher/system-upgrade-co
 
 * Only nodes that have been labeled with `k3s-upgrade=true` will be upgraded
   * Any node missing this label or set to `false` or `disabled` will not be upgraded until the value is set to `true`
+* Be careful skipping versions or not upgrading all nodes within the cluster
+  * Understand Kubernetes [Version Skew Policy](https://kubernetes.io/releases/version-skew-policy/)
 
 ### The Upgrade Process
 
