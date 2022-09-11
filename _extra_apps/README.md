@@ -30,8 +30,9 @@ Each Application uses this directory structure:
 ## Application List
 
 * [Custom-Alerts](./custom-alerts/) - Alerts for Prometheus Operator Alertmanager for:
-  * Node Hardware, ArgoCD Sync Issues, Traefik Ingress Error codes
+  * Node Hardware, ArgoCD Sync Issues, Cert-Manager, Longhorn, Mosquitto, Sealed Secrets, Traefik Ingress Error codes, ZFS Monitoring
 * [Goldilocks](./goldilocks/) - Uses [Vertical Pod Autoscaler (VPA)](./vpa/) to make recommendations on container limit and request recommendations, includes a dashboard.
+* [Pod Restart Info Collector](./pod-restart-info-collector/) [ArgoCD Helm Application Based] - Controller to monitor and provide detailed alerts when pods restart
 * [Mosquitto](./mosquitto/) [Kustomize Based] - Eclipse Mosquitto is a lightweight MQTT Message Broker
 * [Mosquitto](./mosquitto-exporter-argocd-helm/) [ArgoCD Helm Application Based] - Eclipse Mosquitto lightweight MQTT Message Broker
 * [Mosquitto-Exporter](./mosquitto-exporter/) - Exposes Mosquitto MQTT Broker Metrics as Prometheus Service Monitor
