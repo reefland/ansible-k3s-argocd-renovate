@@ -53,7 +53,10 @@ k3s:
 
   # When containerd for ZFS is enabled, this will be added to k3s_exec_options
   k3s_containerd_options:
-    - "--container-runtime-endpoint unix:///run/containerd/containerd.sock"
+    - "--snapshotter=zfs"                                                     # Tell K3s about ZFS Snapshotter
+    - "--kubelet-arg=image-gc-low-threshold=50"                               # End Garbage Collection of Images at 50% disk space free
+    - "--kubelet-arg=image-gc-high-threshold=65"                              # Start Garbage Collection of Images at 65% disk space used
+    - "--container-runtime-endpoint unix:///run/containerd/containerd.sock"   # External containerd socket location
 
   # When "disable_local_path_as_default_storage_class = true" this will be added to k3s_exec_options
   cli_disable_storage_options:              
