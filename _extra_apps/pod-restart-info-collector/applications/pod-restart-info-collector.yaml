@@ -1,0 +1,58 @@
+# Values: https://github.com/airwallex/k8s-pod-restart-info-collector/blob/master/helm/values.yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argocd
+  name: pod-restart-info-collector
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "14"  # Lower the number the sooner to deploy
+spec:
+  project: default
+  source:
+    chart: k8s-pod-restart-info-collector
+    repoURL: https://reefland.github.io/helm-charts
+    targetRevision: 0.1.1
+    helm:
+      values: |
+        image:
+          repository: devopsairwallex/k8s-pod-restart-info-collector
+          # renovate: datasource=docker devopsairwallex/k8s-pod-restart-info-collector
+          tag: "v1.0.0"
+
+        # clusterName: "gtpn-prod-sg"
+        # slackWebhookUrl: "https://hooks.slack.com/services/xxxxxx"
+        slackChannel: "restart-info-nonprod"
+        slackUsername: "k8s-pod-restart-info-collector"
+        muteSeconds: 600
+
+        resources: 
+          limits:
+            cpu: 40m
+            memory: 50Mi
+          requests:
+            cpu: 10m
+            memory: 15Mi
+
+        imagePullSecrets: []
+        nameOverride: ""
+        fullnameOverride: "pod-restart-info-collector"
+        podAnnotations: {}
+        podSecurityContext: {}
+        nodeSelector: {}
+        tolerations: []
+        affinity: {}
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: pod-restart-info-collector
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true
