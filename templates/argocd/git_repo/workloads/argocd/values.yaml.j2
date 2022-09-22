@@ -77,7 +77,6 @@ argo-cd:
     extraArgs:
       - --insecure
       - --rootpath={{install.argocd.dashboard.path}}
-      - --enable-gzip
 
     resources:
       limits:
@@ -88,6 +87,8 @@ argo-cd:
         memory: 64Mi
 
     config:
+      # Set to "false" to disable terminal access to pods
+      exec.enabled: "true"
       repositories: |
         - url: {{install.argocd.repository.url}}
           name: {{install.argocd.repository.name}}
