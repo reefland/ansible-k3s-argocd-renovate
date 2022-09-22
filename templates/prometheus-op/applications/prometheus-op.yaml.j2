@@ -25,6 +25,10 @@ spec:
         ## Provide a name to substitute for the full names of resources
         fullnameOverride: "prometheus"
 
+        global:
+          rbac:
+            pspEnabled: false
+
         kubeApiServer:
           enabled: true
 
@@ -123,6 +127,8 @@ spec:
           fullnameOverride: kube-state-metrics
           selfMonitor:
             enabled: true
+          podSecurityPolicy:
+            enabled: false
           prometheus:
             monitor:
               enabled: true
@@ -146,6 +152,8 @@ spec:
             - --collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
           service:
             portName: http-metrics
+          rbac:
+            pspEnabled: false
           prometheus:
             monitor:
               enabled: true
@@ -198,6 +206,8 @@ spec:
         grafana:
           fullnameOverride: "grafana"
           enabled: true
+          rbac:
+            pspEnabled: false
 
           grafana.ini:
             server:
