@@ -58,6 +58,7 @@ spec:
             accessMode: ReadWriteOnce
             size: 100Mi
             retain: true
+            storageClass: freenas-iscsi-csi
             # existingClaim:
             # volumeName:
 

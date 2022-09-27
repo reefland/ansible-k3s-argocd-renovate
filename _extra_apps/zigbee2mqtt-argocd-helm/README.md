@@ -24,6 +24,22 @@ Review file `zigbee2mqtt-argocd-helm/applications/zigbee2mqtt.yaml`
       privileged: false
   ```
 
+* For Persistent Storage, not much is needed.  However the storage is somewhat write intensive which means it is not a good fit for Longhorn storage.  The storage class is set to Democratic CSI's iSCSI.  You may need to adjust this to fit your needs:
+
+  ```yaml
+    persistence:
+      data:
+        enabled: true
+        mountPath: /data
+        type: pvc
+        accessMode: ReadWriteOnce
+        size: 100Mi
+        retain: true
+        storageClass: freenas-iscsi-csi
+        # existingClaim:
+        # volumeName:
+  ```
+
 * Affinity by default is set to be scheduled on the same node as Mosquitto MQTT Broker via `podAffinity`
   * If using USB coordinator device, you **WILL** need to change this section to be based on `nodeAffinity` to always schedule on node with the USB device
 
