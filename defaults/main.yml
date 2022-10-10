@@ -86,7 +86,7 @@ install:
     enabled: true
 
     # Select Release to install: https://artifacthub.io/packages/helm/argo/argo-cd
-    install_version: "{{argocd_install_version|default('4.9.7')}}" 
+    install_version: "{{argocd_install_version|default('5.5.16')}}" 
     
     namespace: "argocd"
 

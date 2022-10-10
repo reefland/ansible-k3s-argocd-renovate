@@ -7,6 +7,15 @@ argo-cd:
     secret:
       createSecret: false
 
+    # Argo CD configuration parameters
+    ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cmd-params-cm.yaml
+    params:
+      ## Server properties
+      # Traefik Proxy will handle TLS
+      server.insecure: true
+      # -- Used if Argo CD is running behind reverse proxy under subpath different from /
+      server.rootpath: '{{install.argocd.dashboard.path}}'
+
 ###[ Application Controller Settings ]#########################################
   controller:
     name: application-controller
@@ -74,9 +83,10 @@ argo-cd:
   server:
     name: server
     revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
-    extraArgs:
-      - --insecure
-      - --rootpath={{install.argocd.dashboard.path}}
+# Deprecated in ArgoCD Chart 5.5, moved to configs.parms section
+#    extraArgs:
+#      - --insecure
+#      - --rootpath={{install.argocd.dashboard.path}}
 
     resources:
       limits:
