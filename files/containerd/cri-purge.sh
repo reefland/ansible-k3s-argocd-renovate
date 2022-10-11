@@ -16,7 +16,7 @@
 #          
 AUTHOR="Richard J. Durso"
 RELDATE="10/11/2022"
-VERSION="0.02"
+VERSION="0.03"
 #############################################################################
 
 ###[ Define Variables ]#######################################################
@@ -37,11 +37,12 @@ __usage() {
   honor semantic versioning always leaving the newest version of the downloaded
   image and only delete previous version(s). 
 
-  -h, --help  : This usage statement.
-  -l, --list  : List cached images and which could be purged.
-  -p, --purge : List cached images and PURGE/PRUNE older images.
+  -h, --help          : This usage statement.
+  -l, --list          : List cached images and which could be purged.
+  -p, --purge         : List cached images and PURGE/PRUNE older images.
+  -s, --show-skipped  : List images to be skipped (humans to clean up)
 
-  The following version tags are ignored (not deleted): ${SKIP_THESE_TAGS}
+  Following version tags are skipped/ignored (not deleted): ${SKIP_THESE_TAGS}
 
   "
 }
@@ -90,7 +91,7 @@ __generate_image_list() {
 # recently downloaded image is retained and all older versions are purged to
 # free up local disk storage.
 #
-# If $1 is "PURGE" then this route will act and purge specific image(s), any
+# If $1 is "PURGE" then this routine will act and purge specific image(s), any
 # other value will just display of a list of images that could be purged.
 
 __process_images() {
@@ -113,9 +114,8 @@ __process_images() {
     # If only 1 version detected, keep it.
     if [[ ${NUM_IMAGES} -eq 1 ]]; then
       echo " - Keep TAG: $(echo ${IMAGES} | awk '{ printf "%s (%s)\n", $2, $4 }')"
-      #echo
     else
-      # print last line of the array, shoudl be one to keep.
+      # print last line of the array, should be one to keep.
       echo " - Keep TAG: $(printf %s\\n "${IMAGES[@]: -1}"| awk '{ printf "%s (%s)\n", $2, $4 }')"
 
       for (( i=0; i<$(( ${#IMAGES[@]}-1 )); i++ )) 
@@ -127,7 +127,7 @@ __process_images() {
           # Remove the Specific Image:TAG
           ${CRI_CMD} rmi $(echo ${IMAGES[$i]} |awk '{ printf "%s:%s\n", $1, $2 }') > /dev/null 2>&1
         else
-          echo - Purgable TAG: $( echo ${IMAGES[$i]} | awk '{ printf "%s (%s)\n", $2, $4 }')
+          echo - Purgeable TAG: $( echo ${IMAGES[$i]} | awk '{ printf "%s (%s)\n", $2, $4 }')
         fi
       done
       echo
@@ -137,6 +137,15 @@ __process_images() {
 
 ###[ Main Section ]##########################################################
 
+# Confirm crictl is installed
+if ! command -v ${CRI_CMD} >/dev/null 2>&1; then
+  echo
+  echo "* ERROR: crictl command not found, install missing application or update script variable CRI_CMD"
+  echo
+  exit 2
+fi
+
+# Confirm sudo or root equivilant access
 if [ $(id -u) -ne 0 ]; then
   echo
   echo "* ERROR: ROOT privilage required to access CRICTL binaries."
@@ -145,18 +154,19 @@ if [ $(id -u) -ne 0 ]; then
   exit 1
 fi
 
+# Process argument list
 if [ "$#" -ne 0 ]; then
-	while [ "$#" -gt 0 ]
-	do
-		case "$1" in
-		-h|--help)
-			__usage
-			exit 0
-			;;
-		-v|--version)
-			echo "$VERSION"
-			exit 0
-			;;
+  while [ "$#" -gt 0 ]
+  do
+    case "$1" in
+    -h|--help)
+      __usage
+      exit 0
+      ;;
+    -v|--version)
+      echo "$VERSION"
+      exit 0
+      ;;
     -l|--list)
       __process_images LIST
       exit 0
@@ -169,19 +179,23 @@ if [ "$#" -ne 0 ]; then
       echo Disk Space Change: $(numfmt --to iec --format "%8.4f" $((START_DISK_SPACE-END_DISK_SPACE)) )
       exit 0
       ;;
-		--)
-			break
-			;;
-		-*)
-			echo "Invalid option '$1'. Use --help to see the valid options" >&2
-			exit 1
-			;;
-		# an option argument, continue
-		*)  ;;
-		esac
-		shift
-	done
+    -s|--show-skipped)
+      __generate_image_list
+      exit 0
+      ;;
+    --)
+      break
+      ;;
+    -*)
+      echo "Invalid option '$1'. Use --help to see the valid options" >&2
+      exit 1
+      ;;
+    # an option argument, continue
+    *)  ;;
+    esac
+    shift
+  done
 else
-	__usage
-	exit 1
+  __usage
+  exit 1
 fi
