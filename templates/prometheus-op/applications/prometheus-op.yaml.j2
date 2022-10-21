@@ -275,6 +275,13 @@ spec:
     server: https://kubernetes.default.svc
     namespace: {{install.prometheus_operator.namespace}}
 
+  # Allow changes to number of replicas (down to zero)
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jsonPointers:
+        - /spec/replicas
+
   syncPolicy:
     automated:
       prune: true
