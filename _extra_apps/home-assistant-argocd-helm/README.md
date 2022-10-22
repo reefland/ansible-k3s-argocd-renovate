@@ -36,7 +36,7 @@ Review file `home-assistant-argocd-helm/applications/home-assistant.yaml`
                 topologyKey: "kubernetes.io/hostname"
   ```
 
-* The `ingress` middleware reference points to the Traefik CRD for without basic authentication as Home Assistant provides its own authentication:
+* The `ingress` middleware reference points to the Traefik CRD without basic authentication as Home Assistant provides its own authentication:
 
   ```yaml
     ingress:
