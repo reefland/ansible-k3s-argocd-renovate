@@ -1,0 +1,100 @@
+# References:
+# https://github.com/reefland/helm-charts/tree/main/charts/apps/trilium-notes
+# https://github.com/reefland/helm-charts/tree/main/charts/apps/trilium-notes/values.yaml
+# https://github.com/reefland/helm-charts/blob/main/charts/library/common/values.yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argocd
+  name: trilium-notes
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"  # Lower the number the sooner to deploy
+spec:
+  project: default
+  revisionHistoryLimit: 3
+
+  source:
+    chart: trilium-notes
+    repoURL: https://reefland.github.io/helm-charts
+    targetRevision: 0.0.1
+    helm:
+      values: |
+        image:
+          repository: zadam/trilium
+          # renovate: datasource=docker depName=zadam/trilium
+          tag: "0.55.1"
+
+        controller:
+          enabled: true
+          # Valid options are deployment, daemonset or statefulset
+          type: statefulset
+          revisionHistoryLimit: 3
+
+        env:
+          TZ: "America/New York"
+
+        resources:
+          requests:
+            cpu: "75m"
+            memory: "128Mi"
+          limits:
+            cpu: "150m"
+            memory: "384Mi"
+
+        persistence:
+          config:
+            enabled: true
+            mountPath: /home/node/trilium-data
+            type: pvc
+            accessMode: ReadWriteOnce
+            size: 10Gi
+            retain: true
+            storageClass: freenas-iscsi-csi
+            # existingClaim:
+            # volumeName:
+
+        service:
+          main:
+            enabled: true
+            primary: true
+            type: ClusterIP
+            ports:
+              http:
+                enabled: true
+                port: 8080
+                # If there is more than 1 service, make sure that only 1 service is marked as primary.
+                primary: true
+
+        ingress:
+          main:
+            enabled: true
+            annotations:
+              traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+              traefik.ingress.kubernetes.io/router.middlewares: "traefik-x-forward-https-headers@kubernetescrd,traefik-compress@kubernetescrd"
+            hosts:
+              - host: trilium.example.com
+                paths:
+                  - path: /
+                    pathType: Prefix
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: trilium-notes
+
+  # Allow changes to number of replicas (down to zero)
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jsonPointers:
+        - /spec/replicas
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true
