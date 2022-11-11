@@ -85,7 +85,7 @@ The `codeserver` is an editor you can use to maintain configuration files using 
 
 Unfortunately Home Assistant does not allow you to upload or restore a backup within the containerized version of Home Assistant.  It only allows you to create a backup for importing into Home Assistant OS version.
 
-However, you can create a backup from an existing Home Assistant (any verion) download the backup and then manually copy that backup file into the Home Assistant version under Kubernetes.
+However, you can create a backup from an existing Home Assistant (any version) download the backup and then manually copy that backup file into the Home Assistant version under Kubernetes.
 
 My Home Assistant created a backup file, when downloaded was named `e8a6c2c4.tar` about 1200 MB in size. I used the following to transfer the backup file into the Pod:
 
