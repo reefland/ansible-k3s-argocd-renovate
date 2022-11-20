@@ -20,7 +20,7 @@ spec:
   source:
     chart: rook-ceph
     repoURL: https://charts.rook.io/release
-    targetRevision: v1.10.5
+    targetRevision: v1.10.6
     helm:
       # https://github.com/rook/rook/blob/master/deploy/charts/rook-ceph/values.yaml
       values: |
