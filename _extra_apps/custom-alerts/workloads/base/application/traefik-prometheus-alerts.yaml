@@ -8,15 +8,16 @@ spec:
   groups:
     - name: NodeAlerts                                         # Name of the prometheus rule group
       rules:
+        # Commented out due to high occurrence but no application impact
         # Traefik service 401 error rate is above 5% 
-        - alert: TraefikHighHttp401ErrorRateService
-          expr: sum(rate(traefik_service_requests_total{code="401"}[3m])) by (service) / sum(rate(traefik_service_requests_total[3m])) by (service) * 100 > 5
-          for: 1m
-          labels:
-            severity: warning
-          annotations:
-            summary: Traefik high HTTP 401 Unauthorized error rate service (instance {{ $labels.instance }})
-            description: "Traefik service 401 Unauthorized error rate is above 5%\n  VALUE = {{ $value | humanize }}%\n  LABELS = {{ $labels }}"
+        #- alert: TraefikHighHttp401ErrorRateService
+        #  expr: sum(rate(traefik_service_requests_total{code="401"}[3m])) by (service) / sum(rate(traefik_service_requests_total[3m])) by (service) * 100 > 5
+        #  for: 1m
+        #  labels:
+        #    severity: warning
+        #  annotations:
+        #    summary: Traefik high HTTP 401 Unauthorized error rate service (instance {{ $labels.instance }})
+        #    description: "Traefik service 401 Unauthorized error rate is above 5%\n  VALUE = {{ $value | humanize }}%\n  LABELS = {{ $labels }}"
 
         # Traefik service 403 error rate is above 5% 
         - alert: TraefikHighHttp403ErrorRateService
