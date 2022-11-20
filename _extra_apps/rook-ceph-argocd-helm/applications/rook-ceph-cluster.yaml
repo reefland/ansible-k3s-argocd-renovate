@@ -42,11 +42,11 @@ spec:
             affinity: {}
             resources:
               limits:
-                cpu: "200m"
-                memory: "512Mi"
-              requests:
                 cpu: "100m"
-                memory: "128Mi"
+                memory: "384Mi"
+              requests:
+                cpu: "50m"
+                memory: "64Mi"
 
           # monitoring requires Prometheus to be pre-installed
           monitoring:
@@ -167,25 +167,25 @@ spec:
             resources:
               mgr:
                 limits:
-                  cpu: "300m"
-                  memory: "768Mi"
-                requests:
-                  cpu: "125m"
-                  memory: "384Mi"
-              mon:
-                limits:
-                  cpu: "500m"
-                  memory: "1Gi"
+                  cpu: "200m"
+                  memory: "832Mi"
                 requests:
                   cpu: "100m"
                   memory: "512Mi"
+              mon:
+                limits:
+                  cpu: "250m"
+                  memory: "1Gi"
+                requests:
+                  cpu: "50m"
+                  memory: "512Mi"
               osd:
                 limits:
-                  cpu: "500m"
+                  cpu: "400m"
                   memory: "2Gi"
                 requests:
                   cpu: "100m"
-                  memory: "384Mi"
+                  memory: "768Mi"
               prepareosd:
                 # limits: It is not recommended to set limits on the OSD prepare job since it's a one-time burst for memory
                 # that must be allowed to complete without an OOM kill
@@ -201,17 +201,17 @@ spec:
                   memory: "40Mi"
               crashcollector:
                 limits:
-                  cpu: "300m"
-                  memory: "60Mi"
+                  cpu: "200m"
+                  memory: "50Mi"
                 requests:
                   cpu: "25m"
-                  memory: "60Mi"
+                  memory: "50Mi"
               logcollector:
                 limits:
-                  cpu: "250m"
-                  memory: "1Gi"
+                  cpu: "150m"
+                  memory: "768Mi"
                 requests:
-                  cpu: "100m"
+                  cpu: "50m"
                   memory: "100Mi"
               cleanup:
                 limits:
