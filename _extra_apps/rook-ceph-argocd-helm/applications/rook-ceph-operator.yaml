@@ -14,7 +14,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "5"  # Lower the number the sooner to deploy
 spec:
-  project: storage
+  project: default
   revisionHistoryLimit: 3
   
   source:

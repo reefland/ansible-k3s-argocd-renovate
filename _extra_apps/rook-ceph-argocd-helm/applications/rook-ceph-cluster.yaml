@@ -14,7 +14,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "7"  # Lower the number the sooner to deploy
 spec:
-  project: storage
+  project: default
   revisionHistoryLimit: 3
   
   source:
@@ -237,9 +237,9 @@ spec:
                 osdsPerDevice: "1" # SSD / NVMe devices (HDD should use 1)
                 storeType: bluestore
               devices:
-                - name: "/dev/disk/by-id/nvme-Samsung_SSD_980_1TB_S64ANS0RB07316T-part5" #k3s01
-                - name: "/dev/disk/by-id/nvme-Samsung_SSD_980_1TB_S64ANS0T131593J-part5" #k3s02
-                - name: "/dev/disk/by-id/nvme-Samsung_SSD_980_1TB_S64ANS0T201060J-part5" #k3s03
+                - name: "/dev/disk/by-id/nvme-Samsung_SSD_980_1TB_S64AN07316T-part5" #k3s01
+                - name: "/dev/disk/by-id/nvme-Samsung_SSD_980_1TB_S64AN31593J-part5" #k3s02
+                - name: "/dev/disk/by-id/nvme-Samsung_SSD_980_1TB_S64AN01060J-part5" #k3s03
 
           ingress:
             dashboard:
