@@ -142,10 +142,9 @@ k3s_control:
 
 k3s_workers:
   hosts:
-    k3s04.example.com:                        # Worker #1 (add more if needed)
+    k3s04.example.com:                        # Worker #1
       containerd_pool: "rpool"
-
-    k3s04.example.com:                        # Worker #1 (add more if needed)
+    k3s05.example.com:                        # Worker #2 (add more if needed)
       containerd_pool: "rpool"
 
   vars:                                       # Applies to all worker nodes
