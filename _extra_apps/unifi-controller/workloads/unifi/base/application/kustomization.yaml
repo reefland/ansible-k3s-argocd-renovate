@@ -1,5 +1,0 @@
-resources:
-  - longhorn-pvc.yaml
-  - statefulset.yaml
-  - service.yaml
-  - ingress-route.yaml

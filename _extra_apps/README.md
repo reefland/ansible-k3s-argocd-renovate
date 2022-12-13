@@ -37,7 +37,6 @@ Each Application uses this directory structure:
 * [Mosquitto](./mosquitto-argocd-helm/) [ArgoCD Helm Application Based] - Eclipse Mosquitto lightweight MQTT Message Broker
 * [Mosquitto-Exporter](./mosquitto-exporter/) - Exposes Mosquitto MQTT Broker Metrics as Prometheus Service Monitor
 * [Rook-Ceph](./rook-ceph-argocd-helm/) [ArgoCD Helm Application Based] - Rook operator and Ceph Cluster Storage for Block, FileSystem and Object (S3) storage
-* [Unifi Controller](./unifi-controller/) [Kustomize Based] -Wireless Network Management Software from Ubiquiti
 * [Unifi Controller](./unifi-controller-argocd-helm/) [ArgoCD Helm Application Based] - Wireless Network Management Software from Ubiquiti
 * [Unpoller-Exporter](./unpoller-exporter/) - Exposes [Unifi Controller](./unifi-controller/) Management Software Metrics as Prometheus Pod Monitor
 * [Vertical Pod Autoscaler (VPA)](./vpa/) - Enables ability to make container resource limit and request recommendations, used with [Goldilocks](./goldilocks/)

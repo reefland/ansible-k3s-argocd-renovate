@@ -75,7 +75,7 @@ Note the Unifi Controller application can take several minutes to become ready. 
 
 ---
 First time connecting should show this screen:
-![Unifi Controller Initial Installation Wizard](../unifi-controller/unifi-controller-initial-install.png)
+![Unifi Controller Initial Installation Wizard](./unifi-controller-initial-install.png)
 
 From here you can restore your configuration from a backup or start building your network from scratch.  
 
@@ -83,6 +83,6 @@ From here you can restore your configuration from a backup or start building you
 
 One all the kinks are worked out, your network devices will start reporting in:
 
-![Unifi Controller Console Screen Shot](../unifi-controller/unifi-controller-screenshot.png)
+![Unifi Controller Console Screen Shot](./unifi-controller-screenshot.png)
 
 [Return to Application List](../)
