@@ -184,6 +184,8 @@ NAMESPACE   NAME            READY   SECRET          AGE
 traefik     wildcard-cert   True    wildcard-cert   5h6m
 ```
 
+* If no `wildcard-cert` is listed ("No resources found" message), then see help for [missing wildcard certificate](./lets-encrypt-missing-wildcard-cert.md).
+
 ### Show Certificate Metadata
 
 ```shell
