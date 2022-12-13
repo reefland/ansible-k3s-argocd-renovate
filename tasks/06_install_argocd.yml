@@ -3,148 +3,154 @@
 # Install ArgoCD to get GitOPS methodology in place.
 #
 
-###[ Install ArgoCD ]##############################################################################
+# [ Install ArgoCD ]###############################################################################
 - name: Install ArgoCD Block
-  block:
-  - name: Create directory for ArgoCD files for non-root user
-    file:
-      path: "/home/{{install.os.non_root_user.name}}/argocd/"
-      state: directory
-      mode: 0770
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-
-  - name: Clone Remote ArgoCD Repository
-    ansible.builtin.git:
-      repo: "{{install.argocd.repository.url|urlsplit('scheme')}}://{{install.argocd.repository.username}}:{{install.argocd.repository.password}}@{{install.argocd.repository.url|urlsplit('hostname')}}{{install.argocd.repository.url|urlsplit('path')}}"
-      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
-      force: yes
-
-  - name: Process Initial ArgoCD Repository
-    ansible.builtin.include_tasks: "process_app_to_deploy.yml"
-    loop:
-      - { enabled: true, name: "argocd/git_repo" }
-    when:
-      - deploy_app.enabled == true
-    loop_control:
-      loop_var: deploy_app
-      label: "{{deploy_app.name}}"
-
-  # Ansible helm was unable to process chart dependencies, got this message:
-  # Error: An error occurred while checking for chart dependencies. You may need to run `helm dependency build` to fetch missing dependencies: found in Chart.yaml, but missing in charts/ directory: argo-cd
-  # Workaround - create name space manually and run dependency update directly.
-
-  - name: Create Namespaces
-    kubernetes.core.k8s:
-      state: present
-      name: "{{item}}"
-      kind: Namespace
-    loop:
-      - "{{install.argocd.namespace}}"
-      - "{{install.renovate.namespace}}"
-    
-  - name: Run Helm Dependency Update Directly
-    ansible.builtin.command:
-      argv:
-        - /usr/sbin/helm
-        - dependency
-        - update
-        - "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd"
-
-  - name: Process Default Admin Credential
-    ansible.builtin.include_tasks: process_secret.yml
-    loop:
-      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/argocd_admin_secret.yaml", delete_src: "yes", process: "yes" }
-      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/argocd_secret.yaml", delete_src: "yes", process: "yes" }
-      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/argocd_notification_secret.yaml", delete_src: "yes", process: "yes" }
-      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/renovate_secret.yaml", delete_src: "yes", process: "yes" }
-    loop_control:
-      loop_var: deploy_secret
-      label: "{{deploy_secret}}"      
-
-  - name: Install ArgoCD Helm Using Local Files
-    kubernetes.core.helm:
-      name: argocd
-      atomic: yes
-      release_namespace: "{{install.argocd.namespace}}"
-      chart_ref: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/argocd"
-      wait: yes
-    when:
-      - '"update_argocd_files" not in ansible_run_tags'
-
-  - name: Create root ArgoCD Application
-    kubernetes.core.k8s:
-      state: present
-      src: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/applications.yaml"
-
-  - name: Check Argo Pods are Running
-    k8s_info:
-      kind: Pod
-      namespace: "{{install.argocd.namespace}}"
-      label_selectors:
-        - "{{pod_label}}"
-      wait: yes
-      wait_condition:
-        type: Ready
-      wait_sleep: 5
-      wait_timeout: 120
-    loop:
-      - "app.kubernetes.io/name=argocd-server"
-      - "app.kubernetes.io/name=argocd-repo-server"
-      - "app.kubernetes.io/name=argocd-application-controller"
-      - "app.kubernetes.io/name=argocd-applicationset-controller"
-    loop_control:
-      loop_var: pod_label
-      label: "{{pod_label}}"
-
-  - name: Check Renovate Kubernetes CronJob is Scheduled
-    k8s_info:
-      kind: CronJob
-      namespace: "{{install.renovate.namespace}}"
-      label_selectors:
-        - "app.kubernetes.io/instance=renovate"
-
-  - name: Check-in Any New or Modified Files
-    include_tasks: "checkin_argocd_repo_files.yml"
-    vars:
-      commit_message: "- ArgoCD Updated Files"  # Keep under 30 chars
-
-  # Let Helm know not to manage ArgoCD anymore
-  - name: Remove ArgoCD secrets from Helm
-    ansible.builtin.command:
-      argv:
-        - /usr/local/bin/kubectl
-        - delete
-        - secret
-        - -l
-        - owner=helm,name=argocd
-        - -n
-        - "{{install.argocd.namespace}}"
-
-  - name: Delete Local Working ArgoCD Git Repo as Cleanup
-    ansible.builtin.file:
-      path: "/home/{{install.os.non_root_user.name}}/argocd/"
-      state: absent
-
-  when: 
+  when:
     - inventory_hostname == groups['k3s_control'][0]
-    - install.argocd.enabled|default(false)|bool == true
+    - install.argocd.enabled | default(false) | bool
   tags:
     - install_argocd
     - update_argocd_files
+  block:
+    - name: Create directory for ArgoCD files for non-root user
+      ansible.builtin.file:
+        path: "/home/{{ install.os.non_root_user.name }}/argocd/"
+        state: directory
+        mode: "0770"
+        owner: "{{ install.os.non_root_user.name }}"
+        group: "{{ install.os.non_root_user.name }}"
+
+    - name: Clone Remote ArgoCD Repository
+      ansible.builtin.git: # noqa yaml[line-length] latest[git]
+        repo: "{{ install.argocd.repository.url | urlsplit('scheme') }}://{{ install.argocd.repository.username }}:{{ install.argocd.repository.password }}@{{ install.argocd.repository.url | urlsplit('hostname') }}{{ install.argocd.repository.url | urlsplit('path') }}"
+        dest: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/"
+        force: true
+
+    - name: Process Initial ArgoCD Repository
+      ansible.builtin.include_tasks: "process_app_to_deploy.yml"
+      loop:
+        - { enabled: true, name: "argocd/git_repo" }
+      when:
+        - deploy_app.enabled
+      loop_control:
+        loop_var: deploy_app
+        label: "{{ deploy_app.name }}"
+
+    # Ansible helm was unable to process chart dependencies, got this message:
+    # Error: An error occurred while checking for chart dependencies. You may need to run `helm dependency build` to fetch missing dependencies: found in Chart.yaml, but missing in charts/ directory: argo-cd
+    # Workaround - create name space manually and run dependency update directly.
+
+    - name: Create Namespaces
+      kubernetes.core.k8s:
+        state: present
+        name: "{{ item }}"
+        kind: Namespace
+      loop:
+        - "{{ install.argocd.namespace }}"
+        - "{{ install.renovate.namespace }}"
+
+    - name: Run Helm Dependency Update Directly
+      ansible.builtin.command:
+        argv:
+          - /usr/sbin/helm
+          - dependency
+          - update
+          - "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/workloads/argocd"
+      register: cmd
+      changed_when: cmd.rc == 0
+
+    - name: Process Default Admin Credential
+      ansible.builtin.include_tasks: process_secret.yml
+      loop:
+        - { source: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/workloads/secrets/argocd_admin_secret.yaml", delete_src: "yes", process: "yes" }
+        - { source: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/workloads/secrets/argocd_secret.yaml", delete_src: "yes", process: "yes" }
+        - { source: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/workloads/secrets/argocd_notification_secret.yaml", delete_src: "yes", process: "yes" }
+        - { source: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/workloads/secrets/renovate_secret.yaml", delete_src: "yes", process: "yes" }
+      loop_control:
+        loop_var: deploy_secret
+        label: "{{ deploy_secret }}"
+
+    - name: Install ArgoCD Helm Using Local Files
+      kubernetes.core.helm:
+        name: argocd
+        atomic: true
+        release_namespace: "{{ install.argocd.namespace }}"
+        chart_ref: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/workloads/argocd"
+        wait: true
+      when:
+        - '"update_argocd_files" not in ansible_run_tags'
+
+    - name: Create root ArgoCD Application
+      kubernetes.core.k8s:
+        state: present
+        src: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/applications.yaml"
+
+    - name: Check Argo Pods are Running
+      kubernetes.core.k8s_info:
+        kind: Pod
+        namespace: "{{ install.argocd.namespace }}"
+        label_selectors:
+          - "{{ pod_label }}"
+        wait: true
+        wait_condition:
+          type: Ready
+        wait_sleep: 5
+        wait_timeout: 120
+      loop:
+        - "app.kubernetes.io/name=argocd-server"
+        - "app.kubernetes.io/name=argocd-repo-server"
+        - "app.kubernetes.io/name=argocd-application-controller"
+        - "app.kubernetes.io/name=argocd-applicationset-controller"
+      loop_control:
+        loop_var: pod_label
+        label: "{{ pod_label }}"
+
+    - name: Check Renovate Kubernetes CronJob is Scheduled
+      kubernetes.core.k8s_info:
+        kind: CronJob
+        namespace: "{{ install.renovate.namespace }}"
+        label_selectors:
+          - "app.kubernetes.io/instance=renovate"
+
+    - name: Check-in Any New or Modified Files
+      ansible.builtin.include_tasks: "checkin_argocd_repo_files.yml"
+      vars:
+        commit_message: "- ArgoCD Updated Files"  # Keep under 30 chars
+
+    # Let Helm know not to manage ArgoCD anymore
+    - name: Remove ArgoCD secrets from Helm
+      ansible.builtin.command:
+        argv:
+          - /usr/local/bin/kubectl
+          - delete
+          - secret
+          - -l
+          - owner=helm,name=argocd
+          - -n
+          - "{{ install.argocd.namespace }}"
+      register: cmd
+      changed_when: cmd.rc == 0
+
+    - name: Delete Local Working ArgoCD Git Repo as Cleanup
+      ansible.builtin.file:
+        path: "/home/{{ install.os.non_root_user.name }}/argocd/"
+        state: absent
 
 # Install ArgoCD CLI on all Control Nodes
 - name: Install ArgoCD CLI Executable
   ansible.builtin.shell: |
-    VERSION=$(kubectl get pods -n {{install.argocd.namespace}} -o jsonpath="{.items[*].spec.containers[*].image}" | tr -s '[[:space:]]' '\n' | grep argocd | uniq | cut -d ":" -f 2)
+    set -euo pipefail
+    VERSION=$(kubectl get pods -n {{ install.argocd.namespace }} -o jsonpath="{.items[*].spec.containers[*].image}" | tr -s '[[:space:]]' '\n' | grep argocd | uniq | cut -d ":" -f 2)
     echo "Fetch ArgoCD ${VERSION}"
-    
+
     curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/download/$VERSION/argocd-linux-amd64
-    
+
     install -m 755 argocd /usr/local/bin/argocd
-  when: 
+  register: cmd
+  changed_when: cmd.rc == 0
+  when:
     - inventory_hostname in groups['k3s_control']
-    - install.argocd.enabled|default(false)|bool == true
+    - install.argocd.enabled | default(false) | bool
   tags:
     - install_argocd
     - update_argocd_cli

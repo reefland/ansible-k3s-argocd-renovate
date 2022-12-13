@@ -1,12 +1,12 @@
 ---
 
-###[ Linux OS Configuration ]####################################################################
+# [ Linux OS Configuration ]#######################################################################
 os:
   central_logging:
     packages:
       - lnav                                      # Handy program to watch logs in real-time
 
-###[ rsyslog Configuration ]######################################################################
+# [ rsyslog Configuration ]########################################################################
 rsyslog:
   config_file: "/etc/rsyslog.conf"                # path to rsyslog conf file
   central_config: "/etc/rsyslog.d/central.conf"   # path to central logging config
@@ -17,8 +17,8 @@ rsyslog:
     group: "syslog"
     mode: "0750"
 
-###[ K3s Installation Settings ]###################################################################
-kubeconfig_path: "/home/{{install.os.non_root_user.name}}/.kube/config"
+# [ K3s Installation Settings ]####################################################################
+kubeconfig_path: "/home/{{ install.os.non_root_user.name }}/.kube/config"
 
 k3s:
   # Location for K3s installation script
@@ -29,27 +29,23 @@ k3s:
 
   # Packages required for Ansible to issue Kubernetes and commands
   packages:
-    - python3-pip
-    - lm-sensors                                            # For Hardware temperature monitoring
+    - "python3-pip"
   packages_pip:
-    - openshift
-    - pyyaml
-    - kubernetes
+    - "openshift"
+    - "pyyaml"
+    - "kubernetes"
 
   k3s_init_options: >-
     {% if groups['k3s_control'] | length > 1 -%}
     {% if inventory_hostname == groups['k3s_control'][0] -%}
-    --cluster-init
-    {%- else %}
-    --server https://{{ groups['k3s_control'][0] }}:6443
-    {%- endif %}
-    --token {{ K3S_TOKEN|default('top_secret') }}
-    {%- endif %}
+    --cluster-init{%- else %}
+    --server https://{{ groups['k3s_control'][0] }}:6443{%- endif %}
+    --token {{ K3S_TOKEN | default('top_secret') }}{%- endif %}
 
   # This becomes the "INSTALL_K3S_EXEC=" CLI parameter
   k3s_exec_options:
-    - "{{k3s_cli_var|default('')|join(' ')}}"               # Options set in inventory or hosts vars
-    - "{{install.k3s.k3s_cli_var|default('')|join(' ')}}"   # Options set in defaults/main.yml
+    - "{{ k3s_cli_var | default('') | join(' ') }}"               # Options set in inventory or hosts vars
+    - "{{ install.k3s.k3s_cli_var | default('') | join(' ') }}"   # Options set in defaults/main.yml
 
   # When containerd for ZFS is enabled, this will be added to k3s_exec_options
   k3s_containerd_options:
@@ -59,15 +55,15 @@ k3s:
     - "--container-runtime-endpoint unix:///run/containerd/containerd.sock"   # External containerd socket location
 
   # When "disable_local_path_as_default_storage_class = true" this will be added to k3s_exec_options
-  cli_disable_storage_options:              
-    - "--disable local-storage"   
+  cli_disable_storage_options:
+    - "--disable local-storage"
 
   # When "install.kube_vip.lb.enabled == true"
   # this will be added to k3s_exec_options
-  cli_disable_loadbalancer_options:        
+  cli_disable_loadbalancer_options:
     - "--disable servicelb"
 
-###[ Containerd Installation Setting ]#############################################################
+# [ Containerd Installation Setting ]##############################################################
 containerd:
   # List of packages to install
   packages:
@@ -88,14 +84,14 @@ containerd:
   cni_dir_path: "/usr/lib/cni"
 
   runtime_endpoint: "/run/containerd/containerd.sock"
-  
-  zfs:
+
+  zfs: # noqa yaml[line-length]
     # ZFS Mount point for Containerd
     zfs_mount_point: "/var/lib/containerd/io.containerd.snapshotter.v1.zfs"
+    zfs_uuid_detect_cmd:
+      "zfs list -o name | grep -E -o '{{ install.containerd.zfs.pool }}/{{ install.containerd.zfs.dataset_prefix }}{{ install.containerd.zfs.uuid }}[^/]*{6}$' | rev | cut -c 1-6 | rev"
 
-    zfs_uuid_detect_cmd: "zfs list -o name | grep -E -o '{{install.containerd.zfs.pool}}/{{install.containerd.zfs.dataset_prefix}}{{install.containerd.zfs.uuid}}[^/]*{6}$' | rev | cut -c 1-6 | rev"
-
-###[ Sealed Secrets Configuration Settings ]#######################################################
+# [ Sealed Secrets Configuration Settings ]########################################################
 sealed_secrets:
   # This defines the default name used in Helm Chart, does not overwrite or change name to be used
   controller_name: "sealed-secrets"
@@ -103,7 +99,7 @@ sealed_secrets:
   # Sealed Secret Scope:
   # "strict" (default): Sealed Secret uses secret name and the namespace. You can’t change the
   #                     name or the namespaces of your SealedSecret once you've created it.
-  # "namespace-wide"    This scope allows you to freely rename the SealedSecret within the 
+  # "namespace-wide"    This scope allows you to freely rename the SealedSecret within the
   #                     namespace for which you’ve sealed the Secret.
   # "cluster-wide"      This scope allows you to freely move the Secret to any namespace and give
   #                     it any name you wish.
@@ -117,17 +113,17 @@ sealed_secrets:
 
   # Define name of Sealed Secret Private to use
   use_pre_generated_private_key_name: "sealed-secrets-key"
-  
+
   # Define label to be applied to pre-generated private key
   use_pre_generated_private_key_label: "sealedsecrets.bitnami.com/sealed-secrets-key: active"
 
-###[ Let's Encrypt Configuration Settings ]########################################################
+# #[ Let's Encrypt Configuration Settings ]########################################################
 lets_encrypt:
 
   le_staging_server: "https://acme-staging-v02.api.letsencrypt.org/directory"
   le_production_server: "https://acme-v02.api.letsencrypt.org/directory"
 
-###[ Longhorn Configuration Setting ]##############################################################
+# #[ Longhorn Configuration Setting ]###############################################################
 longhorn:
 
   packages:
@@ -136,23 +132,23 @@ longhorn:
   zfs:
     # Format of the filesystem used for Longhorn storage
     zvol:
-      format: "xfs" 
+      format: "xfs"
 
-###[ Democratic-csi iSCSI & NFS Installation Settings ]############################################
+# [ Democratic-csi iSCSI & NFS Installation Settings ]#############################################
 democratic_csi:
   iscsi:
     packages:
-    - open-iscsi
-    - lsscsi
-    - sg3-utils
-    - multipath-tools
-    - scsitools
+      - open-iscsi
+      - lsscsi
+      - sg3-utils
+      - multipath-tools
+      - scsitools
 
   nfs:
     packages:
-    - libnfs-utils
+      - libnfs-utils
 
-###[ Prometheus Operator Installation Settings ]###################################################
+# [ Prometheus Operator Installation Settings ]####################################################
 prometheus_op:
   packages:
     - lm-sensors                          # For Hardware temperature monitoring
@@ -163,5 +159,5 @@ prometheus_op:
   zfs_exporter:
     url: "https://github.com/pdf/zfs_exporter/releases/download"
     bin: "/usr/local/bin/zfs_exporter"
-    IP: "{{hostvars[inventory_hostname]['ansible_default_ipv4']['address']}}"
+    IP: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
     port: "9134"

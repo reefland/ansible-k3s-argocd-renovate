@@ -1,93 +1,107 @@
 ---
-### [ Install Prometheus Operator Block ]##########################################################
+# [ Install Prometheus Operator Block ]############################################################
 - name: Install Prometheus Operator Block
-  block:
-  - name: Install Prometheus Operator Support packages
-    apt:
-      name: "{{prometheus_op.packages}}"
-      state: present
-
-  - name: Create directory for Prometheus Operator files for non-root user
-    file:
-      path: "/home/{{install.os.non_root_user.name}}/prometheus-op"
-      state: directory
-      mode: '0700'
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-
-  # K3s does not have control-plane in a pod, get IPs of nodes in control-plane
-  - name: Determine InternalIP's for ControlPlane nodes
-    command: >
-      kubectl get nodes --selector=node-role.kubernetes.io/control-plane=true -o jsonpath='{.items[*].status.addresses[?(@.type=="InternalIP")].address}'
-    register: controlPlaneIPs
-
-  - name: Determine InternalIP's for Worker nodes
-    command: >
-      kubectl get nodes --selector=node-role.kubernetes.io/role=worker -o jsonpath='{.items[*].status.addresses[?(@.type=="InternalIP")].address}'
-    register: workerNodeIPs
-
-  - name: Clone Remote ArgoCD Repository
-    ansible.builtin.git:
-      repo: "{{install.argocd.repository.url|urlsplit('scheme')}}://{{install.argocd.repository.username}}:{{install.argocd.repository.password}}@{{install.argocd.repository.url|urlsplit('hostname')}}{{install.argocd.repository.url|urlsplit('path')}}"
-      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
-      force: yes
-
-  # Generate templates and then check into Git repository are defined below
-  - name: Process Deployable Enabled Applications
-    ansible.builtin.include_tasks: "process_app_to_deploy.yml"
-    loop:
-      - { enabled: true,  name: "prometheus-op", overwrite_files: "no" }
-      - { enabled: true,  name: "grafana-dashboards", overwrite_files: "yes"}
-    when:
-      - deploy_app.enabled == true
-    loop_control:
-      loop_var: deploy_app
-      label: "{{deploy_app}}"
-
-  - name: Create Namespace to Apply Secret to   # ArgoCD will have a copy namespace file
-    kubernetes.core.k8s:
-      state: present
-      kind: Namespace
-      name: "{{install.prometheus_operator.namespace}}"
-
-  - name: Apply Prometheus Operator Config Secrets
-    ansible.builtin.include_tasks: process_secret.yml
-    loop:
-      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-additional-scrape-configs_secret.yaml", delete_src: "yes", enabled: true }
-      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-alertmanager-config_secret.yaml", delete_src: "yes", enabled: true }
-      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/prometheus-grafana-admin_secret.yaml", delete_src: "yes", enabled: true }
-    loop_control:
-      loop_var: deploy_secret
-      label: "{{deploy_secret.source}}"   
-    when:
-      - deploy_secret.enabled == true
-
-  # Remove some files copied if not enabled
-  - name: Remove Application Pod Monitor if Application not enabled
-    ansible.builtin.file:
-      state: absent
-      path: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/prometheus-op/workloads/{{item.file}}"
-    loop:
-      - { file: "traefik_podmonitor.yaml", enabled: "{{install.traefik.enabled|default(false)|bool}}" }
-      - { file: "longhorn_servicemonitor.yaml", enabled: "{{install.longhorn.enabled|default(false)|bool}}"}
-    when:
-      - item.enabled == false
-
-  # Commit Changed to Repository
-  - name: Check-in Any New or Modified Files
-    include_tasks: "checkin_argocd_repo_files.yml"
-    vars:
-      commit_message: "- Prometheus Operator"  # Keep under 30 chars
-
   when:
     - inventory_hostname == groups['k3s_control'][0]
   tags:
     - never
     - install_prometheus_operator
+  block:
+    - name: Install Prometheus Operator Support packages
+      ansible.builtin.apt:
+        name: "{{ prometheus_op.packages }}"
+        state: present
+
+    - name: Create directory for Prometheus Operator files for non-root user
+      ansible.builtin.file:
+        path: "/home/{{ install.os.non_root_user.name }}/prometheus-op"
+        state: directory
+        mode: '0700'
+        owner: "{{ install.os.non_root_user.name }}"
+        group: "{{ install.os.non_root_user.name }}"
+
+    # K3s does not have control-plane in a pod, get IPs of nodes in control-plane
+    - name: Determine InternalIP's for ControlPlane nodes
+      ansible.builtin.command:
+        argv:
+          - /usr/local/bin/kubectl
+          - get
+          - nodes
+          - --selector=node-role.kubernetes.io/control-plane=true
+          - -o
+          - jsonpath='{.items[*].status.addresses[?(@.type=="InternalIP")].address}'
+      register: controlPlaneIPs
+      changed_when: controlPlaneIPs.rc == 0
+
+    - name: Determine InternalIP's for Worker nodes
+      ansible.builtin.command:
+        argv:
+          - /usr/local/bin/kubectl
+          - get
+          - nodes
+          - --selector=node-role.kubernetes.io/role=worker
+          - -o
+          - jsonpath='{.items[*].status.addresses[?(@.type=="InternalIP")].address}'
+      register: workerNodeIPs
+      changed_when: workerNodeIPs.rc == 0
+
+    - name: Clone Remote ArgoCD Repository
+      ansible.builtin.git: # noqa yaml[line-length] latest[git]
+        repo: "{{ install.argocd.repository.url | urlsplit('scheme') }}://{{ install.argocd.repository.username }}:{{ install.argocd.repository.password }}@{{ install.argocd.repository.url | urlsplit('hostname') }}{{ install.argocd.repository.url | urlsplit('path') }}"
+        dest: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/"
+        force: true
+
+    # Generate templates and then check into Git repository are defined below
+    - name: Process Deployable Enabled Applications
+      ansible.builtin.include_tasks: "process_app_to_deploy.yml"
+      loop:
+        - { enabled: true, name: "prometheus-op", overwrite_files: "no" }
+        - { enabled: true, name: "grafana-dashboards", overwrite_files: "yes"}
+      when:
+        - deploy_app.enabled
+      loop_control:
+        loop_var: deploy_app
+        label: "{{ deploy_app }}"
+
+    - name: Create Namespace to Apply Secret to   # ArgoCD will have a copy namespace file
+      kubernetes.core.k8s:
+        state: present
+        kind: Namespace
+        name: "{{ install.prometheus_operator.namespace }}"
+
+    - name: Apply Prometheus Operator Config Secrets
+      ansible.builtin.include_tasks: process_secret.yml
+      loop:
+        - { source: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/workloads/secrets/prometheus-additional-scrape-configs_secret.yaml", delete_src: "yes", enabled: true }
+        - { source: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/workloads/secrets/prometheus-alertmanager-config_secret.yaml", delete_src: "yes", enabled: true }
+        - { source: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/workloads/secrets/prometheus-grafana-admin_secret.yaml", delete_src: "yes", enabled: true }
+      loop_control:
+        loop_var: deploy_secret
+        label: "{{ deploy_secret.source }}"
+      when:
+        - deploy_secret.enabled
+
+    # Remove some files copied if not enabled
+    - name: Remove Application Pod Monitor if Application not enabled
+      ansible.builtin.file:
+        state: absent
+        path: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/prometheus-op/workloads/{{ item.file }}"
+      loop:
+        - { file: "traefik_podmonitor.yaml", enabled: "{{ install.traefik.enabled | default(false) | bool }}" }
+        - { file: "longhorn_servicemonitor.yaml", enabled: "{{ install.longhorn.enabled | default(false) | bool }}"}
+      when:
+        - item.enabled
+
+    # Commit Changed to Repository
+    - name: Check-in Any New or Modified Files
+      ansible.builtin.include_tasks: "checkin_argocd_repo_files.yml"
+      vars:
+        commit_message: "- Prometheus Operator"  # Keep under 30 chars
+
 
 # Make sure all changes are checked in before removing repository
 - name: Flush Handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
   tags:
     - never
     - install_prometheus_operator
@@ -95,9 +109,9 @@
 # Probably not safe to leave these on the K3s instance
 - name: Delete Local ArgoCD Git Repo Created
   ansible.builtin.file:
-    path: "/home/{{install.os.non_root_user.name}}/argocd"
+    path: "/home/{{ install.os.non_root_user.name }}/argocd"
     state: absent
-  when: 
+  when:
     - inventory_hostname == groups['k3s_control'][0]
   tags:
     - never
@@ -105,11 +119,12 @@
 
 # Copy to Each Control Plane Node
 - name: Copy K3S config.yaml if not exist
-  copy:
+  ansible.builtin.copy:
     src: "files/prometheus-op/k3s_config.yaml"
     dest: "/etc/rancher/k3s/config.yaml"
+    mode: "0644"
     force: "no"
-  when: 
+  when:
     - inventory_hostname in groups['k3s_control']
   notify:
     - Restart k3s Service
@@ -118,39 +133,40 @@
     - install_prometheus_operator
 
 - name: Flush Handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
   tags:
     - install_prometheus_operator
 
-### [ ZFS Exporter Block ]#########################################################################
+# [ ZFS Exporter Block ]###########################################################################
 # ZFS Exporter will expose ZFS Metrics to Prometheus
 
 - name: Install or Upgrade ZFS Exporter
-  block:
-  - name: Install or Upgrade ZFS Exporter
-    ansible.builtin.shell: |
-      VERSION={{install.prometheus_operator.exporters.zfs_exporter.install_version}}
-      echo "Fetch ZFS Exporter ${VERSION}"
-      
-      wget {{prometheus_op.zfs_exporter.url}}/${VERSION}/zfs_exporter-$(echo ${VERSION}|cut -c2-).linux-amd64.tar.gz -O zfs_exporter.tar.gz
-      
-      tar -xvzf zfs_exporter.tar.gz
-
-      install -m 755 zfs_exporter-$(echo ${VERSION}|cut -c2-).linux-amd64/zfs_exporter {{prometheus_op.zfs_exporter.bin}}
-    notify:
-      - Restart zfs-exporter service
-
-  - name: Install ZFS Exporter Systemd Service
-    template: 
-      src=systemd/zfs-exporter.service.j2
-      dest=/lib/systemd/system/zfs-exporter.service
-      mode=644
-    notify:
-      - Restart zfs-exporter service
-
   when:
-    - install.prometheus_operator.exporters.zfs_exporter.enabled|default(false)|bool == true
+    - install.prometheus_operator.exporters.zfs_exporter.enabled | default(false) | bool
   tags:
     - never
     - install_prometheus_operator
     - update_zfs_exporter
+  block:
+    - name: Install or Upgrade ZFS Exporter
+      ansible.builtin.shell: |
+        VERSION={{ install.prometheus_operator.exporters.zfs_exporter.install_version }}
+        echo "Fetch ZFS Exporter ${VERSION}"
+
+        wget {{ prometheus_op.zfs_exporter.url }}/${VERSION}/zfs_exporter-$(echo ${VERSION}|cut -c2-).linux-amd64.tar.gz -O zfs_exporter.tar.gz
+
+        tar -xvzf zfs_exporter.tar.gz
+
+        install -m 755 zfs_exporter-$(echo ${VERSION}|cut -c2-).linux-amd64/zfs_exporter {{ prometheus_op.zfs_exporter.bin }}
+      register: cmd
+      changed_when: cmd.rc == 0
+      notify:
+        - Restart zfs-exporter service
+
+    - name: Install ZFS Exporter Systemd Service
+      ansible.builtin.template:
+        src: "systemd/zfs-exporter.service.j2"
+        dest: "/lib/systemd/system/zfs-exporter.service"
+        mode: "0644"
+      notify:
+        - Restart zfs-exporter service

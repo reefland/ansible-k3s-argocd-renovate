@@ -1,25 +1,35 @@
 ---
 - name: Restart Containerd Service
   ansible.builtin.systemd:
-    daemon_reload: yes
+    daemon_reload: true
     state: started
     name: containerd
 
 - name: Restart k3s Service
   ansible.builtin.systemd:
-    daemon_reload: yes
+    daemon_reload: true
     state: started
     name: k3s
+  when:
+    - inventory_hostname in groups['k3s_control']
+
+- name: Restart k3s-agent Service
+  ansible.builtin.systemd:
+    daemon_reload: true
+    state: started
+    name: k3s-agent
+  when:
+    - inventory_hostname in groups['k3s_workers']
 
 - name: Restart rsyslog service
   ansible.builtin.systemd:
-    daemon_reload: yes
+    daemon_reload: true
     state: restarted
     name: rsyslog
 
 - name: Restart zfs-exporter service
   ansible.builtin.systemd:
-    daemon_reload: yes
-    enabled: yes
+    daemon_reload: true
+    enabled: true
     state: restarted
     name: zfs-exporter

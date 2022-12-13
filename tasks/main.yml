@@ -1,33 +1,33 @@
 ---
 ####################################################################################################
 # This script is for installing k3s distribution of Kubernetes. k3s does not have native support
-# for ZFS file system (will produce overlayfs errors).  
+# for ZFS file system (will produce overlayfs errors).
 # See: https://github.com/k3s-io/k3s/discussions/3980
 #
 # This script by default will also install containerd and container network plugins packages which
 # is configured to support ZFS.  Then k3s configuration will be updated to use containerd.
 # Based on: https://blog.nobugware.com/post/2019/k3s-containterd-zfs/
 
-###[ Load up the secret files ]####################################################################
+# [ Load up the secret files ]#####################################################################
 - name: Include Secret Files
-  include_vars: "{{ item }}"
+  ansible.builtin.include_vars: "{{ item }}"
   tags: ["always"]
   loop:
     - secrets/main.yml
-  no_log: "{{no_log_secrets|default(true)}}"
+  no_log: "{{ no_log_secrets | default(true) }}"
 
-###[ Detect ZFS UUID from ZFS on Root installations ]##############################################
+# [ Detect ZFS UUID from ZFS on Root installations ]###############################################
 - name: Detect ZFS Dataset UUID
-  shell:
-    cmd: "{{containerd.zfs.zfs_uuid_detect_cmd}}"
+  ansible.builtin.shell: # noqa command-instead-of-shell
+    cmd: "{{ containerd.zfs.zfs_uuid_detect_cmd }}"
   register: UUID
   tags: ["always"]
   when:
-    - install.containerd.zfs.detect_uuid|default(false)|bool == true
+    - install.containerd.zfs.detect_uuid | default(false) | bool
 ###################################################################################################
 
 - name: Include Task Files
-  include_tasks: "{{task_names}}"
+  ansible.builtin.include_tasks: "{{ task_names }}"
   tags: ["always"]
   loop:
     - 00_sanity_check.yml
@@ -46,5 +46,5 @@
     - 09_install_democratic_csi_nfs.yml
     - 10_install_prometheus-op.yml
   loop_control:
-    label: "{{task_names}}"
+    label: "{{ task_names }}"
     loop_var: task_names

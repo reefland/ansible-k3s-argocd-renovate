@@ -1,51 +1,59 @@
 ---
-###[ Test k3s Running ]############################################################################
+# [ Test k3s Running ]#############################################################################
 - name: Confirm K3s Running and deployed default Block
-  block:
-
-  - name: Copy config to non-root user config file
-    copy:
-      src: "/etc/rancher/k3s/k3s.yaml"
-      dest: "{{kubeconfig_path}}"
-      remote_src: yes
-      mode: 0600
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-
-  - name: Copy config to root user config file
-    copy:
-      src: "/etc/rancher/k3s/k3s.yaml"
-      dest: "/root/.kube/config"
-      remote_src: yes
-      mode: 0600
-      owner: "root"
-      group: "root"
-
-  - name: Add alias of "k" for "kubectl"
-    ansible.builtin.lineinfile:
-      path: "/home/{{install.os.non_root_user.name}}/.bash_aliases"
-      line: "alias {{item.alias_name}}='{{item.command}}'"
-      create: yes
-      state: present
-    with_items:
-      - "{{install.k3s.alias.entries}}"
-    when: install.k3s.alias.enabled|default(false)|bool == true
-
-  - name: Get kubectl node status
-    command:
-      cmd: "kubectl get node {{ansible_hostname}}"
-    register: kubestl_status
-  
-  - name: Fail if status is "No resources found"
-    fail:
-      msg: |
-        Something went wrong, k3s is reporting no resources.
-    when:
-      - kubestl_status.stdout == "No resources found"
-
-  - name: Shows kubestl status
-    debug:
-      msg: "{{kubestl_status.stdout}}"
-
   tags:
     - validate_k3s
+  block:
+    - name: Copy config to non-root user config file on control-plane nodes
+      ansible.builtin.copy:
+        src: "/etc/rancher/k3s/k3s.yaml"
+        dest: "{{ kubeconfig_path }}"
+        remote_src: true
+        mode: 0600
+        owner: "{{ install.os.non_root_user.name }}"
+        group: "{{ install.os.non_root_user.name }}"
+      when:
+        - inventory_hostname in groups['k3s_control']
+
+    - name: Copy config to root user config file on control-plane nodes
+      ansible.builtin.copy:
+        src: "/etc/rancher/k3s/k3s.yaml"
+        dest: "/root/.kube/config"
+        remote_src: true
+        mode: 0600
+        owner: "root"
+        group: "root"
+      when:
+        - inventory_hostname in groups['k3s_control']
+
+    - name: Add alias of "k" for "kubectl" on control-plane nodes
+      ansible.builtin.lineinfile:
+        path: "/home/{{ install.os.non_root_user.name }}/.bash_aliases"
+        line: "alias {{ item.alias_name }}='{{ item.command }}'"
+        create: true
+        mode: "0644"
+        state: present
+      with_items:
+        - "{{ install.k3s.alias.entries }}"
+      when:
+        - install.k3s.alias.enabled | default(false) | bool
+        - inventory_hostname in groups['k3s_control']
+
+    # Worker / Agent nodes do not have permissions for this
+    - name: Get kubectl node status from control-plane node
+      ansible.builtin.command:
+        cmd: "kubectl get node {{ ansible_hostname }}"
+      register: kubestl_status
+      changed_when: kubestl_status.rc == 0
+      delegate_to: "{{ groups['k3s_control'][0] }}"
+
+    - name: Fail if status is "No resources found"
+      ansible.builtin.fail:
+        msg: |
+          Something went wrong, k3s is reporting no resources.
+      when:
+        - kubestl_status.stdout == "No resources found"
+
+    - name: Shows kubestl status
+      ansible.builtin.debug:
+        msg: "{{ kubestl_status.stdout }}"

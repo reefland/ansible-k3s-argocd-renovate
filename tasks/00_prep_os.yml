@@ -1,100 +1,98 @@
 ---
-###[ Setup non-root User ]#########################################################################
+# [ Setup non-root User ]##########################################################################
 # Setup non-root user for interacting with Kubernetes.
 
 - name: Create non-Root User Block
-  block:
-
-  - name: Add non-root user that will be used with Kubernetes
-    ansible.builtin.user:
-      name: "{{install.os.non_root_user.name}}"
-      shell: "{{install.os.non_root_user.shell}}"
-      groups: "{{install.os.non_root_user.groups}}"
-      append: yes
-      createhome: yes
-
-  - name: Allow non-root user to have passwordless sudo convenience
-    ansible.builtin.lineinfile:
-      dest: /etc/sudoers
-      line: "{{install.os.non_root_user.name}} ALL=(ALL) NOPASSWD: /usr/local/bin/kubectl"
-      validate: "visudo -cf %s"
-    when:
-      - install.os.allow_passwordless_sudo|default(false)|bool == true
-
-  - name: Configure node sysctl updates
-    sysctl:
-      name: "{{ item.key }}"
-      value: "{{ item.value }}"
-      state: "present"
-      reload: True
-    with_dict: "{{ install.os.sysctl_updates }}"
-
   tags:
     - prep_os
+  block:
+    - name: Add non-root user that will be used with Kubernetes
+      ansible.builtin.user:
+        name: "{{ install.os.non_root_user.name }}"
+        shell: "{{ install.os.non_root_user.shell }}"
+        groups: "{{ install.os.non_root_user.groups }}"
+        append: true
+        createhome: true
 
-###[ Setup Longhorn Storage Location ]#############################################################
+    - name: Allow non-root user to have passwordless sudo convenience
+      ansible.builtin.lineinfile:
+        dest: /etc/sudoers
+        line: "{{ install.os.non_root_user.name }} ALL=(ALL) NOPASSWD: /usr/local/bin/kubectl"
+        validate: "visudo -cf %s"
+      when:
+        - install.os.allow_passwordless_sudo | default(false) | bool
+
+    - name: Configure node sysctl updates
+      ansible.posix.sysctl:
+        name: "{{ item.key }}"
+        value: "{{ item.value }}"
+        state: "present"
+        reload: true
+      with_dict: "{{ install.os.sysctl_updates }}"
+
+# [ Setup Longhorn Storage Location ]##############################################################
 # Storage for longhorn needs to be in-place before node joins the cluster.
 
 - name: Setup Longhorn Storage Location
-  block:
-
-  - name: Install Longhorn iSCSI Support packages
-    apt:
-      name: "{{longhorn.packages}}"
-      state: present
-    register: result
-    retries: 10             # Sometimes unattended upgrades is running
-    delay: 10
-    until: result is success
-
-  - name: Enable and Start open-iscsi Service
-    ansible.builtin.systemd:
-      enabled: yes
-      state: started
-      name: open-iscsi
-
-  # Expected to return no output if not found, this is needed to prevent error below.
-  - name: Check if Longhorn Volume is already exists
-    shell:
-      cmd: "echo $(findmnt -t {{longhorn.zfs.zvol.format|string}} --target {{install.longhorn.zfs.zvol.mountpoint}})"
-    register: longhorn_zvol
-    
-  # This would error with volblocksize as read-only property if volume already existed.
-  # When clause added to get around this error condition
-  - name: Create ZFS Zvol for Longhorn (if does not exist)
-    community.general.zfs:
-      name: "{{install.longhorn.zfs.pool}}/{{install.longhorn.zfs.volume_name}}"
-      extra_zfs_properties: "{{install.longhorn.zfs.zvol.options}}"
-      state: present
-    when:
-      - longhorn_zvol.stdout.find("TARGET") == -1
-
-  - name: Create Filesystem for Longhorn ZVOL
-    community.general.filesystem:
-      fstype: "{{longhorn.zfs.zvol.format}}"
-      dev: "/dev/zvol/{{install.longhorn.zfs.pool}}/{{install.longhorn.zfs.volume_name}}"
-
-  - name: Mount Longhorn Volume into /etc/fstab
-    ansible.posix.mount:
-      path: "{{install.longhorn.zfs.zvol.mountpoint}}"
-      src: "/dev/zvol/{{install.longhorn.zfs.pool}}/{{install.longhorn.zfs.volume_name}}"
-      opts: noatime,discard
-      fstype: "{{longhorn.zfs.zvol.format}}"
-      state: mounted
-
-  # Expected to return no output if not found
-  - name: Confirm Longhorn Volume is mounted
-    shell:
-      cmd: "findmnt -t {{longhorn.zfs.zvol.format|string}} --target {{install.longhorn.zfs.zvol.mountpoint}}"
-    register: longhorn_zvol
-
-  - name: Fail if Longhorn volume is not mounted
-    fail:
-      msg: "Longhorn volume not mounted as expected."
-    when:
-      - longhorn_zvol.stdout.find("TARGET") == -1
-
   when:
-    - install.longhorn.enabled|default(false)|bool == true
+    - install.longhorn.enabled | default(false) | bool
   tags:
     - prep_os
+  block:
+    - name: Install Longhorn iSCSI Support packages
+      ansible.builtin.apt:
+        name: "{{ longhorn.packages }}"
+        state: present
+      register: result
+      retries: 10             # Sometimes unattended upgrades is running
+      delay: 10
+      until: result is success
+
+    - name: Enable and Start open-iscsi Service
+      ansible.builtin.systemd:
+        enabled: true
+        state: started
+        name: open-iscsi
+
+    # Expected to return no output if not found, this is needed to prevent error below.
+    - name: Check if Longhorn Volume is already exists
+      ansible.builtin.command:
+        cmd: "echo $(findmnt -t {{ longhorn.zfs.zvol.format | string }} --target {{ install.longhorn.zfs.zvol.mountpoint }})"
+      register: longhorn_zvol
+      changed_when: longhorn_zvol.rc == 0
+
+    # This would error with volblocksize as read-only property if volume already existed.
+    # When clause added to get around this error condition
+    - name: Create ZFS Zvol for Longhorn (if does not exist)
+      community.general.zfs:
+        name: "{{ install.longhorn.zfs.pool }}/{{ install.longhorn.zfs.volume_name }}"
+        extra_zfs_properties: "{{ install.longhorn.zfs.zvol.options }}"
+        state: present
+      when:
+        - longhorn_zvol.stdout.find("TARGET") == -1
+
+    - name: Create Filesystem for Longhorn ZVOL
+      community.general.filesystem:
+        fstype: "{{ longhorn.zfs.zvol.format }}"
+        dev: "/dev/zvol/{{ install.longhorn.zfs.pool }}/{{ install.longhorn.zfs.volume_name }}"
+
+    - name: Mount Longhorn Volume into /etc/fstab
+      ansible.posix.mount:
+        path: "{{ install.longhorn.zfs.zvol.mountpoint }}"
+        src: "/dev/zvol/{{ install.longhorn.zfs.pool }}/{{ install.longhorn.zfs.volume_name }}"
+        opts: noatime,discard
+        fstype: "{{ longhorn.zfs.zvol.format }}"
+        state: mounted
+
+    # Expected to return no output if not found
+    - name: Confirm Longhorn Volume is mounted
+      ansible.builtin.command:
+        cmd: "findmnt -t {{ longhorn.zfs.zvol.format | string }} --target {{ install.longhorn.zfs.zvol.mountpoint }}"
+      register: longhorn_zvol
+      changed_when: longhorn_zvol.rc == 0
+
+    - name: Fail if Longhorn volume is not mounted
+      ansible.builtin.fail:
+        msg: "Longhorn volume not mounted as expected."
+      when:
+        - longhorn_zvol.stdout.find("TARGET") == -1

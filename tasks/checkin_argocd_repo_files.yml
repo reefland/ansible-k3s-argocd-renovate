@@ -1,40 +1,45 @@
 ---
 
 - name: Check if any ArgoCD Repository Files were Updated
-  ansible.builtin.command:
-    chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
+  ansible.builtin.command: # noqa command-instead-of-module
+    chdir: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/"
     argv:
       - /usr/bin/git
       - status
   register: git_status
+  changed_when: git_status.rc == 0
 
 - name: Git Checkin and Commit Block
-  block:
-  - name: Add New Files Generated Files to ArgoCD Repository
-    ansible.builtin.command:
-      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
-      argv:
-        - /usr/bin/git
-        - add
-        - --all
-    register: git_add
-
-  - name: Commit Checked in Files to ArgoCD Repository
-    ansible.builtin.command:
-      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
-      argv:
-        - /usr/bin/git
-        - commit
-        - -a
-        - -m
-        - "Commit via Ansible {{commit_message|default('')}}"
-
-  - name: Git Push ArgoCD
-    ansible.builtin.command:
-      chdir: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
-      argv:
-        - /usr/bin/git
-        - push
-
   when:
-    - '("nothing to commit" not in git_status.stdout) or ("Untracked files" in git_status.stdout)' 
+    - '("nothing to commit" not in git_status.stdout) or ("Untracked files" in git_status.stdout)'
+  block:
+    - name: Add New Files Generated Files to ArgoCD Repository
+      ansible.builtin.command: # noqa command-instead-of-module
+        chdir: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/"
+        argv:
+          - /usr/bin/git
+          - add
+          - --all
+      register: git_add
+      changed_when: git_add.rc == 0
+
+    - name: Commit Checked in Files to ArgoCD Repository
+      ansible.builtin.command: # noqa command-instead-of-module
+        chdir: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/"
+        argv:
+          - /usr/bin/git
+          - commit
+          - -a
+          - -m
+          - "Commit via Ansible {{ commit_message | default('') }}"
+      register: git_commit
+      changed_when: git_commit.rc == 0
+
+    - name: Git Push ArgoCD
+      ansible.builtin.command: # noqa command-instead-of-module
+        chdir: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/"
+        argv:
+          - /usr/bin/git
+          - push
+      register: git_push
+      changed_when: git_push.rc == 0

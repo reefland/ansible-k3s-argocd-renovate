@@ -1,11 +1,11 @@
 ---
-###[ Ansible Configuration Options ]#############################################################
+# [ Ansible Configuration Options ]################################################################
 # Do not log sensitive information / tokens, etc.  Maybe be handy to set to "false" during
 # troubleshooting if you need to see ansible vault secret values.
 no_log_secrets: false
 
 install:
-  ###[ Linux OS Configuration ]####################################################################
+  # [ Linux OS Configuration ]#####################################################################
   os:
     non_root_user:                            # Some specifics about the non-root user
       name: "kube"
@@ -14,7 +14,7 @@ install:
 
     allow_passwordless_sudo: true             # Allow non-root use to passwordless sudo
 
-    remove_packages:                             
+    remove_packages:
       enabled: true
       packages:
         - "snapd"                             # Remove Snapd Demon, we don't need it.
@@ -27,24 +27,24 @@ install:
     # Send all logs to a centralized logging server. This will be the 1st server defined
     # within the "k3s_control" group. All other cluster members will send logs to this system.
     # All logs from k3s hosts will be stored under: /var/log/central/<hostname>.log
-    
-    central_logging:                          
+
+    central_logging:
       log_path: "/var/log/central"            # Directory on central server to hold logs
 
-  ### [ K3s Installation Settings ]################################################################
+  # [ K3s Installation Settings ]##################################################################
   k3s:
     # CLI_options are passed directly to install script "as-is", you can add to list.
     cli_options:
       # Do not start service after installation as it will have issues with ZFS
       - "INSTALL_K3S_SKIP_START=true"
-      
+
       # This is to pin a specific version of k3s for initial installation
       # Select Release: https://github.com/k3s-io/k3s/releases
-      - "INSTALL_K3S_VERSION={{k3s_install_version|default('v1.23.5+k3s1')}}"
-      
+      - "INSTALL_K3S_VERSION={{ k3s_install_version | default('v1.25.3+k3s1') }}"
+
       # Select installation channel to use (stable, latest, testing)
       # - "INSTALL_K3S_CHANNEL=latest"
-    
+
     k3s_cli_var:
       - "--disable traefik"                   # Install a stable Traefik via helm instead
       - "--kube-apiserver-arg=feature-gates=MixedProtocolLBService=true"  # Allow Load Balancer to use TCP & UDP Ports
@@ -54,13 +54,13 @@ install:
       enabled: true
       entries:
         # alias for kubectl  ($ k get all -A)
-        - { alias_name: "k", command: "kubectl" }   
+        - { alias_name: "k", command: "kubectl" }
         # alias for a pod to run curl against other pods
         - { alias_name: "kcurl", command: "kubectl run curl --image=radial/busyboxplus:curl --rm=true --stdin=true --tty=true --restart=Never" }
         # Alias for Kubeseal to include controller name by default
-        - { alias_name: "kubeseal", command: "kubeseal --controller-name {{sealed_secrets.controller_name}}" }
+        - { alias_name: "kubeseal", command: "kubeseal --controller-name {{ sealed_secrets.controller_name }}" }
 
-  ###[ Containerd Installation Settings ]##########################################################
+  # [ Containerd Installation Settings ]###########################################################
   containerd:
     enabled: true
 
@@ -69,33 +69,36 @@ install:
       # detect_uuid will determine the UUID name used for the dataset name and include it.
       # ZFS on Root guide uses a random set of characters (UUID) in the naming convention
       # such as:  "rpool/ROOT/ubuntu_3wgs2q" where "3wgs2q" is the UUID to detect.
-      
+
       # You can set to false and set your own or set uuid to empty string.
 
       # End result would be a dataset name such as:  rpool/ROOT/ubuntu_3wgs2q/var/lib/containerd
       detect_uuid: false
-      pool: "rpool"
+      pool: "{{ containerd_pool | default('rpool') }}"
       dataset_prefix: "containerd"            # "ROOT/ubuntu"
       uuid: ""                                # "_"
       dataset_postfix: ""                     # "/var/lib/containerd"
 
-  ###[ ArgoCD Installation Settings ]##############################################################
-  # ArgoCD will be used to deploy applications to K3s cluster based on manifests checked into 
+  # [ ArgoCD Installation Settings ]###############################################################
+  # ArgoCD will be used to deploy applications to K3s cluster based on manifests checked into
   # Git repository.
   argocd:
     enabled: true
 
     # Select Release to install: https://artifacthub.io/packages/helm/argo/argo-cd
-    install_version: "{{argocd_install_version|default('5.5.16')}}" 
-    
+    install_version: "{{ argocd_install_version | default('5.13.9') }}"
     namespace: "argocd"
 
     repository:
-      name: "k3s-argocd-renovate"                                                           # Name used within ArgoCD
-      url: "{{argocd_repo_url|default('UNDEFINED_REPO_URL')}}"                              # https://github.com/<user>/<repo-name>
+      # Name used within ArgoCD
+      name: "k3s-argocd-renovate"
+      # https://github.com/<user>/<repo-name>
+      url: "{{ argocd_repo_url | default('UNDEFINED_REPO_URL') }}"
       # Define secrets in vars/secrets/main.yml
-      username: "{{ARGOCD_REPO_USERNAME_SECRET|default('oauth')}}"                          # oauth - not really used
-      password: "{{ARGOCD_REPO_PASSWORD_SECRET|default('UNDEFINED_REPO_PASSWORD_TOKEN')}}"  # Github Personal Access Token
+      # oauth - not really used
+      username: "{{ ARGOCD_REPO_USERNAME_SECRET | default('oauth') }}"
+      # Github Personal Access Token
+      password: "{{ ARGOCD_REPO_PASSWORD_SECRET | default('UNDEFINED_REPO_PASSWORD_TOKEN') }}"
 
     # Default Dashboard URL:  https://k3s.{{ansible_domain}}/argocd/
     dashboard:
@@ -116,16 +119,16 @@ install:
       # Reference slack tokens, email credentials, etc.
       # Define secrets in vars/secrets/main.yml
       secret_contents: |
-        slack-token: "{{ARGOCD_NOTIFICATIONS_SLACK_TOKEN_SECRET|default('UNDEFINED_SLACK_TOKEN')}}"
+        slack-token: "{{ ARGOCD_NOTIFICATIONS_SLACK_TOKEN_SECRET | default('UNDEFINED_SLACK_TOKEN') }}"
 
       # Reference secrets from above with "$<key-name> such as $slack-token"
       configmap_contents: |
         ## For more information: https://argocd-notifications.readthedocs.io/en/stable/subscriptions/
-        subscriptions: 
+        subscriptions:
           # Where to send notifications:
           - recipients:
               # Slack Channel:
-              - slack:argocd 
+              - slack:argocd
             triggers:
               # What to send notifications about:
               - on-created
@@ -143,45 +146,44 @@ install:
                 username: ArgoCD
                 icon: "https://cncf-branding.netlify.app/img/projects/argo/icon/color/argo-icon-color.png"
 
-  ###[ Renovate Configuration Settings ]###########################################################
+  # [ Renovate Configuration Settings ]############################################################
   # Renovate will monitor manifests deployed to ArgoCD repositories for updates and open a PR
   # request to start the process of upgrading applications.
   renovate:
     # Select Release to install: https://github.com/renovatebot/helm-charts/releases
-    install_version: "{{renovate_install_version|default('32.99.1')}}"
-
+    install_version: "{{ renovate_install_version | default('34.22.1') }}"
     namespace: "renovate"
 
     platform: "github"
-    repositories:
-      - "{{argocd_repo_url|default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$, ''') }}"    # Hopefully the <user>/<repo-name> part of URL
+    repositories: # noqa jinja[spacing]
+      # Hopefully the <user>/<repo-name> part of URL
+      - "{{ argocd_repo_url | default('UNDEFINED_REPO_URL') | urlsplit('path') | regex_replace('^\\/|\\/$', '') }}"
 
     # Cron style schedule when renovate should look for updates
     schedule: "0 1 * * *"                     # At 01:00 every day
 
-  ###[ Cert Manager Installation Settings ]########################################################
+  # [ Cert Manager Installation Settings ]#########################################################
   cert_manager:
     # Select release to use:  https://github.com/cert-manager/cert-manager/releases
-    install_version: "{{cert_manager_install_version|default('v1.8.2')}}"
-
+    install_version: "{{ cert_manager_install_version | default('v1.10.0') }}"
     namespace: "cert-manager"      # Add resources to this namespace
     argocd_project: "security"     # ArgoCD Project to associate this with
 
-  ###[ Let's Encrypt Certificate Configuration ]###################################################
+  # [ Let's Encrypt Certificate Configuration ]####################################################
   lets_encrypt:
     # Define secrets in vars/secrets/main.yml
-    le_api_token_name: "{{DNS_API_TOKEN_SECRET}}"  # Define the name of the API token key                                           #
-    le_api_token_email: "{{AUTH_EMAIL_SECRET}}"    # Define the name of the email authorization key
+    le_api_token_name: "{{ DNS_API_TOKEN_SECRET }}"  # Define the name of the API token key                                           #
+    le_api_token_email: "{{ AUTH_EMAIL_SECRET }}"    # Define the name of the email authorization key
 
-    le_email_auth: "{{LE_AUTH_EMAIL_SECRET}}"      # Define the name of the Let's Encrypt Email Address
-    domains: "{{LE_DOMAINS_SECRET}}"               # List of Domain Names for LetsEncrypt Certificates
+    le_email_auth: "{{ LE_AUTH_EMAIL_SECRET }}"      # Define the name of the Let's Encrypt Email Address
+    domains: "{{ LE_DOMAINS_SECRET }}"               # List of Domain Names for LetsEncrypt Certificates
 
     # to create prod certificates --extra-vars="le_staging=false"
-    le_staging: "{{le_staging|default(true)}}"
+    le_staging: "{{ le_staging | default(true) }}"
 
-###[ Optional Software Listed Below - Can be DISABLED ]############################################
+# [ Optional Software Listed Below - Can be DISABLED ]#############################################
 
-  ###[ Bitnami Sealed-Secrets Controller ]#########################################################
+  # [ Bitnami Sealed-Secrets Controller ]##########################################################
   # This will deploy the sealed secrets controller which allows for encrypted secrets to be safely
   # committed to a repository.  Sealed secrets also add some more complexity to cluster management
   # and deployment.
@@ -189,7 +191,7 @@ install:
     enabled: true
 
     # Select release to use: https://artifacthub.io/packages/helm/bitnami-labs/sealed-secrets
-    install_version: "{{sealed_secret_install_version|default('v2.3.0')}}"
+    install_version: "{{ sealed_secret_install_version | default('v2.7.1') }}"
 
     namespace: "sealed-secrets"    # Add resources to this namespace
     argocd_project: "security"     # ArgoCD Project to associate this with
@@ -203,83 +205,83 @@ install:
 
     # By default Sealed Secrets will create a new private key with each installation and secrets
     # can only be decrypted in that cluster unless you manually manipulate the private keys. The
-    # setting below when enabled will instead install your standard private key for Sealed 
+    # setting below when enabled will instead install your standard private key for Sealed
     # Secrets which allows secrets to work across clusters and allows cluster to be restored from
     # git repository and re-use secrets encrypted with your standard private key. After initial
     # 30 days, new signing keys will be generated automatically and used for new sealed secrets.
 
     # if not enabled, then a new private key will be used each time Sealed Secrets is installed,
     # this is the default behavior.
-    use_pre_generated_private_key: "{{use_pre_generated_private_key|default(false)}}"
+    use_pre_generated_private_key: "{{ use_pre_generated_private_key | default(false) }}"
 
-  ###[ Kube-VIP Configuration Settings ]###########################################################
+  # [ Kube-VIP Configuration Settings ]############################################################
   # Kube-VIP provides HA Load Balancer for the API service and optionally LoadBalancer services
   # It can optionally also provide Load Balancer services if you specify "loadBalancerIP: x.y.z.a"
   # in the LoadBalancer Service spec.
   # When enabled this will disable k3s built-in Klipper Load Balancer.
   kube_vip:
-    # When enabled, you must define variable "vip_endpoint_ip" at host or group level within 
+    # When enabled, you must define variable "vip_endpoint_ip" at host or group level within
     # inventory, host_var or group_var file. This must be set to an IP address. This IP address will
-    # be a Load Balanced VIP cluster wide for the API service.  You can point kubectl to this IP 
+    # be a Load Balanced VIP cluster wide for the API service.  You can point kubectl to this IP
     # address.
     enabled: true
 
     # Select release to use: https://github.com/kube-vip/kube-vip/releases
-    install_version: "{{kube_vip_install_version|default('v0.4.4')}}"
+    install_version: "{{ kube_vip_install_version | default('v0.5.6') }}"
 
     argocd_project: "infrastructure"          # ArgoCD Project to associate this with
 
     # To use Kube-VIP Cloud Provider to enable using an address pool with Kube-VIP
     lb:
-      # When enabled, you must define variable "vip_lb_ip_range" at host or group level within 
+      # When enabled, you must define variable "vip_lb_ip_range" at host or group level within
       # inventory, host_var or group_var file. This must be set to an IP range or CIDR range.
       # This will define the pool of IP addresses to hand out to serviced of type LoadBalancer.
       enabled: true
 
       # Select release to use: https://github.com/kube-vip/kube-vip-cloud-provider/releases
-      install_version: "{{kube_vip_cloud_provider_install_version|default('v0.0.2')}}"
+      install_version: "{{ kube_vip_cloud_provider_install_version | default('v0.0.2') }}"
 
-  ###[ Traefik Installation Settings ]#############################################################
+  # [ Traefik Installation Settings ]##############################################################
   traefik:
     # When enabled Traefik will be used as an Ingress Controller and be used to handle IngressRoutes
     # for various dashboards offered by installed software.  Traefik will be deployed as a DaemonSet
     # for High Availability.
 
     # When enabled, you must define variable "traefik_lb_ip" at host or group level within
-    # inventory, host_var or group_var file. This must be set to an IP address WITHIN the 
+    # inventory, host_var or group_var file. This must be set to an IP address WITHIN the
     # Kube-VIP CIDR range defined in "vip_lb_ip_range" variable (above).
     enabled: true
 
     # Select release to use: https://github.com/traefik/traefik-helm-chart/tags
-    install_version: "{{traefik_install_version|default('v10.22.0')}}"
+    install_version: "{{ traefik_install_version | default('v20.3.0') }}"
 
     namespace: "traefik"                      # Add resources to this namespace
     argocd_project: "ingress"                 # ArgoCD Project to associate this with
 
     # Traefik Dashboard
     dashboard:
-      create_route: true                      # Create Ingress Router to make accessible 
+      create_route: true                      # Create Ingress Router to make accessible
       enable_https: true                      # Require HTTPS to access dashboard
       enable_basic_auth: true                 # Require Authentication to access dashboard
 
       # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
       # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
-      ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
-      
+      ingress_name: '{{ k3s_cluster_ingress_name | default("k3s.{{ansible_domain}}") }}'
+
       # Default Dashboard URL:  https://k3s.{{ansible_domain}}/dashboard/
       path: "/dashboard"                      # PathPrefix for dashboard
 
       # Define secrets in vars/secrets/main.yml
-      allowed_users: "{{TRAEFIK_DASHBOARD_USERS_SECRET}}"    # Encoded users and passwords for basic authentication
+      allowed_users: "{{ TRAEFIK_DASHBOARD_USERS_SECRET }}"  # Encoded users and passwords for basic authentication
 
-  ###[ System Upgrade Controller Settings ]########################################################
+  # [ System Upgrade Controller Settings ]#########################################################
   upgrade_controller:
     # The upgrade controller will work in coordination with renovate to provide rolling upgrades
     # to the nodes in your cluster.
     enabled: true
 
     # Select release to use: https://github.com/rancher/system-upgrade-controller/releases
-    install_version: "{{system_upgrade_controller_install_version|default('v0.9.1')}}"
+    install_version: "{{ system_upgrade_controller_install_version | default('v0.10.0') }}"
 
     namespace: "system-upgrade"               # Add resources to this namespace
     argocd_project: "system-upgrade"          # ArgoCD Project to associate this with
@@ -300,49 +302,49 @@ install:
         ignoreDaemonSets: true
         skipWaitForDeleteTimeout: 60 # honor pod disruption budgets up to 60 seconds per pod then moves on
 
-  ###[ Longhorn Installation Settings ]############################################################
+  # [ Longhorn Installation Settings ]#############################################################
   longhorn:
-    # Longhorn distributed storage will be enabled on all nodes.  
+    # Longhorn distributed storage will be enabled on all nodes.
 
     # When enabled that node will have a portion of its local disk space made available to the
     # cluster to provide replicated storage. By default the ZFS "rpool" storage pool will be used.
     # The local and amount of space to dedicate to Longhorn can be specified per node or group of
     # nodes based on the inventory file using variables "longhorn_zfs_pool" and "longhorn_vol_size".
 
-    enabled: "{{longhorn_enabled|default(true)}}"  # Install longhorn distributed cluster storage
+    enabled: "{{ longhorn_enabled | default(false) }}"  # Install longhorn distributed cluster storage
 
-    # Select Release to use: https://github.com/longhorn/longhorn/releases 
-    install_version: "{{longhorn_install_version|default('v1.3.0')}}"
+    # Select Release to use: https://github.com/longhorn/longhorn/releases
+    install_version: "{{ longhorn_install_version | default('v1.3.0') }}"
 
     namespace: "longhorn-system"   # Add resources to this namespace
     argocd_project: "storage"      # ArgoCD Project to associate this with
 
     # Longhorn Dashboard
     dashboard:
-      create_route: true           # Create Ingress Route to make accessible 
+      create_route: true           # Create Ingress Route to make accessible
       enable_https: true           # Require HTTPS to access dashboard
       enable_basic_auth: true      # Require Authentication to access dashboard
 
       # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
       # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
-      ingress_name: '{{k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}")}}'
+      ingress_name: '{{ k3s_cluster_ingress_name | default("k3s.{{ansible_domain}}") }}'
 
       # Default Dashboard URL:  https://k3s.{{ansible_domain}}/longhorn/
       path: "/longhorn"            # URI Path for Ingress Route
 
     # Define where ZFS Zvol should be created for Longhorn storage
     zfs:                           # Combined "rpool/longhorn"
-      pool: "{{longhorn_zfs_pool|default('rpool')}}"
-      volume_name: "longhorn"              
+      pool: "{{ longhorn_zfs_pool | default('rpool') }}"
+      volume_name: "longhorn"
 
       zvol:
         options:
-          volsize: "{{longhorn_vol_size|default('10G')}}"
+          volsize: "{{ longhorn_vol_size | default('10G') }}"
           compression: "lz4"       # "" (inherit), lz4, gzip-9, etc
           volblocksize: "16k"
 
         mountpoint: "/var/lib/longhorn"
-        
+
     # The intent of longhorn is to be used instead of "local-path" storage class
     # once Longhorn is installed "local-path" will be disabled as the default storage class
     # If true on initial installation, then "local-path" is disabled entirely (not available)
@@ -354,7 +356,7 @@ install:
       cron_schedule: "03 6 * * *" # Daily at 6:03am
       retain_days: "7"            # Keep for 7 days
       concurrency: "2"            # number of jobs to run concurrently
-    
+
     # Default Backups - Longhorn will take a snapshot and backup the snapshot to a remote NFS share
     backups:
       cron_schedule: "08 3 * * *" # Daily at 3:08am
@@ -368,45 +370,45 @@ install:
       size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
       remove: true                # true = remove claim when test is completed (false leaves it alone)
 
-  ###[ Democratic CSI Installation Settings ]######################################################
+  # [ Democratic CSI Installation Settings ]#######################################################
   # This is not installed by default.  Can be installed later once the cluster is stable.
   # democratic-csi implements the csi (container storage interface) spec providing storage for
   # various container orchestration systems such as Kubernetes
   democratic_csi:
     # Select Release to use: https://github.com/democratic-csi/charts/releases
-    install_version: "{{democratic_csi_install_version|default('0.13.1')}}"
+    install_version: "{{ democratic_csi_install_version | default('0.13.5') }}"
 
     namespace: "democratic-csi"   # Add resources to this namespace
     argocd_project: "storage"     # ArgoCD Project to associate this with
-    
+
     truenas:
       # Define secrets in vars/secrets/main.yml
       http_connection:
         protocol: "https"
         port: 443
         allow_insecure: false
-        host: "{{TN_HTTP_HOST|default('NOT_SET_IN_vars/secrets/main.yml')}}"
-        api_key: "{{TN_HTTP_API_KEY|default('NOT_SET_IN_vars/secrets/main.yml')}}"
+        host: "{{ TN_HTTP_HOST | default('NOT_SET_IN_vars/secrets/main.yml') }}"
+        api_key: "{{ TN_HTTP_API_KEY | default('NOT_SET_IN_vars/secrets/main.yml') }}"
 
       # Define secrets in vars/secrets/main.yml
       ssh_connection:
-        host: "{{TN_SSH_HOST|default('NOT_SET_IN_vars/secrets/main.yml')}}"
+        host: "{{ TN_SSH_HOST | default('NOT_SET_IN_vars/secrets/main.yml') }}"
         port: 22
-        user: "{{TN_SSH_USER|default('NOT_SET_IN_vars/secrets/main.yml')}}"
-        
+        user: "{{ TN_SSH_USER | default('NOT_SET_IN_vars/secrets/main.yml') }}"
+
         # Must use a password or private key
-        #password: "{{TN_SSH_PASSWD|default('NOT_SET_IN_vars/secrets/main.yml')}}"
-        private_key: "{{TN_SSH_PRIV_KEY|default('NOT_SET_IN_vars/secrets/main.yml')}}"
+        # password: "{{ TN_SSH_PASSWD | default('NOT_SET_IN_vars/secrets/main.yml') }}"
+        private_key: "{{ TN_SSH_PRIV_KEY | default('NOT_SET_IN_vars/secrets/main.yml') }}"
 
       iscsi_connection:
-        host: "{{TN_ISCSI_HOST|default('NOT_SET_IN_vars/secrets/main.yml')}}"
+        host: "{{ TN_ISCSI_HOST | default('NOT_SET_IN_vars/secrets/main.yml') }}"
         port: 3260
-        #interface: ""                 # leave empty to omit usage of -I with iscsiadm
+        # interface: ""                 # leave empty to omit usage of -I with iscsiadm
 
       nfs_connection:
-        host: "{{TN_NFS_HOST|default('NOT_SET_IN_vars/secrets/main.yml')}}"
+        host: "{{ TN_NFS_HOST | default('NOT_SET_IN_vars/secrets/main.yml') }}"
 
-    ###[ Democratic CSI iSCSI Settings ]###########################################################
+    # [ Democratic CSI iSCSI Settings ]############################################################
     # Provisioners Available and Examples: https://github.com/democratic-csi/democratic-csi/tree/master/examples
     iscsi:
       provisioner: "freenas-iscsi"
@@ -425,16 +427,16 @@ install:
         #   standard volume naming overhead is 46 chars
         #   Which means names **MUST-BE** 17 characters or LESS!!!!
         datasets:
-          parent_name: "{{democratic_csi_parent_dataset|default('main/k8s')}}/iscsi/v"
-          snapshot_ds_name: "{{democratic_csi_parent_dataset|default('main/k8s')}}/iscsi/s"
-        
+          parent_name: "{{ democratic_csi_parent_dataset | default('main/k8s') }}/iscsi/v"
+          snapshot_ds_name: "{{ democratic_csi_parent_dataset | default('main/k8s') }}/iscsi/s"
+
         zvol:
           compression: "lz4"        # "" (inherit), lz4, gzip-9, etc
           blocksize: ""             # 512, 1K, 2K, 4K, 8K, 16K, 64K, 128K default is 16K
           enable_reservation: false
 
       name_prefix: csi-
-      name_suffix: "-{{democratic_csi_parent_dataset|default('main/k8s') | replace ('/','-')}}"
+      name_suffix: "-{{ democratic_csi_parent_dataset | default('main/k8s') | replace('/', '-') }}"
 
       target_group:
         portal_group: 1             # get the correct ID from the "portal" section in the UI
@@ -457,7 +459,7 @@ install:
         size: "1Mi"                 # size of claim to request ("1Mi" is 1 Mebibytes)
         remove: true                # true = remove claim when test is completed (false leaves it alone)
 
-    ###[ Democratic CSI NFS Settings ]#############################################################
+    # [ Democratic CSI NFS Settings ]##############################################################
     nfs:
       provisioner: "freenas-nfs"
 
@@ -472,8 +474,8 @@ install:
         # Assumes pool named "main", dataset named "k8s", child dataset "nfs"
         # Any additional provisioners such as iSCSI would be at the same level as "nfs" (sibling of it)
         datasets:
-          parent_name: "{{democratic_csi_parent_dataset|default('main/k8s')}}/nfs/v"
-          snapshot_ds_name: "{{democratic_csi_parent_dataset|default('main/k8s')}}/nfs/s"        
+          parent_name: "{{ democratic_csi_parent_dataset | default('main/k8s') }}/nfs/v"
+          snapshot_ds_name: "{{ democratic_csi_parent_dataset | default('main/k8s') }}/nfs/s"
 
           enable_quotas: true
           enable_reservation: false
@@ -490,13 +492,13 @@ install:
         size: "1Mi"               # size of claim to request ("1Mi" is 1 Mebibytes)
         remove: true              # true = remove claim when test is completed (false leaves it alone)
 
-  ###[ Prometheus Operator Installation Settings ]#################################################
+  # [ Prometheus Operator Installation Settings ]##################################################
   # This is not installed by default.  Can be installed later once the cluster is stable.
   prometheus_operator:
     # Select release to use:  https://github.com/prometheus-community/helm-charts/releases
-    install_version: "{{prometheus_op_install_version|default('39.4.0')}}"
+    install_version: "{{ prometheus_op_install_version | default('41.7.4') }}"
     # Select CRD release to use: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack#upgrading-chart
-    crd_version: "{{prometheus_op_crd_version|default('v0.58.0')}}"
+    crd_version: "{{ prometheus_op_crd_version | default('v0.60.1') }}"
 
     namespace: "monitoring"       # Add resources to this namespace
     argocd_project: "monitoring"  # ArgoCD Project to associate this with
@@ -512,12 +514,12 @@ install:
 
       # Prometheus Web Interface
       dashboard:
-        create_route: true        # Create Ingress Route to make accessible 
+        create_route: true        # Create Ingress Route to make accessible
         enable_basic_auth: true   # Require Authentication to access dashboard
 
         # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
         # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
-        ingress_name: '{{ k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}") }}'
+        ingress_name: '{{ k3s_cluster_ingress_name | default("k3s.{{ansible_domain}}") }}'
 
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/prometheus/
         path: "/prometheus"       # URI Path for Ingress Route
@@ -525,9 +527,9 @@ install:
     exporters:
       # Install ZFS Exporter for ZFS Monitoring
       zfs_exporter:
-        enabled: "{{zfs_exporter_enabled|default(true)}}"
+        enabled: "{{ zfs_exporter_enabled | default(true) }}"
         # Select Release to use: https://github.com/pdf/zfs_exporter/releases
-        install_version: "{{zfs_exporter_install_version|default('v2.2.5')}}"
+        install_version: "{{ zfs_exporter_install_version | default('v2.2.5') }}"
 
     grafana:
       storage_claim:              # Define where and how data is stored
@@ -543,12 +545,12 @@ install:
 
       # Grafana Dashboard
       dashboard:
-        create_route: true        # Create Ingress Route to make accessible 
+        create_route: true        # Create Ingress Route to make accessible
         enable_basic_auth: false  # Grafana has its own login page
 
         # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
         # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
-        ingress_name: '{{ k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}") }}'
+        ingress_name: '{{ k3s_cluster_ingress_name | default("k3s.{{ansible_domain}}") }}'
 
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/grafana/
         path: "/grafana"          # URI Path for Ingress Route
@@ -563,12 +565,12 @@ install:
 
       # Alertmanager Web Interface
       dashboard:
-        create_route: true        # Create Ingress Route to make accessible 
+        create_route: true        # Create Ingress Route to make accessible
         enable_basic_auth: true   # Has its own login page
 
         # Fully Qualified Domain for ingress routes - Traefik Load Balancer address name
         # This is the DNS name you plan to point to the Traefik ingress Load Balancer IP address.
-        ingress_name: '{{ k3s_cluster_ingress_name|default("k3s.{{ansible_domain}}") }}'
+        ingress_name: '{{ k3s_cluster_ingress_name | default("k3s.{{ansible_domain}}") }}'
 
         # Default Dashboard URL:  https://k3s.{{ansible_domain}}/alertmanager/
         path: "/alertmanager"     # URI Path for Ingress Route
@@ -593,7 +595,7 @@ install:
         - name: 'default-receiver'
           # https://prometheus.io/docs/alerting/latest/configuration/#slack_config
           slack_configs:
-            - api_url: "{{VAULT_SLACK_CONFIG_API_URL_SECRET}}"
+            - api_url: "{{ VAULT_SLACK_CONFIG_API_URL_SECRET }}"
               send_resolved: true
               channel: 'monitoring'
               {% raw %}text: "{{ range .Alerts }}<!channel> {{ .Annotations.summary }}\n{{ .Annotations.description }}\n{{ end }}"{% endraw %}

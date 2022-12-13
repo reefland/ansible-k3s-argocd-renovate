@@ -3,95 +3,94 @@
 # Deploy additional applications based on if enabled.
 #
 
-###[ Deploy Additional Applications ]##############################################################
+# [ Deploy Additional Applications ]###############################################################
 - name: Process Applications to Deploy Block
-  block:
-  - name: Clone Remote ArgoCD Repository
-    ansible.builtin.git:
-      repo: "{{install.argocd.repository.url|urlsplit('scheme')}}://{{install.argocd.repository.username}}:{{install.argocd.repository.password}}@{{install.argocd.repository.url|urlsplit('hostname')}}{{install.argocd.repository.url|urlsplit('path')}}"
-      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/"
-      force: yes
-
-  # Applications templates to render and then check into Git repository are defined below
-  # Only process templates if application is enabled.
-  - name: Process Deployable Enabled Applications
-    include_tasks: "process_app_to_deploy.yml"
-    loop:
-      - { enabled: true, name: "cert-manager" }
-      - { enabled: true, name: "lets-encrypt" }
-      - { enabled: "{{install.upgrade_controller.enabled|default(false)|bool}}", name: "upgrade-controller" }
-      - { enabled: "{{install.kube_vip.enabled|default(false)|bool}}",           name: "kube-vip" }
-      - { enabled: "{{install.kube_vip.lb.enabled|default(false)|bool}}",        name: "kube-vip-cloud-provider" }
-      - { enabled: "{{install.traefik.enabled|default(false)|bool}}",            name: "traefik" }
-      - { enabled: "{{install.longhorn.enabled|default(false)|bool}}",           name: "longhorn" }
-      - { enabled: "{{install.sealed_secrets.enabled|default(false)|bool}}",     name: "sealed-secrets" }
-    when:
-      - deploy_app.enabled == true
-    loop_control:
-      loop_var: deploy_app
-      label: "{{deploy_app.name}}"
-
-  # If sealed secrets are enabled then we can delay creating namespace to let ArgoCD
-  # create them.  If sealed secrets are disabled, then we need to create namespaces before
-  # we can create secrets within them.
-  - name: Create Namespaces if Sealed Secrets Disabled
-    kubernetes.core.k8s:
-      state: present
-      name: "{{deploy_app.namespace}}"
-      kind: Namespace
-    loop:
-      - { enabled: "{{install.traefik.enabled|default(false)|bool}}",  namespace: "{{install.traefik.namespace}}" }
-    when:
-      - install.sealed_secrets.enabled|default(false)|bool == false
-    loop_control:
-      loop_var: deploy_app
-      label: "{{deploy_app.namespace}}"
-
-  - name: Process Traefik Application Secrets
-    ansible.builtin.include_tasks: process_secret.yml
-    loop:
-      - { source: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/workloads/secrets/traefik_auth_secret.yaml", delete_src: "yes" }
-    loop_control:
-      loop_var: deploy_secret
-      label: "{{deploy_secret.source}}"      
-    when:
-      - install.traefik.enabled|default(false)|bool == true
-      - install.traefik.dashboard.enable_basic_auth|default(false)|bool == true
-
-  - name: Check-in Any New or Modified Files
-    include_tasks: "checkin_argocd_repo_files.yml"
-    vars:
-      commit_message: "- Deployed Applications"  # Keep under 30 chars
-
-  - name: Delete Local Working ArgoCD Git Repo as Cleanup
-    ansible.builtin.file:
-      path: "/home/{{install.os.non_root_user.name}}/argocd"
-      state: absent
-
-  when: 
-    - inventory_hostname == groups['k3s_control'][0]
-    - install.argocd.enabled|default(false)|bool == true
-  tags:
-    - deploy_apps
-
-###[Application Specific Steps ]###################################################################
-
-###[ Longhorn Specific Tasks ]#####################################################################
-- name: Longhorn Specific Tasks Block
-  block:
-  - name: StorageClass Patch to Disable "local-path" as default class
-    kubernetes.core.k8s:
-      state: patched
-      kind: StorageClass
-      name: "local-path"
-      definition:
-        metadata:
-          annotations:
-            storageclass.kubernetes.io/is-default-class: "false"
-    when:
-      - install.longhorn.disable_local_path_as_default_storage_class|default(false)|bool == true
   when:
     - inventory_hostname == groups['k3s_control'][0]
-    - install.longhorn.enabled|default(false)|bool == true
+    - install.argocd.enabled | default(false) | bool
   tags:
     - deploy_apps
+  block:
+    - name: Clone Remote ArgoCD Repository
+      ansible.builtin.git: # noqa yaml[line-length] latest[git]
+        repo: "{{ install.argocd.repository.url | urlsplit('scheme') }}://{{ install.argocd.repository.username }}:{{ install.argocd.repository.password }}@{{ install.argocd.repository.url | urlsplit('hostname') }}{{ install.argocd.repository.url | urlsplit('path') }}"
+        dest: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/"
+        force: true
+
+    # Applications templates to render and then check into Git repository are defined below
+    # Only process templates if application is enabled.
+    - name: Process Deployable Enabled Applications
+      ansible.builtin.include_tasks: "process_app_to_deploy.yml"
+      loop:
+        - { enabled: true, name: "cert-manager" }
+        - { enabled: true, name: "lets-encrypt" }
+        - { enabled: "{{ install.upgrade_controller.enabled | default(false) | bool }}", name: "upgrade-controller" }
+        - { enabled: "{{ install.kube_vip.enabled | default(false) | bool }}", name: "kube-vip" }
+        - { enabled: "{{ install.kube_vip.lb.enabled | default(false) | bool }}", name: "kube-vip-cloud-provider" }
+        - { enabled: "{{ install.traefik.enabled | default(false) | bool }}", name: "traefik" }
+        - { enabled: "{{ install.longhorn.enabled | default(false) | bool }}", name: "longhorn" }
+        - { enabled: "{{ install.sealed_secrets.enabled | default(false) | bool }}", name: "sealed-secrets" }
+      when:
+        - deploy_app.enabled
+      loop_control:
+        loop_var: deploy_app
+        label: "{{ deploy_app.name }}"
+
+    # If sealed secrets are enabled then we can delay creating namespace to let ArgoCD
+    # create them.  If sealed secrets are disabled, then we need to create namespaces before
+    # we can create secrets within them.
+    - name: Create Namespaces if Sealed Secrets Disabled
+      kubernetes.core.k8s:
+        state: present
+        name: "{{ deploy_app.namespace }}"
+        kind: Namespace
+      loop:
+        - { enabled: "{{ install.traefik.enabled | default(false) | bool }}", namespace: "{{ install.traefik.namespace }}" }
+      when:
+        - install.sealed_secrets.enabled | default(false) | bool
+      loop_control:
+        loop_var: deploy_app
+        label: "{{ deploy_app.namespace }}"
+
+    - name: Process Traefik Application Secrets
+      ansible.builtin.include_tasks: process_secret.yml
+      loop:
+        - { source: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/workloads/secrets/traefik_auth_secret.yaml", delete_src: "yes" }
+      loop_control:
+        loop_var: deploy_secret
+        label: "{{ deploy_secret.source }}"
+      when:
+        - install.traefik.enabled | default(false) | bool
+        - install.traefik.dashboard.enable_basic_auth | default(false) | bool
+
+    - name: Check-in Any New or Modified Files
+      ansible.builtin.include_tasks: "checkin_argocd_repo_files.yml"
+      vars:
+        commit_message: "- Deployed Applications"  # Keep under 30 chars
+
+    - name: Delete Local Working ArgoCD Git Repo as Cleanup
+      ansible.builtin.file:
+        path: "/home/{{ install.os.non_root_user.name }}/argocd"
+        state: absent
+
+# [Application Specific Steps ]####################################################################
+
+# [ Longhorn Specific Tasks ]######################################################################
+- name: Longhorn Specific Tasks Block
+  when:
+    - inventory_hostname == groups['k3s_control'][0]
+    - install.longhorn.enabled | default(false) | bool
+  tags:
+    - deploy_apps
+  block:
+    - name: StorageClass Patch to Disable "local-path" as default class
+      kubernetes.core.k8s:
+        state: patched
+        kind: StorageClass
+        name: "local-path"
+        definition:
+          metadata:
+            annotations:
+              storageclass.kubernetes.io/is-default-class: "false"
+      when:
+        - install.longhorn.disable_local_path_as_default_storage_class | default(false) | bool

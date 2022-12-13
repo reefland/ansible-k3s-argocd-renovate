@@ -1,60 +1,62 @@
 ---
+# [ Process the ArgoCD repository files for application ]##########################################
 - name: Process App to Deploy Block
-  block:
-  ###[ Process the ArgoCD repository files for application ]#######################################
-  - name: "Create Directory Structure for {{deploy_app}} in ArgoCD Repository"
-    file:
-      state: directory
-      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path }}"
-      mode: 0700
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-    with_filetree: "../templates/{{deploy_app.name}}"
-    loop_control:
-      label: "{{ item.path }}"
-    when: item.state == "directory"
-
-  - name: "Process Template Files for {{deploy_app}} in ArgoCD Repository"
-    template:
-      src: "{{ item.src }}"
-      dest: "/home/{{install.os.non_root_user.name}}/argocd/init_git_repo/{{ item.path | regex_replace('\\.j2$', '') }}"
-      mode: 0660
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-      force: "{{deploy_app.overwrite_files|default('no')}}"
-    with_filetree: "../templates/{{deploy_app.name}}"
-    loop_control:
-      label: "{{ item.path }}"
-    when: item.state == "file"
-
-  ###[ Process non-root user home directory files for application ]################################
-  - name: "Create Directory Structure for {{deploy_app}} in {{install.os.non_root_user.name}} user's home"
-    file:
-      state: directory
-      dest: "/home/{{install.os.non_root_user.name}}/{{ item.path }}"
-      mode: 0700
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-    with_filetree: "../templates/user-files/{{deploy_app.name}}"
-    loop_control:
-      label: "{{ item.path }}"
-    when: item.state == "directory"
-
-  - name: "Process Template Files for {{deploy_app}} in {{install.os.non_root_user.name}} user's home"
-    template:
-      src: "{{ item.src }}"
-      dest: "/home/{{install.os.non_root_user.name}}/{{ item.path | regex_replace('\\.j2$', '') }}"
-      mode: 0660
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-      force: "{{deploy_app.overwrite_files|default('no')}}"
-    with_filetree: "../templates/user-files/{{deploy_app.name}}"
-    loop_control:
-      label: "{{ item.path }}"
-    when: item.state == "file"
-
-  when: 
+  when:
     - inventory_hostname == groups['k3s_control'][0]
   tags:
     - always
+  block:
+    - name: "Create Directory Structures for Apps in ArgoCD Repository"
+      ansible.builtin.file: # noqa deprecated-bare-vars
+        state: directory
+        dest: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/{{ item.path }}"
+        mode: "0700"
+        owner: "{{ install.os.non_root_user.name }}"
+        group: "{{ install.os.non_root_user.name }}"
+      with_community.general.filetree:
+        - "../templates/{{ deploy_app.name }}"
+      loop_control:
+        label: "{{ item.path }}"
+      when: item.state == "directory"
 
+    - name: "Process Template Files for Apps in ArgoCD Repository"
+      ansible.builtin.template: # noqa deprecated-bare-vars
+        src: "{{ item.src }}"
+        dest: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/{{ item.path | regex_replace('\\.j2$', '') }}"
+        mode: "0660"
+        owner: "{{ install.os.non_root_user.name }}"
+        group: "{{ install.os.non_root_user.name }}"
+        force: "{{ deploy_app.overwrite_files | default('no') }}"
+      with_community.general.filetree:
+        - "../templates/{{ deploy_app.name }}"
+      loop_control:
+        label: "{{ item.path }}"
+      when: item.state == "file"
+
+    # [ Process non-root user home directory files for application ]#################################
+    - name: "Create Directory Structure for Apps in non-root user's home"
+      ansible.builtin.file: # noqa deprecated-bare-vars
+        state: directory
+        dest: "/home/{{ install.os.non_root_user.name }}/{{ item.path }}"
+        mode: "0700"
+        owner: "{{ install.os.non_root_user.name }}"
+        group: "{{ install.os.non_root_user.name }}"
+      with_community.general.filetree:
+        - "../templates/user-files/{{ deploy_app.name }}"
+      loop_control:
+        label: "{{ item.path }}"
+      when: item.state == "directory"
+
+    - name: "Process Template Files for App in non-root user's home"
+      ansible.builtin.template: # noqa deprecated-bare-vars
+        src: "{{ item.src }}"
+        dest: "/home/{{ install.os.non_root_user.name }}/{{ item.path | regex_replace('\\.j2$', '') }}"
+        mode: "0660"
+        owner: "{{ install.os.non_root_user.name }}"
+        group: "{{ install.os.non_root_user.name }}"
+        force: "{{ deploy_app.overwrite_files | default('no') }}"
+      with_community.general.filetree:
+        - "../templates/user-files/{{ deploy_app.name }}"
+      loop_control:
+        label: "{{ item.path }}"
+      when: item.state == "file"

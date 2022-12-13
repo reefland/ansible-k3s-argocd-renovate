@@ -1,89 +1,117 @@
 ---
 # Prepare environment, download k3s installation script and run it
-
-- name: Install k3s Kubernetes Distribution Block
-  block:
-
-  - name: Uninstall Snapd Demon
-    apt:
-      name: "{{install.os.remove_packages.packages}}"
-      state: absent
-      autoremove: yes
-    when:
-      - install.os.remove_packages.enabled|default(false)|bool == true 
-
-  - name: Download k3s install script
-    get_url:
-      url: "{{k3s.url}}"
-      dest: "/home/{{install.os.non_root_user.name}}/k3s_install.sh"
-      mode: ug+x
-
-  - name: Create non-root user .kube directory
-    file:
-      path: "/home/{{install.os.non_root_user.name}}/.kube"
-      state: directory
-      mode: 0700
-      owner: "{{install.os.non_root_user.name}}"
-      group: "{{install.os.non_root_user.name}}"
-
-  - name: Create root .kube directory
-    file:
-      path: "/root/.kube"
-      state: directory
-      mode: "0700"
-      owner: "root"
-      group: "root"
-
-  - name: Add export KUBECONFIG to .profile
-    ansible.builtin.lineinfile:
-      dest: "/home/{{install.os.non_root_user.name}}/.profile"
-      line: "export KUBECONFIG=~/.kube/config"
-
-  # Allow Helm to know where config file is
-  - name: Add KUBECONFIG to /etc/environment
-    ansible.builtin.lineinfile:
-      dest: "/etc/environment"
-      line: "KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
-
-  - name: Merge k3s_init_options and k3s_exec_options
-    set_fact:
-      install_k3s_exec_options: "{{k3s.k3s_init_options + ' ' + k3s.k3s_exec_options|join(' ')}}"
-
-  - name: Merge in disable options to exec options list if local storage disabled
-    set_fact:
-      install_k3s_exec_options: "{{install_k3s_exec_options + ' ' + k3s.cli_disable_storage_options|join(' ')}}"
-    when:
-      - install.longhorn.disable_local_path_as_default_storage_class|default(false)|bool == true
-
-  - name: Merge in disable options to exec options list if MetalLB or Kube-VIP is enabled
-    set_fact:
-      install_k3s_exec_options: "{{install_k3s_exec_options + ' ' + k3s.cli_disable_loadbalancer_options|join(' ')}}"
-    when:
-      - inventory_hostname in groups['k3s_control']
-      - install.kube_vip.lb.enabled|default(false)|bool == true
-
-  - name: Merge in containerd options to exec options if containerd is enabled
-    set_fact:
-      install_k3s_exec_options: "{{install_k3s_exec_options + ' ' + k3s.k3s_containerd_options|join(' ')}}"
-    when:
-      - install.containerd.enabled|default(false)|bool == true
-
-  - name: Add in TLS-SAN flag if Kube-VIP is enabled
-    set_fact:
-      install_k3s_exec_options: "{{install_k3s_exec_options}} --tls-san={{vip_endpoint_ip}}"
-    when:
-      - inventory_hostname in groups['k3s_control']
-      - install.kube_vip.enabled|default(false)|bool == true
-
-#  - fail:
-#      msg: "{{ install.k3s.cli_options|join(' ')}} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options}}\" "
-
-  - name: Execute k3s_install.sh and create k3s_install.log
-    ansible.builtin.shell:
-      cmd: "{{ install.k3s.cli_options|join(' ')}} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options}}\" /home/{{install.os.non_root_user.name}}/k3s_install.sh > /home/{{install.os.non_root_user.name}}/k3s_install.log"
-      chdir: "/home/{{install.os.non_root_user.name}}"
-    notify:
-      - Restart k3s Service
-
+# [ Prepare K3S Kubernetes for Nodes for INstallation ]############################################
+- name: Prepare k3s Kubernetes Distribution Block
   tags:
     - install_k3s
+  block:
+    - name: Uninstall Snapd Demon
+      ansible.builtin.apt:
+        name: "{{ install.os.remove_packages.packages }}"
+        state: absent
+        autoremove: true
+      when:
+        - install.os.remove_packages.enabled | default(false) | bool
+
+    - name: Download k3s install script
+      ansible.builtin.get_url:
+        url: "{{ k3s.url }}"
+        dest: "/home/{{ install.os.non_root_user.name }}/k3s_install.sh"
+        mode: ug+x
+
+    - name: Create non-root user .kube directory
+      ansible.builtin.file:
+        path: "/home/{{ install.os.non_root_user.name }}/.kube"
+        state: directory
+        mode: 0700
+        owner: "{{ install.os.non_root_user.name }}"
+        group: "{{ install.os.non_root_user.name }}"
+
+    - name: Create root .kube directory
+      ansible.builtin.file:
+        path: "/root/.kube"
+        state: directory
+        mode: "0700"
+        owner: "root"
+        group: "root"
+
+    - name: Add export KUBECONFIG to .profile
+      ansible.builtin.lineinfile:
+        dest: "/home/{{ install.os.non_root_user.name }}/.profile"
+        line: "export KUBECONFIG=~/.kube/config"
+
+    # Allow Helm to know where config file is
+    - name: Add KUBECONFIG to /etc/environment
+      ansible.builtin.lineinfile:
+        dest: "/etc/environment"
+        line: "KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
+
+# [ Install K3S on Control Plane Nodes ]###########################################################
+- name: Install k3s Kubernetes Distribution for Control-Plane Block
+  when:
+    - inventory_hostname in groups['k3s_control']
+  tags:
+    - install_k3s
+  block:
+    - name: Merge k3s_init_options and k3s_exec_options for master nodes
+      ansible.builtin.set_fact:
+        install_k3s_exec_options: "{{ k3s.k3s_init_options + ' ' + k3s.k3s_exec_options | join(' ') }}"
+
+    - name: Merge in disable options to exec options list if local storage disabled
+      ansible.builtin.set_fact:
+        install_k3s_exec_options: "{{ install_k3s_exec_options + ' ' + k3s.cli_disable_storage_options | join(' ') }}"
+      when:
+        - install.longhorn.enabled | default(false) | bool
+        - install.longhorn.disable_local_path_as_default_storage_class | default(false) | bool
+
+    - name: Merge in disable options to exec options list if Kube-VIP is enabled
+      ansible.builtin.set_fact:
+        install_k3s_exec_options: "{{ install_k3s_exec_options + ' ' + k3s.cli_disable_loadbalancer_options | join(' ') }}"
+      when:
+        - install.kube_vip.lb.enabled | default(false) | bool
+
+    - name: Merge in containerd options to exec options if containerd is enabled
+      ansible.builtin.set_fact:
+        install_k3s_exec_options: "{{ install_k3s_exec_options + ' ' + k3s.k3s_containerd_options | join(' ') }}"
+      when:
+        - install.containerd.enabled | default(false) | bool
+
+    - name: Add in TLS-SAN flag if Kube-VIP is enabled
+      ansible.builtin.set_fact:
+        install_k3s_exec_options: "{{ install_k3s_exec_options }} --tls-san={{ vip_endpoint_ip }}"
+      when:
+        - install.kube_vip.enabled | default(false) | bool
+
+  #  - fail:
+  #      msg: "{{ install.k3s.cli_options|join(' ')}} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options}}\" "
+
+    - name: Execute k3s_install.sh and create k3s_install.log
+      ansible.builtin.shell: # noqa yaml[line-length]
+        cmd: "{{ install.k3s.cli_options | join(' ') }} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options }}\" /home/{{ install.os.non_root_user.name }}/k3s_install.sh > /home/{{ install.os.non_root_user.name }}/k3s_install.log"
+        chdir: "/home/{{ install.os.non_root_user.name }}"
+      register: cmd
+      changed_when: cmd.rc == 0
+#      notify:
+#        - Restart k3s Service
+
+# [ Install K3S on Worker Nodes ]##################################################################
+- name: Install k3s Kubernetes Distribution for Worker Nodes Block
+  when:
+    - inventory_hostname in groups['k3s_workers']
+  tags:
+    - install_k3s
+  block:
+    - name: Set containerd options to exec options if containerd is enabled
+      ansible.builtin.set_fact:
+        install_k3s_exec_options: "{{ k3s.k3s_containerd_options | join(' ') }}"
+      when:
+        - install.containerd.enabled | default(false) | bool
+
+    - name: Execute k3s_install.sh and create k3s_install.log
+      ansible.builtin.shell: # noqa yaml[line-length]
+        cmd: "INSTALL_K3S_SKIP_START=true K3S_URL=https://{{ groups['k3s_control'][0] }}:6443 K3S_TOKEN={{ K3S_TOKEN | default('top_secret') }} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options }}\" /home/{{ install.os.non_root_user.name }}/k3s_install.sh > /home/{{ install.os.non_root_user.name }}/k3s_install.log"
+        chdir: "/home/{{ install.os.non_root_user.name }}"
+      register: cmd
+      changed_when: cmd.rc == 0
+#      notify:
+#        - Restart k3s-agent Service

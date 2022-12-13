@@ -4,35 +4,36 @@
 # Will also install Helm Diff plugin for better idempotency checks
 #
 
-###[ Install Helm Package Manager Client ]#########################################################
+# [ Install Helm Package Manager Client ]##########################################################
 - name: Install Helm Client Block
-  block:
-  - name: Add Helm Signing Certificate
-    apt_key:
-      url: https://baltocdn.com/helm/signing.asc
-      state: present
-
-  - name: Install apt-transport-https
-    apt:
-      name: apt-transport-https
-      state: present
-
-  - name: Add Helm Repository to APT Sources
-    apt_repository: 
-      repo: deb https://baltocdn.com/helm/stable/debian all main
-      state: present
-      mode: 0644
-      update_cache: yes
-
-  - name: Install Helm Client
-    apt:
-      name: helm
-      state: present
-
-  - name: Install Helm Diff
-    kubernetes.core.helm_plugin:
-      state: present
-      plugin_path: https://github.com/databus23/helm-diff
-
+  when:
+    - inventory_hostname in groups['k3s_control']
   tags:
     - install_helm_client
+  block:
+    - name: Add Helm Signing Certificate
+      ansible.builtin.apt_key:
+        url: https://baltocdn.com/helm/signing.asc
+        state: present
+
+    - name: Install apt-transport-https
+      ansible.builtin.apt:
+        name: apt-transport-https
+        state: present
+
+    - name: Add Helm Repository to APT Sources
+      ansible.builtin.apt_repository:
+        repo: deb https://baltocdn.com/helm/stable/debian all main
+        state: present
+        mode: 0644
+        update_cache: true
+
+    - name: Install Helm Client
+      ansible.builtin.apt:
+        name: helm
+        state: present
+
+    - name: Install Helm Diff
+      kubernetes.core.helm_plugin:
+        state: present
+        plugin_path: https://github.com/databus23/helm-diff

@@ -1,42 +1,46 @@
 ---
 # Make sure required packages are installed
 - name: Check required Ansible Software Block
-  block:
-  - name: Install Kubernetes packages for Ansible
-    apt:
-      name: "{{k3s.packages}}"
-      state: present
-    register: result
-    retries: 10             # Sometimes unattended upgrades is running
-    delay: 10
-    until: result is success
-
-  - name: Install Kubernetes pip3 packages for Ansible
-    pip:
-      name: "{{k3s.packages_pip}}"
-      state: present
   tags:
     - always
+  block:
+    - name: Install Kubernetes packages for Ansible
+      ansible.builtin.apt:
+        name: "{{ k3s.packages }}"
+        state: present
+      register: result
+      retries: 10             # Sometimes unattended upgrades is running
+      delay: 10
+      until: result is success
+
+    - name: Install Kubernetes pip3 packages for Ansible
+      ansible.builtin.pip:
+        name: "{{ k3s.packages_pip }}"
+        state: present
 
 # Try to fail early if required values are undefined.
 - name: Sanity Check Variable Block
+  when:
+    - inventory_hostname == groups['k3s_control'][0]
+  tags:
+    - always
   block:
     - name: Variable vip_endpoint_ip is undefined check
-      fail:
+      ansible.builtin.fail:
         msg: |
           Since install.kube_vip.enabled is True
 
           You must define variable "vip_endpoint_ip" at host or group level within inventory, host_var
-          or group_var file. This must be set to an IP address. This IP address will become a Load 
+          or group_var file. This must be set to an IP address. This IP address will become a Load
           Balanced VIP cluster wide for the API service.  You can point kubectl to this IP address.
 
           Example   vip_endpoint_ip: "192.168.10.239"
       when:
         - vip_endpoint_ip is undefined
-        - install.kube_vip.enabled|default(false)|bool == true
+        - install.kube_vip.enabled | default(false) | bool
 
     - name: Variable vip_lb_ip_range is undefined check
-      fail:
+      ansible.builtin.fail:
         msg: |
           Since install.kube_vip.lb.enabled is True
 
@@ -45,35 +49,46 @@
           of IP addressed used for services of LoadBalancer type.
 
           Examples:
-      
+
           vip_lb_ip_range: "range-global: 192.168.1.220-192.168.1.227"
           vip_lb_ip_range: "cidr-global: 192.168.1.220/29"
-      
+
       when:
         - vip_lb_ip_range is undefined
-        - install.kube_vip.lb.enabled|default(false)|bool == true
+        - install.kube_vip.lb.enabled | default(false) | bool
 
     - name: Sealed Secrets Private Certificate check
-      fail:
+      ansible.builtin.fail:
         msg: |
           Since install.sealed_secrets.use_pre_generated_private_key is True
 
           You must define variable "SEALED_SECRETS_PRIVATE_CERT_SECRET" within vars/secrets/main.yaml file.
       when:
-        - install.sealed_secrets.use_pre_generated_private_key|default(false)|bool == true
+        - install.sealed_secrets.use_pre_generated_private_key | default(false) | bool
         - SEALED_SECRETS_PRIVATE_CERT_SECRET is undefined
 
     - name: Sealed Secrets Private Key check
-      fail:
+      ansible.builtin.fail:
         msg: |
           Since install.sealed_secrets.use_pre_generated_private_key is True
 
           You must define variable "SEALED_SECRETS_PRIVATE_KEY_SECRET" within vars/secrets/main.yaml file.
       when:
-        - install.sealed_secrets.use_pre_generated_private_key|default(false)|bool == true
+        - install.sealed_secrets.use_pre_generated_private_key | default(false) | bool
         - SEALED_SECRETS_PRIVATE_KEY_SECRET is undefined
 
-  when:
-    - inventory_hostname == groups['k3s_control'][0]
-  tags:
-    - always
+    - name: Verify ZFS Pool for ContainerD is valid
+      ansible.builtin.command:
+        cmd: "zpool status {{ install.containerd.zfs.pool }}"
+      register: cmd
+      changed_when: cmd.rc == 0
+      failed_when: cmd.rc < 0
+
+    - name: Failed if ZFS Pool for ContainerD is not valid
+      ansible.builtin.fail:
+        msg: |
+          The ZFS pool defined for ContainerD ('{{ install.containerd.zfs.pool }}') is not valid.
+
+          You must create this pool prior to running this playbook.
+      when:
+        - cmd.rc != 0

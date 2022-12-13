@@ -1,27 +1,24 @@
 ---
-###[ Apply Node Labels ]###########################################################################
+# [ Apply Node Labels ]############################################################################
 - name: Apply Node Labels
-  block:
-
-  - name: Convert K3s Label List to Dictionary
-    set_fact: 
-      k3s_labels_dict: "{{ dict(_keys|zip(_vals)) }}"
-    vars:
-      _keys: "{{ k3s_labels|map('split', '=')|map('first')|map('trim')|list }}"
-      _vals: "{{ k3s_labels|map('split', '=')|map('last')|map('trim')|list }}"
-      
-  - name: Apply any defined node labels
-    kubernetes.core.k8s:
-      state: present
-      definition:
-        api_version: v1
-        kind: Node
-        metadata:
-          name: "{{inventory_hostname_short}}"
-          labels: 
-            "{{k3s_labels_dict}}"
-
   when:
     - k3s_labels is defined
   tags:
     - apply_labels
+  block:
+    # Worker / Agents do not have permission to added labels directly
+    # task is delegated to control-plane node to execute
+    - name: Apply any defined node labels, delegate to control-plane node
+      ansible.builtin.command:
+        argv:
+          - /usr/local/bin/kubectl
+          - label
+          - node
+          - "{{ inventory_hostname_short }}"
+          - "{{ item }}"
+      register: cmd
+      changed_when: cmd.rc == 0
+      with_items:
+        - "{{ k3s_labels }}"
+      delegate_facts: true
+      delegate_to: "{{ groups['k3s_control'][0] }}"

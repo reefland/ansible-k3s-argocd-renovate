@@ -1,73 +1,70 @@
 ---
 # Configure Centralized logging - !st server defined in master group is centralized server
 
-###[ Configure Central Logging Server ]############################################################
+# [ Configure Central Logging Server ]#############################################################
 - name: Configure Central Logging Server Block
-  block:
-  
-  - name: Install Packages to Support Central Logging
-    apt:
-      name: "{{os.central_logging.packages}}"
-      state: present
-
-  - name: Create folder for central logging
-    ansible.builtin.file:
-      path: "{{install.os.central_logging.log_path}}"
-      owner: "{{rsyslog.logging_path.owner}}"
-      group: "{{rsyslog.logging_path.group}}"
-      mode: "{{rsyslog.logging_path.mode}}"
-      state: directory
-
-  - name: Enable UDP/TCP syslog reception
-    replace:
-      path: "{{rsyslog.config_file}}"
-      regexp: '^#{{item.find}}'
-      replace: '{{item.replace}}'
-      backup: yes
-    loop:
-      - { find: 'module\(load="imudp"',  replace: 'module(load="imudp"' }
-      - { find: 'input\(type="imudp"',   replace: 'input(type="imudp"' }
-      - { find: 'module\(load="imtcp"',  replace: 'module(load="imtcp"' }
-      - { find: 'input\(type="imtcp"',   replace: 'input(type="imtcp"' }
-    notify:
-     - Restart rsyslog service
-
-  - name: Copy Central Logging Config File
-    copy:
-      src: "files/rsyslog/{{item.src}}"
-      dest: "{{item.dest}}"
-    loop:
-      - { src: "central.conf", dest: "{{rsyslog.central_config}}" }
-      - { src: "central",      dest: "{{rsyslog.logrotate_config}}" }
-    notify:
-     - Restart rsyslog service
-
-  when: 
-     - inventory_hostname == groups['k3s_control'][0]
+  when:
+    - inventory_hostname == groups['k3s_control'][0]
   tags:
     - config_rsyslog
+  block:
+    - name: Install Packages to Support Central Logging
+      ansible.builtin.apt:
+        name: "{{ os.central_logging.packages }}"
+        state: present
 
-###[ Configure Logging Clients ]###################################################################
+    - name: Create folder for central logging
+      ansible.builtin.file:
+        path: "{{ install.os.central_logging.log_path }}"
+        owner: "{{ rsyslog.logging_path.owner }}"
+        group: "{{ rsyslog.logging_path.group }}"
+        mode: "{{ rsyslog.logging_path.mode }}"
+        state: directory
 
+    - name: Enable UDP/TCP syslog reception
+      ansible.builtin.replace:
+        path: "{{ rsyslog.config_file }}"
+        regexp: '^#{{ item.find }}'
+        replace: '{{ item.replace }}'
+        backup: true
+      loop:
+        - { find: 'module\(load="imudp"', replace: 'module(load="imudp"' }
+        - { find: 'input\(type="imudp"', replace: 'input(type="imudp"' }
+        - { find: 'module\(load="imtcp"', replace: 'module(load="imtcp"' }
+        - { find: 'input\(type="imtcp"', replace: 'input(type="imtcp"' }
+      notify:
+        - Restart rsyslog service
+
+    - name: Copy Central Logging Config File
+      ansible.builtin.copy:
+        src: "files/rsyslog/{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: "0644"
+      loop:
+        - { src: "central.conf", dest: "{{ rsyslog.central_config }}" }
+        - { src: "central", dest: "{{ rsyslog.logrotate_config }}" }
+      notify:
+        - Restart rsyslog service
+
+# [ Configure Logging Clients ]####################################################################
 # This is never run on the central logging server, only other nodes
 - name: Configure Logging Clients Block
-  block:
-
-  - name: Enable logging clients to send to remote server
-    lineinfile:
-      path: "{{rsyslog.config_file}}"
-      insertafter: "# Default logging rules"
-      line: "*.* @@{{ groups['k3s_control'][0] }}:514"
-    notify:
-     - Restart rsyslog service
-
-  when: 
-     - inventory_hostname != groups['k3s_control'][0]
+  when:
+    - inventory_hostname != groups['k3s_control'][0]
   tags:
     - config_rsyslog
+  block:
+    - name: Enable logging clients to send to remote server
+      ansible.builtin.lineinfile:
+        path: "{{ rsyslog.config_file }}"
+        insertafter: "# Default logging rules"
+        line: "*.* @@{{ groups['k3s_control'][0] }}:514"
+      notify:
+        - Restart rsyslog service
 
-###[ Flush Handlers ]##############################################################################
+
+# [ Flush Handlers ]###############################################################################
 - name: Flush Handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
   tags:
     - config_rsyslog
