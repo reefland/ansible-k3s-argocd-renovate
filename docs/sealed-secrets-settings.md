@@ -142,7 +142,7 @@ The Sealed Secrets Settings are in variable namespace `install.sealed_secrets`.
 
   ```yaml
       # Select release to use: https://artifacthub.io/packages/helm/bitnami-labs/sealed-secrets
-      install_version: "{{sealed_secret_install_version|default('v2.6.0')}}"
+      install_version: "{{sealed_secret_install_version|default('v2.7.1')}}"
   ```
 
 > Define the Namespace to Install Sealed Secrets into:

@@ -130,7 +130,7 @@ The ArgoCD Settings are in variable namespace `install.argocd`.
 
   ```yaml
       # Select Release to install: https://artifacthub.io/packages/helm/argo/argo-cd
-      install_version: "{{argocd_install_version|default('4.10.5')}}"
+      install_version: "{{argocd_install_version|default('5.13.9')}}"
   ```
 
 * Define the namespace to install ArgoCD into:

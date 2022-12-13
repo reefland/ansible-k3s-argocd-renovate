@@ -4,7 +4,8 @@
 
 ## Important Notes
 
-* Prometheus will use persistent storage. By default it is configured to use the [democratic CSI TrueNAS iSCSI](democratic-csi-settings.md) persistent storage.  This can be configured to use [Longhorn](longhorn-settings.md) persistent storage.
+* Prometheus will use persistent storage. By default it is configured to use the [democratic CSI TrueNAS iSCSI](democratic-csi-settings.md) persistent storage.
+* You can easily change this to a different storage class.
 * To prevent Traefik metrics from being exposed on the LoadBalancer IP address, an internal ClusterIP service is created for the service monitor to reach Traefik metrics.
 
 ## Review `defaults/main.yml` for Prometheus Operator Settings
@@ -15,13 +16,13 @@ The Prometheus Operator Settings are in variable namespace `install.prometheus_o
 
   ```yml
   prometheus_operator:
-    install_version: "39.5.0"
+    install_version: "41.7.4"
   ```
 
 * The Kubernetes Custom Resource Definitions (CRD) for Kube Prometheus Stack are maintained by the [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator) Project and is assigned a different version number than the Kube Prometheus Stack Helm Chart.  These two versions need to be instep with each other.  Luckily renovate will monitor and upgrade both as they become available.  This page should state the version of the CRD to use: [https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack#upgrading-chart)
 
   ```yml
-    crd_version: "v0.58.0"
+    crd_version: "v0.60.1"
   ```
 
 * The namespace Helm will use to install Kube Prometheus Stack:

@@ -57,7 +57,7 @@ The Traefik Settings are in variable namespace `install.traefik`.
       traefik:
 
         # Select release to use: https://github.com/traefik/traefik-helm-chart/tags
-        install_version: "{{traefik_install_version|default('v10.19.4')}}"
+        install_version: "{{traefik_install_version|default('v20.3.0')}}"
   ```
 
 * The namespace Helm will use to install Traefik:

@@ -26,7 +26,7 @@ install:
       - "INSTALL_K3S_SKIP_START=true"
       
       # This is to pin a specific version of k3s for initial installation
-      - "INSTALL_K3S_VERSION=v1.23.4+k3s1"
+      - "INSTALL_K3S_VERSION=v1.25.3+k3s1"
       
       # Select installation channel to use (stable, latest, testing)
       #- "INSTALL_K3S_CHANNEL=stable"
@@ -71,10 +71,11 @@ install:
 By default `k` will be setup as an alias for `kubectl`:
 
 ```shell
-$ k version
+$ k version --short
 
-Client Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.5+k3s1", GitCommit:"313aaca547f030752788dce696fdf8c9568bc035", GitTreeState:"clean", BuildDate:"2022-03-31T01:02:40Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
-Server Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.5+k3s1", GitCommit:"313aaca547f030752788dce696fdf8c9568bc035", GitTreeState:"clean", BuildDate:"2022-03-31T01:02:40Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
+Client Version: v1.25.3+k3s1
+Kustomize Version: v4.5.7
+Server Version: v1.25.3+k3s1
 ```
 
 The `kcurl` will create a pod to run the `curl`, `ping`, `wget`, etc. commands against other pods.  Handy for troubleshooting pod networking.
@@ -114,7 +115,7 @@ $ ansible-playbook -i inventory kubernetes.yml --tags="validate_k3s"
   MSG:
 
   NAME        STATUS   ROLES                       AGE   VERSION
-  testlinux   Ready    control-plane,etcd,master   18h   v1.23.5+k3s1
+  testlinux   Ready    control-plane,etcd,master   18h   v1.25.3+k3s1
 ```
 
 ---

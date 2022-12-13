@@ -4,6 +4,7 @@
 
 ## Important Notes
 
+* Containerd package is provided by Ubuntu repository and version applied will be decided by your package manager.
 * Ubuntu's `zsys` system snapshot creator does _not_ play nicely with containerd.  A dataset outside of its reach is created.
 
 ## Review `defaults/main.yml` for Containerd Settings

@@ -271,7 +271,7 @@ The democratic-csi Settings are in variable namespace `install.democratic_csi`.
   ###[ Democratic CSI Installation Settings ]######################################################  
   democratic_csi:
     # Select Release to use: https://github.com/democratic-csi/charts/releases
-    install_version: "{{democratic_csi_install_version|default('0.13.4')}}"
+    install_version: "{{democratic_csi_install_version|default('0.13.5')}}"
   ```
 
 * The name space Helm will use to install democratic-csi:

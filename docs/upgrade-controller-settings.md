@@ -35,7 +35,7 @@ The System Upgrade Controller Settings are in variable namespace `install.upgrad
 
   ```yaml
     # Select release to use: https://github.com/rancher/system-upgrade-controller/releases
-    install_version: "{{system_upgrade_controller_install_version|default('v0.9.1')}}"
+    install_version: "{{system_upgrade_controller_install_version|default('v0.10.0')}}"
   ```
 
 > Define the Namespace to Install System Upgrade Controller into:

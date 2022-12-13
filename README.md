@@ -62,7 +62,7 @@ Optionally Installed:
 * Ubuntu 20.04.x LTS / 22.04 LTS
   * Based [ZFS on Root](https://github.com/reefland/ansible-zfs_on_root) installation
 * TrueNAS Core 12.x
-* K3s v1.23.x - v1.24.x
+* K3s v1.23.x - v1.25.x
 
 ---
 
@@ -75,7 +75,6 @@ Optionally Installed:
 * [containerd](https://containerd.io/), container networking-plugins, iptables
 * [helm](https://helm.sh/), [helm diff](https://github.com/databus23/helm-diff), [apt-transport-https](http://manpages.ubuntu.com/manpages/focal/man1/apt-transport-https.1.html) (required for helm client install)
 * [open-iscsi](https://github.com/open-iscsi/open-iscsi), [lsscsi](http://sg.danny.cz/scsi/lsscsi.html), [sg3-utils](https://sg.danny.cz/sg/sg3_utils.html), [multipath-tools](https://github.com/opensvc/multipath-tools), [scsitools](https://packages.ubuntu.com/focal/scsitools-gui) (required by democratic-csi  and by Longhorn)
-* [lm-sensors](https://github.com/lm-sensors/lm-sensors) for hardware temperature monitoring
 
 ## Packages Uninstalled
 
@@ -125,34 +124,37 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
 ```yaml
 k3s_control:
   hosts:
-    k3s01.example.com:                        # Master #1
-      longhorn_zfs_pool: "tank"
-      longhorn_vol_size: "10G"
-    k3s02.example.com:                        # Master #2
-      longhorn_zfs_pool: "tank"
-      longhorn_vol_size: "10G"
-    k3s03.example.com:                        # Master #3 (add more if needed)
-      longhorn_zfs_pool: "tank"
-      longhorn_vol_size: "10G"
-
-  vars:
+    k3s01.example.com:                        # Control Node / Master #1
+      containerd_pool: "rpool"
+    k3s02.example.com:                        # Control Node / Master #2
+      containerd_pool: "rpool"
+    k3s03.example.com:                        # Control Node / Master #3
+      containerd_pool: "rpool"
+  vars:                                       # Applies to all control nodes
+    longhorn_zfs_pool: "tank"
+    longhorn_vol_size: "10G"
     vip_endpoint_ip: "192.168.10.220"
     vip_lb_ip_range: "cidr-global: 192.168.10.221/30"   # 4 Addresses pool
     traefik_lb_ip: "192.168.10.221"           # must be within cidr ip_range
+
     k3s_labels:
       - "k3s-upgrade=true"
 
 k3s_workers:
   hosts:
-    k3s-worker01.example.com:                # Worker #1
+    k3s04.example.com:                        # Worker #1 (add more if needed)
+      containerd_pool: "rpool"
 
-  vars:
+    k3s04.example.com:                        # Worker #1 (add more if needed)
+      containerd_pool: "rpool"
+
+  vars:                                       # Applies to all worker nodes
     k3s_labels:
       - "kubernetes.io/role=worker"
       - "node-type=worker"
       - "k3s-upgrade=true"
 
-k3s:
+k3s:                                          # Group name for all nodes
   children:
     k3s_control:
     k3s_workers:
@@ -214,7 +216,13 @@ For simplicity I show the variables within the inventory file.  You can place th
 
 ---
 
+#### Inventory Variables for containerD
+
+* `containerd_pool` lets you define the ZFS pool that containerd will use for the ZFS snapshotter. You don't have to create a new pool, just specify a a valid existing pool to use.  A dataset for containerd will be created within the pool specified here.
+
 #### Inventory Variables for Longhorn Distributed Storage
+
+_NOTE: After using Longhorn for a while, I have decided not to use it.  It has issues reclaiming disk space and does not seem appropriate for any applications with heavy disk write activity. The amount of space is not a concern, just the amount of disk writes.  Works great for low write volume applications._
 
 * `longhorn_zfs_pool` lets you define the ZFS pool to create Longhorn cluster storage with. It will use the ZFS pool `rpool` if not defined. This can be host specific or group scoped.
 

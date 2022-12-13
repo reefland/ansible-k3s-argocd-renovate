@@ -27,7 +27,7 @@ There should not be a need to update any settings for Cert Manager. The Cert-man
   install:
     cert_manager:
       # Select release to use:  https://github.com/cert-manager/cert-manager/releases
-      install_version: "{{cert_manager_install_version|default('v1.7.1')}}"
+      install_version: "{{cert_manager_install_version|default('v1.10.0')}}"
   ```
 
 * Define the namespace to install Cert Manager into:
