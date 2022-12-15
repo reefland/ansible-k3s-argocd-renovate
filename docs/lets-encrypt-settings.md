@@ -137,7 +137,7 @@ Once the default staging certificates are verified to be working, the playbook c
 * Apply playbook to create Production ClusterIssuer:
 
 ```shell
-ansible-playbook -i inventory kubernetes.yml --tags="config_le_certificates" --extra-vars="le_staging=false"
+ansible-playbook -i inventory k3s-argocd.yml --tags="config_le_certificates" --extra-vars="le_staging=false"
 ```
 
 This will clone the ArgoCD repository and replace the staging wildcard certificate and Cert-Manager ClusterIssuer with the production equivalent and commit the change back to ArgoCD. Within a ArgoCD sync cycle or two you should have the production certificate ready for use.
