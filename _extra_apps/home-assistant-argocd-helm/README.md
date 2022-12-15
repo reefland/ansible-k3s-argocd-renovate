@@ -2,8 +2,9 @@
 
 [Return to Application List](../)
 
-* Kustomize based ArgoCD application deployment
-* Deployed as a Statefulset with a 10Gi Democratic-CSI iSCSI Persistent Storage Volume for data
+* Helm based ArgoCD application deployment
+* Deployed as a Statefulset with a 10Gi Democratic-CSI iSCSI Persistent Volume storage for data
+  * Customize the the Persistent Volume to your needs obviously
 
 Review file `home-assistant-argocd-helm/applications/home-assistant.yaml`
 
