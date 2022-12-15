@@ -72,7 +72,7 @@ Review file `apt-cacher-ng-argocd-helm/applications/apt-cacher-ng.yaml`
 
 You can access the APT-Cacher NG maintenance page by the Traefik ingress defined above `https://apt-cacher-ng.example.com/acng-report.html`
 
-TO-DO: Put image of populated maintenance page HERE.
+![apt-cacher-ng maintenance page stats](apt-cacher-ng-maintenance-page-stats.png)
 
 * You can customize the Apt-Cacher NG configuration file within the `configmap` section.  This is not the entire default configuration file, only the changes from the default values are needed.
 
