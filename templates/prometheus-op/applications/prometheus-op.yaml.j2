@@ -71,7 +71,8 @@ spec:
                 targetLabel: instance
 
         kubeControllerManager:
-          enabled: true
+          # Enable when more than one Control Plane node is available
+          enabled: {{ (groups['k3s_control'] | length > 1) | ternary('true','false') }}
           endpoints:
 {% for IP in controlPlaneIPs.stdout_lines[0] | split(' ') %}
             - {{IP}}
@@ -89,7 +90,8 @@ spec:
           enabled: true
 
         kubeScheduler:
-          enabled: true
+          # Enable when more than one Control Plane node is available
+          enabled: {{ (groups['k3s_control'] | length > 1) | ternary('true','false') }}
           endpoints:
 {% for IP in controlPlaneIPs.stdout_lines[0] | split(' ') %}
             - {{IP}}
@@ -104,14 +106,16 @@ spec:
             insecureSkipVerify: true
 
         kubeProxy:
-          enabled: true
+          # Enable when more than one Control Plane node is available
+          enabled: {{ (groups['k3s_control'] | length > 1) | ternary('true','false') }}
           endpoints:
 {% for IP in controlPlaneIPs.stdout_lines[0] | split(' ') %}
             - {{IP}}
 {% endfor %}
 
         kubeEtcd:
-          enabled: true
+          # Enable when more than one Control Plane node is available
+          enabled: {{ (groups['k3s_control'] | length > 1) | ternary('true','false') }}
           endpoints:
 {% for IP in controlPlaneIPs.stdout_lines[0] | split(' ') %}
             - {{IP}}
