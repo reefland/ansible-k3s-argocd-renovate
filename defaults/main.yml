@@ -588,14 +588,19 @@ install:
           # All alerts that do not match the following child routes
           # will remain at the root node and be dispatched to 'default-receiver'.
           routes:
-          #  - matchers:
-          #    - service=~"foo1|foo2|baz"
-          #  receiver: database-team
+            - match:
+                alertname: InfoInhibitor
+              receiver: 'null'
+            - match:
+                severity: info
+              receiver: 'null'
+
         receivers:
-        - name: 'default-receiver'
-          # https://prometheus.io/docs/alerting/latest/configuration/#slack_config
-          slack_configs:
-            - api_url: "{{ VAULT_SLACK_CONFIG_API_URL_SECRET }}"
-              send_resolved: true
-              channel: 'monitoring'
-              {% raw %}text: "{{ range .Alerts }}<!channel> {{ .Annotations.summary }}\n{{ .Annotations.description }}\n{{ end }}"{% endraw %}
+          - name: 'null'
+          - name: default-receiver
+            # https://prometheus.io/docs/alerting/latest/configuration/#slack_config
+            slack_configs:
+              - api_url: "{{ VAULT_SLACK_CONFIG_API_URL_SECRET }}"
+                send_resolved: true
+                channel: 'monitoring'
+                {% raw %}text: "{{ range .Alerts }}<!channel> {{ .Annotations.summary }}\n{{ .Annotations.description }}\n{{ end }}"{% endraw %}

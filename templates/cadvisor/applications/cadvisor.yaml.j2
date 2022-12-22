@@ -1,0 +1,30 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: {{install.argocd.namespace}}
+  name: cadvisor
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "14"  # Lower the number the sooner to deploy
+spec:
+  project: {{install.prometheus_operator.argocd_project|default("default")}}
+  revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
+
+  source:
+    repoURL: {{install.argocd.repository.url}}.git
+    targetRevision: HEAD
+    path: workloads/cadvisor/
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cadvisor
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true

@@ -56,6 +56,7 @@
       ansible.builtin.include_tasks: "process_app_to_deploy.yml"
       loop:
         - { enabled: true, name: "prometheus-op", overwrite_files: "no" }
+        - { enabled: true, name: "cadvisor", overwrite_files: "yes" }
         - { enabled: true, name: "grafana-dashboards", overwrite_files: "yes"}
       when:
         - deploy_app.enabled
@@ -85,12 +86,12 @@
     - name: Remove Application Pod Monitor if Application not enabled
       ansible.builtin.file:
         state: absent
-        path: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/prometheus-op/workloads/{{ item.file }}"
+        path: "/home/{{ install.os.non_root_user.name }}/argocd/init_git_repo/workloads/prometheus-op-monitors/{{ item.file }}"
       loop:
         - { file: "traefik_podmonitor.yaml", enabled: "{{ install.traefik.enabled | default(false) | bool }}" }
         - { file: "longhorn_servicemonitor.yaml", enabled: "{{ install.longhorn.enabled | default(false) | bool }}"}
       when:
-        - item.enabled
+        - not item.enabled
 
     # Commit Changed to Repository
     - name: Check-in Any New or Modified Files
