@@ -262,7 +262,16 @@ spec:
                     {% filter indent(width=10) %}{% for IP in controlPlaneIPs.stdout_lines[0] | split(' ') %}- "{{ IP | replace("'","") }}:{{ prometheus_op.zfs_exporter.port }}"
 {% endfor %}          {% if (workerNodeIPs.stdout_lines[0] is defined) and (workerNodeIPs.stdout_lines[0] | replace("'","")| length > 0) %}{% for IP in workerNodeIPs.stdout_lines[0] | split(' ') %}- "{{ IP | replace("'","") }}:{{ prometheus_op.zfs_exporter.port }}"
 {% endfor %}{% endif %}{% endfilter %}
-{{''}}{% endif %}
+{{''}}
+                # Drop ZFS metrics unlikely to be needed
+                metric_relabel_configs:
+                  - source_labels: [__name__]
+                    action: drop
+                    regex: 'zfs_dataset_(quota_bytes|logical_used_bytes)'
+                  - source_labels: [__name__]
+                    action: drop
+                    regex: 'zfs_pool_(deduplication_ratio)'
+{% endif %}
 
         # Graphana values
         # Reference: https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
