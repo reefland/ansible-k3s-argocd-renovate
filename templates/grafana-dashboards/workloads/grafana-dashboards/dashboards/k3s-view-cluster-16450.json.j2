@@ -23,11 +23,11 @@
     ]
   },
   "description": "Monitors K3s cluster using Prometheus Operator. Shows overall cluster CPU / Memory / ZFS Cluster Filesystem usage (Longhorn ZVOL) as well as individual pod, containers, network statistics. Uses cAdvisor metrics. Based on dashboard: 15282",
-  "editable": true,
+  "editable": false,
   "fiscalYearStartMonth": 0,
   "gnetId": 15282,
   "graphTooltip": 1,
-  "id": 72,
+  "id": 777,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -78,7 +78,7 @@
         "content": "<div class=\"text-center\">\n  <img style=\"height:80px\" src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Kubernetes_logo_without_workmark.svg/1200px-Kubernetes_logo_without_workmark.svg.png\">\n  <h2 style=\"padding-top:15px\">$k8s_version</h2>\n</div>",
         "mode": "html"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.0",
       "targets": [
         {
           "datasource": {
@@ -157,7 +157,7 @@
         "showThresholdMarkers": true,
         "text": {}
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.0",
       "targets": [
         {
           "datasource": {
@@ -245,7 +245,7 @@
         "showThresholdMarkers": true,
         "text": {}
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.0",
       "targets": [
         {
           "datasource": {
@@ -336,7 +336,7 @@
         "showThresholdMarkers": true,
         "text": {}
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.0",
       "targets": [
         {
           "datasource": {
@@ -356,7 +356,7 @@
           "step": 10
         }
       ],
-      "title": "Ceph Cluster Storage usage",
+      "title": "Ceph Cluster Storage space",
       "type": "gauge"
     },
     {
@@ -383,7 +383,16 @@
           ],
           "thresholds": {
             "mode": "absolute",
-            "steps": []
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
           },
           "unit": "none"
         },
@@ -413,7 +422,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.0",
       "targets": [
         {
           "datasource": {
@@ -457,7 +466,16 @@
           ],
           "thresholds": {
             "mode": "absolute",
-            "steps": []
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "dark-red",
+                "value": 1
+              }
+            ]
           },
           "unit": "none"
         },
@@ -487,7 +505,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.0",
       "targets": [
         {
           "datasource": {
@@ -566,7 +584,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.0",
       "targets": [
         {
           "datasource": {
@@ -594,7 +612,7 @@
           "color": {
             "mode": "thresholds"
           },
-          "decimals": 2,
+          "decimals": 0,
           "mappings": [
             {
               "options": {
@@ -643,7 +661,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.0",
       "targets": [
         {
           "datasource": {
@@ -722,7 +740,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.0",
       "targets": [
         {
           "datasource": {
@@ -801,7 +819,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.0",
       "targets": [
         {
           "datasource": {
@@ -881,7 +899,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.0",
       "targets": [
         {
           "datasource": {
@@ -959,7 +977,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.0",
       "targets": [
         {
           "datasource": {
@@ -2209,7 +2227,7 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {
@@ -2240,7 +2258,7 @@
   "timezone": "browser",
   "title": "Kubernetes / Views / K3s Cluster",
   "uid": "1bI4P-xiz",
-  "version": 10,
+  "version": 11,
   "weekStart": ""
 }
 {% endraw %}
