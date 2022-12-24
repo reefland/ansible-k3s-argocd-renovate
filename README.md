@@ -364,7 +364,7 @@ A K3s cluster monitoring dashboard specific to this installation (Containerd, ZF
 
 ![Cluster Dashboard Screen One](./files/grafana/cluster_dashboard_01.png)
 
-[Screen Shot #2](./files/grafana/cluster_dashboard_02.png) - [Screen Shot #3](./files/grafana/cluster_dashboard_03.png)
+![Cluster Dashbaord Screen Two](./files/grafana/cluster_dashboard_02.png)
 
 Additional Dashboards will also be deployed as ConfigMaps (modified from defaults to work with containerd and not docker):
 
