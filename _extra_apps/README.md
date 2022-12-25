@@ -29,15 +29,20 @@ Each Application uses this directory structure:
 
 ## Application List
 
-* [Custom-Alerts](./custom-alerts/) - Alerts for Prometheus Operator Alertmanager for:
-  * Node Hardware, ArgoCD Sync Issues, Cert-Manager, Longhorn, Mosquitto, Sealed Secrets, Traefik Ingress Error codes, ZFS Monitoring
-* [Goldilocks](./goldilocks/) - Uses [Vertical Pod Autoscaler (VPA)](./vpa/) to make recommendations on container limit and request recommendations, includes a dashboard.
-* [Pod Restart Info Collector](./pod-restart-info-collector/) [ArgoCD Helm Application Based] - Controller to monitor and provide detailed alerts when pods restart
-* [Mosquitto](./mosquitto/) [Kustomize Based] - Eclipse Mosquitto is a lightweight MQTT Message Broker
-* [Mosquitto](./mosquitto-argocd-helm/) [ArgoCD Helm Application Based] - Eclipse Mosquitto lightweight MQTT Message Broker
-* [Mosquitto-Exporter](./mosquitto-exporter/) - Exposes Mosquitto MQTT Broker Metrics as Prometheus Service Monitor
-* [Rook-Ceph](./rook-ceph-argocd-helm/) [ArgoCD Helm Application Based] - Rook operator and Ceph Cluster Storage for Block, FileSystem and Object (S3) storage
-* [Unifi Controller](./unifi-controller-argocd-helm/) [ArgoCD Helm Application Based] - Wireless Network Management Software from Ubiquiti
-* [Unpoller-Exporter](./unpoller-exporter/) - Exposes [Unifi Controller](./unifi-controller/) Management Software Metrics as Prometheus Pod Monitor
-* [Vertical Pod Autoscaler (VPA)](./vpa/) - Enables ability to make container resource limit and request recommendations, used with [Goldilocks](./goldilocks/)
-* [Zigbee2MQTT](./zigbee2mqtt-argocd-helm/) - A Zigbee to MQTT ([Mosquitto](./mosquitto/)) Bridge
+| Application | Type | Description |
+| ----- | ----------- |-----------------|
+| [Apt-Cacher NG](./apt-cacher-ng-argocd-helm/)| ArgoCD Helm Chart | Caching proxy for package files from Linux distributors. |
+| [Custom-Alerts](./custom-alerts/)| ArgoCD Kustomize | Alerts for Prometheus Operator Alertmanager for: Node Hardware, ArgoCD Sync Issues, Cert-Manager, Longhorn, Mosquitto, Sealed Secrets, Traefik Ingress Error codes, ZFS Monitoring. |
+| [Goldilocks](./goldilocks/) | ArgoCD Helm Chart | Uses [Vertical Pod Autoscaler (VPA)](./vpa/) to make recommendations on container limit and request recommendations, includes a dashboard. |
+| [Home Assistant](./home-assistant-argocd-helm/) | ArgoCD Helm Chart | Open source home automation that puts local control and privacy first.|
+| [Mosquitto](./mosquitto/) | ArgoCD Kustomize | Eclipse Mosquitto is a lightweight MQTT Message Broker |
+| [Mosquitto](./mosquitto-argocd-helm/) | ArgoCD Helm Chart | Eclipse Mosquitto lightweight MQTT Message Broker |
+| [Mosquitto-Exporter](./mosquitto-exporter/) |  ArgoCD Kustomize | Exposes Mosquitto MQTT Broker Metrics as Prometheus Service Monitor. |
+| [Pod Restart Info Collector](./pod-restart-info-collector/) | ArgoCD Helm Chart | Controller to monitor and provide detailed alerts when pods restart. |
+| [Rook-Ceph](./rook-ceph-argocd-helm/) | ArgoCD Helm Chart | Rook operator and Ceph Cluster Storage for Block, FileSystem and Object (S3) storage. |
+| [Syncthing](./syncthing-argocd-helm/) | ArgoCD Helm Chart | Synchronizes files between two or more computers in real time, safely protected from prying eyes. |
+| [Trilium Notes](./trilium-notes-argocd-helm/) | ArgoCD Helm Chart | Hierarchical note taking application with focus on building large personal knowledge bases. |
+| [Unifi Controller](./unifi-controller-argocd-helm/) | ArgoCD Helm Chart | Wireless Network Management Software from Ubiquiti. |
+| [Unpoller-Exporter](./unpoller-exporter/) | ArgoCD Kustomize | Exposes [Unifi Controller](./unifi-controller/) Management Software Metrics as Prometheus Pod Monitor. |
+| [Vertical Pod Autoscaler (VPA)](./vpa/) | ArgoCD Helm Chart | Enables ability to make container resource limit and request recommendations, used with [Goldilocks](./goldilocks/). |
+| [Zigbee2MQTT](./zigbee2mqtt-argocd-helm/) | ArgoCD Helm Chart |A Zigbee to MQTT ([Mosquitto](./mosquitto/)) Bridge, works great with [Home Assistant](./home-assistant-argocd-helm/).
