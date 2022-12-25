@@ -1,0 +1,115 @@
+# References:
+# https://github.com/reefland/helm-charts/tree/main/charts/apps/syncthing
+# https://github.com/reefland/helm-charts/tree/main/charts/apps/syncthing/values.yaml
+# https://github.com/reefland/helm-charts/blob/main/charts/library/common/values.yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argocd
+  name: syncthing
+  # cascade deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"  # Lower the number the sooner to deploy
+spec:
+  project: default
+  revisionHistoryLimit: 3
+
+  source:
+    chart: syncthing
+    repoURL: https://reefland.github.io/helm-charts
+    targetRevision: 3.5.3
+    helm:
+      values: |
+        image:
+          repository: syncthing/syncthing
+          # renovate: datasource=docker depName=syncthing/syncthing
+          tag: "1.22.2"
+
+        controller:
+          enabled: true
+          # Valid options are deployment, daemonset or statefulset
+          type: statefulset
+          revisionHistoryLimit: 3
+
+        env:
+          TZ: "America/New York"
+
+        # resources:
+        #   requests:
+        #     cpu: "25m"
+        #     memory: "768Mi"
+        #   limits:
+        #     cpu: "350m"
+        #     memory: "1280Mi"
+
+        # Data and configuration stored here
+        persistence:
+          data:
+            enabled: true
+            mountPath: /var/syncthing
+            # type: pvc
+            type: emptyDir
+            accessMode: ReadWriteOnce
+            size: 50Gi
+            retain: true
+            # storageClass: ceph-block
+            # existingClaim:
+            # volumeName:
+
+        service:
+          main:
+            enabled: true
+            ports:
+              http:
+                port: 8384
+          listen:
+            enabled: true
+            type: LoadBalancer
+            # loadBalancerIP: 192.168.10.221
+            externalTrafficPolicy: Local
+            ports:
+              listen:
+                enabled: true
+                port: 22000
+                protocol: TCP
+                targetPort: 22000
+              discovery:
+                enabled: true
+                port: 21027
+                protocol: UDP
+                targetPort: 21027
+          discovery:
+              enabled: false
+
+        ingress:
+          main:
+            enabled: true
+            annotations:
+              traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+              traefik.ingress.kubernetes.io/router.middlewares: "traefik-x-forward-https-headers@kubernetescrd,traefik-compress@kubernetescrd"
+            hosts:
+              - host: syncthing.example.com
+                paths:
+                  - path: /
+                    pathType: Prefix
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: syncthing
+
+  # Allow changes to number of replicas (down to zero)
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jsonPointers:
+        - /spec/replicas
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true
