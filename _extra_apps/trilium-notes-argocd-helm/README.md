@@ -2,8 +2,8 @@
 
 [Return to Application List](../)
 
-* Kustomize based ArgoCD application deployment
-* Deployed as a Statefulset with a 10Gi Democratic-CSI iSCSI Persistent Storage Volume for data
+* Helm based ArgoCD application deployment
+* Deployed as a Statefulset
 
 Review file `trilium-notes-argocd-helm/applications/trilium-notes.yaml`
 
