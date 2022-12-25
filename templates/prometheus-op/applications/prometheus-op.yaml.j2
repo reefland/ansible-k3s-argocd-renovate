@@ -254,6 +254,12 @@ spec:
                     source_labels: [node]
                     target_label: "instance"
 
+                # metrics_path is required to match upstream rules and charts
+                relabel_configs:
+                  - action: replace
+                    source_labels: [__metrics_path__]
+                    target_label: metrics_path
+
 {% if install.prometheus_operator.exporters.zfs_exporter.enabled|default(false)|bool == true%}
               # ZFS Exporter Scrape Job
               - job_name: "zfs-exporter"
