@@ -40,10 +40,23 @@ Optionally Installed:
 
 ---
 
+## Home Cluster Hardware
+
+Hardware Used for my Home Cluster:
+
+| Device          | Count | Cores / Threads     | OS Disk Size      | Data Disk Size         | Ram  | Purpose               |
+| --------------- | ----- | ---------------     | ------------      | ---------------------- | ---- | -------------------   |
+| HP T740 Thin PC | 3 | (Ryzen V1756B) 4 / 8 | 118GiB ZFS Mirror | 700Gib Rook-Ceph | 64GB | Kubernetes Master / Ceph Storage |
+| Minisform UM560 | 2 | (Ryzen 5 5625U) 6 / 12 | 120GiB ZFS Mirror | 700Gib Rook-Ceph | 40GB | Kubernetes Worker / Ceph Storage |
+
+* All devices have 2.5GbE networking to UniFi USW Enterprise 8 Port Switch with dual 10GbE uplinks to main network.
+
+---
+
 ## TL;DR
 
 * You should read it. :)
-* A tweaked multi-node Kubernetes cluster based on K3s (no docker used) is created
+* A tweaked multi-node Kubernetes cluster based on K3s (no docker used)
 * You will need to setup an Ansible inventory file in a defined way
 * You will need to create a dedicated repository for ArgoCD, ideally a private Github repository (free)
 * **ArgoCD** will require Ansible secrets set for repository URL, Access Token, etc.
@@ -52,14 +65,14 @@ Optionally Installed:
 * **Renovate** will monitor deployed application manifests and provide update notifications via Pull Request process
 * **Let's Encrypt** configuration requires you to define your challenge credentials and list domains for certificate generation
 * **Kube-vip** Load Balancer section will require you to specify a range of IP addresses available for use and a VIP address for the API Load Balancer
-* **Longhorn** Distributed storage is intended to be the default storage class, the `local-path` StorageClass is not installed
+* **Longhorn** Distributed storage (if enabled) is intended to be the default storage class, the `local-path` StorageClass is not installed
 * **Sealed Secrets** can be used to provide truly encrypted secrets considered safe to be committed to public git repositories
 
 ---
 
 ## Environments Tested
 
-* Ubuntu 20.04.x LTS / 22.04 LTS
+* Ubuntu 20.04.x LTS / 22.04.x LTS
   * Based [ZFS on Root](https://github.com/reefland/ansible-zfs_on_root) installation
 * TrueNAS Core 12.x
 * K3s v1.23.x - v1.25.x
