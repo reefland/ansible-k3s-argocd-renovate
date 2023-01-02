@@ -1,0 +1,65 @@
+---
+kind: Kustomization
+
+bases:
+  - ./base/application/
+
+images:
+  - name: gitea/gitea
+    newTag: 1.17-rootless
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: gitea-config-file
+    files:
+      - ./base/conf/app.ini
+
+patches:
+  # Set Service to LoadBalancer and Specify IP Address to use
+  - patch: |-
+      - op: remove
+        path: /spec/clusterIP
+      - op: add
+        path: /spec/type
+        value: LoadBalancer
+      - op: add
+        path: /spec/loadBalancerIP
+        value: 192.168.10.222
+    target:
+      kind: Service
+      name: gitea-ssh
+
+  # Set Ingress Host Name to use
+  - patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: "gitea.example.com"
+    target:
+      kind: Ingress
+      name: gitea-http
+
+  # Set PVC Size and StorageClass to use
+  - patch: |-
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: "5Gi"
+      - op: replace
+        path: /spec/storageClassName
+        value: "local-path"
+    target:
+      kind: PersistentVolumeClaim
+      name: gitea-data
+
+  # Set CPU and Memory Resources
+  # Edit resources-patch.yaml to enable / adjust values
+  - path: resources-patch.yaml
+    target:
+      kind: StatefulSet
+      name: gitea
+
+commonLabels:
+  app: gitea
+  app.kubernetes.io/instance: gitea
+  app.kubernetes.io/name: gitea

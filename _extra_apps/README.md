@@ -33,6 +33,7 @@ Each Application uses this directory structure:
 | ----- | ----------- |-----------------|
 | [Apt-Cacher NG](./apt-cacher-ng-argocd-helm/)| ArgoCD Helm Chart | Caching proxy for package files from Linux distributors. |
 | [Custom-Alerts](./custom-alerts/)| ArgoCD Kustomize | Alerts for Prometheus Operator Alertmanager for: Node Hardware, ArgoCD Sync Issues, Cert-Manager, Longhorn, Mosquitto, Sealed Secrets, Traefik Ingress Error codes, ZFS Monitoring. |
+| [Gitea](./gitea-argocd-kustomize/) | ArgoCD Kustomize | It is similar to GitHub, Bitbucket, and GitLab. |
 | [Goldilocks](./goldilocks/) | ArgoCD Helm Chart | Uses [Vertical Pod Autoscaler (VPA)](./vpa/) to make recommendations on container limit and request recommendations, includes a dashboard. |
 | [Home Assistant](./home-assistant-argocd-helm/) | ArgoCD Helm Chart | Open source home automation that puts local control and privacy first.|
 | [Mosquitto](./mosquitto/) | ArgoCD Kustomize | Eclipse Mosquitto is a lightweight MQTT Message Broker |

@@ -1,0 +1,5 @@
+resources:
+  - ingress.yaml
+  - pvc.yaml
+  - statefulset.yaml
+  - service.yaml

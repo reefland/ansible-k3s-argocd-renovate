@@ -1,0 +1,115 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gitea
+spec:
+  serviceName: gitea
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector: {}
+  template:
+    spec:
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+        - name: init-gitea-storage
+          image: gitea/gitea:1.17-rootless
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: GITEA_APP_INI
+              value: /data/gitea/conf/app.ini
+          command: [ "/bin/bash", "-c" ]
+          args:
+            -
+              if [[ ! -f ${GITEA_APP_INI} ]]; then
+                chown git:git /data;
+                mkdir -p /data/gitea/conf;
+                mkdir -p /data/git/.ssh;
+                chmod -R 700 /data/git/.ssh;
+                cp /tmp/app.ini ${GITEA_APP_INI};
+                chown -R git:git gitea/;
+                  if [[ -f ${GITEA_APP_INI} ]]; then
+                    echo "Created ${GITEA_APP_INI} Init Completed.";
+                    exit 0;
+                  else
+                    echo "ERROR Failed to complete init!";
+                    exit 1;
+                  fi
+              else
+                echo "Existing ${GITEA_APP_INI} found, init skipped.";
+                exit 0;
+              fi
+          volumeMounts:
+            - mountPath: /data
+              name: data
+            - mountPath: /tmp/app.ini
+              name: gitea-config
+              subPath: app.ini
+
+      containers:
+        - name: gitea
+          image: gitea/gitea:1.17-rootless
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: GITEA_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: GITEA_CUSTOM
+              value: /data/gitea
+            - name: GITEA_WORK_DIR
+              value: /data
+            - name: GITEA_TEMP
+              value: /tmp/gitea
+
+          resources: {}
+
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+            - name: ssh
+              containerPort: 2222
+              protocol: TCP
+
+          livenessProbe:
+            failureThreshold: 10
+            initialDelaySeconds: 200
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /tmp
+              name: temp
+            - mountPath: /data
+              name: data
+
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: gitea-data
+        - name: temp
+          emptyDir: {}
+        - name: gitea-config
+          configMap:
+            name: gitea-config-file
