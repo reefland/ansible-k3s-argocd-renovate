@@ -5,6 +5,7 @@
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
+
 metadata:
   namespace: argocd
   name: apt-cacher-ng
@@ -39,11 +40,11 @@ spec:
 
         # resources:
         #   requests:
-        #     cpu: "10m"
-        #     memory: "45Mi"
+        #     cpu: "15m"
+        #     memory: "105Mi"
         #   limits:
-        #     cpu: "25m"
-        #     memory: "75Mi"
+        #     cpu: "15m"
+        #     memory: "105Mi"
 
         persistence:
           cache-vol:
