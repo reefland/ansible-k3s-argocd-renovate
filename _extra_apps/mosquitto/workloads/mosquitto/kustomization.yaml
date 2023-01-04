@@ -1,11 +1,13 @@
 ---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
 # NOTES: ConfigMaps need "subPath" mounting, unable to get working with ConfigMapGenerator
 # 1) Review base/application/configmap-config.yaml for mosquitto.conf file
 # 2) Review base/application/configmap-passwd.yaml for user / password file.
 
 # As user / password file data is already encoded, it was not made a Kubernetes secret.
-
-kind: Kustomization
 
 bases:
   - ./base/application/
