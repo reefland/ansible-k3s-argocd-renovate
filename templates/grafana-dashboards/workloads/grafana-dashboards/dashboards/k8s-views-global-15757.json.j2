@@ -1422,7 +1422,7 @@
           "refId": "A"
         }
       ],
-      "title": "CPU Utilization by node",
+      "title": "CPU Utilization by instance",
       "type": "timeseries"
     },
     {
@@ -1524,7 +1524,7 @@
           "refId": "A"
         }
       ],
-      "title": "Memory Utilization by node",
+      "title": "Memory Utilization by instance",
       "type": "timeseries"
     },
     {
@@ -1630,7 +1630,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(container_network_receive_bytes_total[$__rate_interval]))",
+          "expr": "sum(rate(node_network_receive_bytes_total[$__rate_interval]))",
           "interval": "$resolution",
           "legendFormat": "Total received bytes",
           "range": true,
@@ -1643,7 +1643,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "- sum(rate(container_network_transmit_bytes_total[$__rate_interval]))",
+          "expr": "- sum(rate(node_network_transmit_bytes_total[$__rate_interval]))",
           "interval": "$resolution",
           "legendFormat": "Total transmitted bytes",
           "range": true,
@@ -1739,7 +1739,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(container_network_receive_packets_dropped_total[$__rate_interval]))",
+          "expr": "sum(rate(node_network_receive_drop_total[$__rate_interval]))",
           "interval": "$resolution",
           "legendFormat": "Packets dropped (receive)",
           "range": true,
@@ -1752,7 +1752,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "- sum(rate(container_network_transmit_packets_dropped_total[$__rate_interval]))",
+          "expr": "- sum(rate(node_network_transmit_drop_total[$__rate_interval]))",
           "interval": "$resolution",
           "legendFormat": "Packets dropped (transmit)",
           "range": true,
@@ -1835,8 +1835,8 @@
           "showLegend": false
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "pluginVersion": "8.3.3",
@@ -1944,8 +1944,8 @@
           "showLegend": false
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "pluginVersion": "8.3.3",
@@ -1957,9 +1957,9 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(container_network_receive_bytes_total[$__rate_interval])) by (node)",
+          "expr": "sum(rate(node_network_receive_bytes_total[$__rate_interval])) by (instance)",
           "interval": "$resolution",
-          "legendFormat": "Received bytes in {{ node }}",
+          "legendFormat": "Received bytes in {{ instance }}",
           "range": true,
           "refId": "A"
         },
@@ -1969,15 +1969,15 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "- sum(rate(container_network_transmit_bytes_total[$__rate_interval])) by (node)",
+          "expr": "- sum(rate(node_network_transmit_bytes_total[$__rate_interval])) by (instance)",
           "hide": false,
           "interval": "$resolution",
-          "legendFormat": "Transmitted bytes in {{ node }}",
+          "legendFormat": "Transmitted bytes in {{ instance }}",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "Network Received by node",
+      "title": "Network Received by instance",
       "type": "timeseries"
     }
   ],
@@ -2065,7 +2065,7 @@
   "timezone": "",
   "title": "Kubernetes / Views / Global",
   "uid": "k8s_views_global",
-  "version": 20,
+  "version": 21,
   "weekStart": ""
 }
 {% endraw %}
