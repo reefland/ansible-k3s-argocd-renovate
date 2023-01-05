@@ -1,0 +1,15 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+
+metadata:
+  name: gitea
+
+spec:
+  selector:
+    matchLabels:
+      app: gitea
+      app.kubernetes.io/name: gitea
+
+  endpoints:
+    - port: http

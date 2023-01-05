@@ -8,3 +8,14 @@ resources:
   - pvc.yaml
   - statefulset.yaml
   - service.yaml
+  # - servicemonitor.yaml
+
+# Grafana Dashboard if Service Monitor and Metrics are Enabled:
+# configMapGenerator:
+#   - name: gitea-dashboard-17802
+#     files: [ gitea-dashboard-17802.json ]
+
+# generatorOptions:
+#   disableNameSuffixHash: true
+#   labels:
+#     grafana_dashboard: "true"

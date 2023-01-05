@@ -125,6 +125,45 @@ If you plan on migrating repositories from other instances (Gitea, GitLab, GitHu
 
 ---
 
+## Enable Prometheus Metrics
+
+If you wish to enable Prometheus Metics scraping of Gitea:
+
+* Enable the Prometheus Endpoint in Gitea within the `app.ini` file:
+
+  ```yaml
+  [metrics]
+  ENABLED = true
+  ENABLED_ISSUE_BY_REPOSITORY=true
+  ENABLED_ISSUE_BY_LABEL=true
+  ```
+
+* Update file in `gitea-argocd-kustomize/workloads/gitea/base/application/kustomization.yaml`  and Uncomment the `servicemonitor.yaml` entry:
+
+  ```yaml
+  resources:
+    - ingress.yaml
+    - pvc.yaml
+    - statefulset.yaml
+    - service.yaml
+    - servicemonitor.yaml
+  ```
+
+* Enable Grafana Dashboard to view Prometheus Metrics, uncomment this section:
+
+  ```yaml
+  configMapGenerator:
+    - name: gitea-dashboard-17802
+      files: [ gitea-dashboard-17802.json ]
+
+  generatorOptions:
+    disableNameSuffixHash: true
+    labels:
+      grafana_dashboard: "true"
+  ```
+
+---
+
 ## Application Deployment
 
 * Test YAML syntax for any errors:
