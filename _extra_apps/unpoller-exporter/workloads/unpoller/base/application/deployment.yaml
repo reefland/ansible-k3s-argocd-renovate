@@ -5,6 +5,7 @@ metadata:
   name: unpoller
 spec:
   replicas: 1
+  revisionHistoryLimit: 3
   selector: {}
   template:
     spec:

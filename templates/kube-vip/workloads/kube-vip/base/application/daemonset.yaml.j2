@@ -8,6 +8,7 @@ metadata:
   name: kube-vip-ds
   namespace: kube-system
 spec:
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app.kubernetes.io/name: kube-vip-ds
