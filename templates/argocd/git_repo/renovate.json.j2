@@ -45,5 +45,20 @@
       "datasourceTemplate": "github-releases",
       "versioningTemplate": "semver"
     }
+  ],
+    "packageRules": [
+    {
+      "description": "Disables the creation of branches/PRs for any minor/patch updates etc. of Renovate bot",
+      "matchPackageNames": ["renovate"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest", "rollback"],
+      "enabled": false
+    },
+    {
+      "description": "Causes the bot to create a PR (and thus, an email notification), whenever there is a new major Renovate version",
+      "matchPackageNames": ["renovate"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "prCreation": "immediate"
+    }
   ]
 }
