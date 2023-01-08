@@ -25,10 +25,11 @@ spec:
           image: golift/unifi-poller:2.1.3
           resources:
             requests:
-              cpu: "10m"
-              memory: "30Mi"
+              cpu: "15m"
+              memory: "35Mi"
             limits:
-              cpu: "25m"
+              # CPU usage is bursty. Will show low limit average, yet high CPU throttling rate.
+              cpu: "75m"
               memory: "50Mi"
           ports:
             - name: metrics
