@@ -290,6 +290,14 @@ spec:
           grafana.ini:
             server:
               root_url: https://{{install.prometheus_operator.grafana.dashboard.ingress_name|default("k3s.{{ansible_domain}}")|lower}}{{install.prometheus_operator.grafana.dashboard.path}}/
+            security:
+              allow_embedding: true
+            auth:
+              login_cookie_name: grafana_session_k3s
+              login_maximum_inactive_lifetime_duration: 2M
+              login_maximum_lifetime_duration: 2M
+              token_rotation_interval_minutes: 1000
+
           persistence:
             type: pvc
             enabled: true
