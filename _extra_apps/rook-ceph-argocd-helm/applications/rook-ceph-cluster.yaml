@@ -167,17 +167,17 @@ spec:
             resources:
               mgr:
                 limits:
-                  cpu: "200m"
+                  cpu: "250m"
                   memory: "832Mi"
                 requests:
-                  cpu: "100m"
-                  memory: "512Mi"
+                  cpu: "85m"
+                  memory: "550Mi"
               mon:
                 limits:
-                  cpu: "250m"
+                  cpu: "200m"
                   memory: "1Gi"
                 requests:
-                  cpu: "50m"
+                  cpu: "55m"
                   memory: "512Mi"
               osd:
                 limits:
@@ -185,7 +185,7 @@ spec:
                   memory: "2Gi"
                 requests:
                   cpu: "100m"
-                  memory: "768Mi"
+                  memory: "1Gi"
               prepareosd:
                 # limits: It is not recommended to set limits on the OSD prepare job since it's a one-time burst for memory
                 # that must be allowed to complete without an OOM kill
@@ -193,19 +193,21 @@ spec:
                   cpu: "500m"
                   memory: "50Mi"
               mgr-sidecar:
+                # watch-active sidecar container is CPU throttled with low limits value, highly bursty CPU usage. Will show very low
+                # cpu usage average as it doesn't need much. But when it does need it in bursts seems to get throttled.
                 limits:
-                  cpu: "500m"
+                  cpu: "600m"
                   memory: "100Mi"
                 requests:
-                  cpu: "100m"
+                  cpu: "150m"
                   memory: "40Mi"
               crashcollector:
                 limits:
-                  cpu: "200m"
+                  cpu: "100m"
                   memory: "50Mi"
                 requests:
-                  cpu: "25m"
-                  memory: "50Mi"
+                  cpu: "15m"
+                  memory: "40Mi"
               logcollector:
                 limits:
                   cpu: "100m"
@@ -237,6 +239,7 @@ spec:
                 osdsPerDevice: "1" # SSD / NVMe devices (HDD should use 1)
                 storeType: bluestore
               devices:
+                # Replace these with your device names
                 - name: "/dev/disk/by-id/nvme-Samsung_SSD_980_1TB_S64AN07316T-part5" #k3s01
                 - name: "/dev/disk/by-id/nvme-Samsung_SSD_980_1TB_S64AN31593J-part5" #k3s02
                 - name: "/dev/disk/by-id/nvme-Samsung_SSD_980_1TB_S64AN01060J-part5" #k3s03
@@ -305,8 +308,8 @@ spec:
                   activeStandby: true
                   resources:
                     limits:
-                      cpu: "250m"
-                      memory: "1Gi"
+                      cpu: "450m"
+                      memory: "768Mi"
                     requests:
                       cpu: "100m"
                       memory: "256Mi"
