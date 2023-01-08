@@ -39,11 +39,12 @@ spec:
 
         resources:
           requests:
-            cpu: "75m"
-            memory: "128Mi"
+            cpu: "35m"
+            memory: "248Mi"
           limits:
-            cpu: "150m"
-            memory: "384Mi"
+            # cpu usage is bursty, shows low average but yet cpu throttled
+            cpu: "200m"
+            memory: "415Mi"
 
         persistence:
           config:
