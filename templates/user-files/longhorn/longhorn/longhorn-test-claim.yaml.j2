@@ -7,8 +7,8 @@ metadata:
   name: longhorn-volv-pvc
 spec:
   accessModes:
-    - {{install.longhorn.test_claim.mode}}
+    - {{ install.longhorn.test_claim.mode }}
   storageClassName: longhorn
   resources:
     requests:
-      storage: {{install.longhorn.test_claim.size}}
+      storage: {{ install.longhorn.test_claim.size }}

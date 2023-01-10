@@ -4,11 +4,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: test-claim-nfs
   annotations:
-    volume.beta.kubernetes.io/storage-class: "{{install.democratic_csi.nfs.provisioner}}-csi"
+    volume.beta.kubernetes.io/storage-class: "{{ install.democratic_csi.nfs.provisioner }}-csi"
 spec:
-  storageClassName: {{install.democratic_csi.nfs.provisioner}}-csi
+  storageClassName: {{ install.democratic_csi.nfs.provisioner }}-csi
   accessModes:
-    - {{install.democratic_csi.nfs.test_claim.mode}}
+    - {{ install.democratic_csi.nfs.test_claim.mode }}
   resources:
     requests:
-      storage: {{install.democratic_csi.nfs.test_claim.size}}
+      storage: {{ install.democratic_csi.nfs.test_claim.size }}
