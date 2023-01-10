@@ -30,6 +30,9 @@ k3s:
   # Packages required for Ansible to issue Kubernetes and commands
   packages:
     - "python3-pip"
+    - "xfsprogs"
+    - "apparmor"
+    - "apparmor-utils"
   packages_pip:
     - "openshift"
     - "pyyaml"
@@ -46,13 +49,8 @@ k3s:
   k3s_exec_options:
     - "{{ k3s_cli_var | default('') | join(' ') }}"               # Options set in inventory or hosts vars
     - "{{ install.k3s.k3s_cli_var | default('') | join(' ') }}"   # Options set in defaults/main.yml
-
-  # When containerd for ZFS is enabled, this will be added to k3s_exec_options
-  k3s_containerd_options:
-    - "--snapshotter=zfs"                                                     # Tell K3s about ZFS Snapshotter
-    - "--kubelet-arg=image-gc-low-threshold=50"                               # End Garbage Collection of Images at 50% disk space free
-    - "--kubelet-arg=image-gc-high-threshold=65"                              # Start Garbage Collection of Images at 65% disk space used
-    - "--container-runtime-endpoint unix:///run/containerd/containerd.sock"   # External containerd socket location
+    - "--kubelet-arg=image-gc-low-threshold=50"                   # End Garbage Collection of Images at 50% disk space free
+    - "--kubelet-arg=image-gc-high-threshold=65"                  # Start Garbage Collection of Images at 65% disk space used
 
   # When "disable_local_path_as_default_storage_class = true" this will be added to k3s_exec_options
   cli_disable_storage_options:
@@ -63,33 +61,11 @@ k3s:
   cli_disable_loadbalancer_options:
     - "--disable servicelb"
 
-# [ Containerd Installation Setting ]##############################################################
-containerd:
-  # List of packages to install
-  packages:
-    - containerd
-    - containernetworking-plugins
-    - iptables
-
-  # Location of containerd configuration file
-  config_path: "/etc/containerd"
-
-  # name of containerd configuration file
-  config_file: "config.toml"
-
-  # Location to place flannel.conflist
-  flannel_conflist_path: "/etc/cni/net.d"
-
-  # Directory of Container Network Plugins
-  cni_dir_path: "/usr/lib/cni"
-
-  runtime_endpoint: "/run/containerd/containerd.sock"
-
-  zfs: # noqa yaml[line-length]
-    # ZFS Mount point for Containerd
-    zfs_mount_point: "/var/lib/containerd/io.containerd.snapshotter.v1.zfs"
-    zfs_uuid_detect_cmd:
-      "zfs list -o name | grep -E -o '{{ install.containerd.zfs.pool }}/{{ install.containerd.zfs.dataset_prefix }}{{ install.containerd.zfs.uuid }}[^/]*{6}$' | rev | cut -c 1-6 | rev"
+  zfs:
+    zvol:
+      volume_name: "rancher"
+      # ZFS Mount point for K3S rancher directory
+      mountpoint: "/var/lib/rancher"
 
 # [ Sealed Secrets Configuration Settings ]########################################################
 sealed_secrets:
