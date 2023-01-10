@@ -3,7 +3,7 @@ Description=Prometheus zfs-exporter
 
 [Service]
 Restart=always
-ExecStart={{prometheus_op.zfs_exporter.bin}} --web.listen-address=":{{prometheus_op.zfs_exporter.port}}" --exclude='^{{ install.containerd.zfs.pool }}/{{ install.containerd.zfs.dataset_prefix }}{{ install.containerd.zfs.uuid }}{{ install.containerd.zfs.dataset_postfix }}/'
+ExecStart={{ prometheus_op.zfs_exporter.bin }} --web.listen-address=":{{ prometheus_op.zfs_exporter.port }}"
 
 [Install]
 WantedBy=default.target
