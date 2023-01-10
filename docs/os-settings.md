@@ -2,9 +2,9 @@
 
 [Back to README.md](../README.md)
 
-Review the non-root user account that will be created for Kubernetes with optional passwordless access to `kubectl` command.
+Review the non-root user account that will be created for Kubernetes with optional passwordless access to `kubectl` command:
 
-```yml
+```yaml
 install:
   os:
     non_root_user:
@@ -29,5 +29,15 @@ Review the packages which will be removed from the base Ubuntu Linux installatio
 ```
 
 * To disable package removal set `enabled: false` you can add additional package names to the list of packages to uninstall.
+
+---
+
+Sysctl modifications to be applied to `/etc/sysctl.conf`:
+
+```yaml
+  sysctl_updates:
+    fs.inotify.max_user_instances: 8192
+    fs.inotify.max_user_watches: 524288
+```
 
 [Back to README.md](../README.md)
