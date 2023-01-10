@@ -1,10 +1,4 @@
 ---
-- name: Restart Containerd Service
-  ansible.builtin.systemd:
-    daemon_reload: true
-    state: started
-    name: containerd
-
 - name: Restart k3s Service
   ansible.builtin.systemd:
     daemon_reload: true

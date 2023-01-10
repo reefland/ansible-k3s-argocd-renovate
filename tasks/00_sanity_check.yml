@@ -8,6 +8,8 @@
       ansible.builtin.apt:
         name: "{{ k3s.packages }}"
         state: present
+        update_cache: true
+        cache_valid_time: 3600
       register: result
       retries: 10             # Sometimes unattended upgrades is running
       delay: 10
@@ -77,17 +79,17 @@
         - install.sealed_secrets.use_pre_generated_private_key | default(false) | bool
         - SEALED_SECRETS_PRIVATE_KEY_SECRET is undefined
 
-    - name: Verify ZFS Pool for ContainerD is valid
+    - name: Verify ZFS Pool for K3s rancher directory is valid
       ansible.builtin.command:
-        cmd: "zpool status {{ install.containerd.zfs.pool }}"
+        cmd: "zpool status {{ install.k3s.zfs.pool }}"
       register: cmd
       changed_when: cmd.rc == 0
       failed_when: cmd.rc < 0
 
-    - name: Failed if ZFS Pool for ContainerD is not valid
+    - name: Failed if ZFS Pool for K3s rancher directory is not valid
       ansible.builtin.fail:
         msg: |
-          The ZFS pool defined for ContainerD ('{{ install.containerd.zfs.pool }}') is not valid.
+          The ZFS pool defined for K3s rancher directory ('{{ install.k3s.zfs.pool }}') is not valid.
 
           You must create this pool prior to running this playbook.
       when:

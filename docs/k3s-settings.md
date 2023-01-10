@@ -6,8 +6,8 @@
 
 * The `containerd` included within `k3s` does not have native support for ZFS file system. Attempting to use `k3s` wih ZFS will produce `overlayfs` error message in the system logs and not function correctly.
   * See: [https://github.com/k3s-io/k3s/discussions/3980](https://github.com/k3s-io/k3s/discussions/3980)
-* To get around this ZFS compatibility issue, this process will also install the full `containerd` and `container network plugins` packages and configure them to support ZFS. The k3s configuration is then updated to use the new containerd.
-  * Based on: [https://blog.nobugware.com/post/2019/k3s-containterd-zfs/](https://blog.nobugware.com/post/2019/k3s-containterd-zfs/)
+* To get around this ZFS compatibility issue, this process will create a ZFS ZVOL mounted at `/var/lib/racher` formatted for XFS (ext4 could be used).
+  * Being backed by ZFS, this mount still enjoys the benefits of ZFS (mirrors, compression, encryption, etc) while not being formatted as ZFS to allow compatibility with K3s embedded containerd.
 
 ## Review `defaults/main.yml` for K3S Settings
 
@@ -50,6 +50,37 @@ You can add more entries to the `k3s_cli_var` list needed.  See [Installation Op
 
 ---
 
+### ZFS ZVOL for K3s Installation
+
+This sections defines how the ZFS ZVOL to be mounted at `/var/lib/rancher` will be created:
+
+```yaml
+install:
+  k3s:
+
+    zfs:
+      pool: "{{ k3s_pool | default('rpool') }}"
+      zvol:
+        format: "xfs"
+        options:
+          volsize: "{{ k3s_vol_size | default('30G') }}"
+          compression: "lz4"       # "" (inherit), lz4, gzip-9, etc
+          volblocksize: "16k"
+```
+
+* `zfs.pool` defines the name of the existing pool where the ZVOL should be created.
+* `zfs.zvol.format` defines the filesystem format to use for the ZVOL.
+  * XFS has been tested and works well (easy to expand volume if needed).
+  * XFS is set to use 4KB block-size and 4KB sector-size
+  * This can be changed to `ext4` or some other K3s compatible filesystem if needed.
+* `zfs.zvol.options.volsize` defines how large the ZVOL should be.
+  * 30GB is a resonable starting point. Clusters with a high-density of containers will likely need to increase this.
+  * This ZVOL is not thin-provisioned. ZFS will take a minimum of this amount of space immediately from the ZFS pool (plus whatever overhead ZFS needs).
+* `zfs.zvol.options.compression` defines the underlying ZFS compression method to be applied.
+* `zfs.zvol.options.volblocksize` defines the block size the ZVOL should use.
+  * A value of `16k` has proved effective in testing for the types of files that K3s will store.
+  * Do not go smaller than `16K`, but a larger value such as `32K` could be worth testing in your environment.
+
 ### Kubernetes Command Aliases
 
 It can be annoying typing `kubectl` all day.  An alias lets you assign an alternate name to a command.  
@@ -66,6 +97,9 @@ install:
         - { alias_name: "k", command: "kubectl" }   
         # alias for a pod to run curl against other pods
         - { alias_name: "kcurl", command: "kubectl run curl --image=radial/busyboxplus:curl --rm=true --stdin=true --tty=true --restart=Never" }
+        # Alias for Kubeseal to include controller name by default
+        - { alias_name: "kubeseal", command: "kubeseal --controller-name {{ sealed_secrets.controller_name }}" }
+
 ```
 
 By default `k` will be setup as an alias for `kubectl`:
@@ -105,7 +139,7 @@ certmanager_controller_sync_call_count{controller="orders"} 1
 
 ### K3S Validation Step
 
-This Ansible script will confirm k3s is up and running at end of its installation. If any configuration issues exist between k3s, containerd and container network plugs then k3s will not be able to deploy properly to reach a "Ready" state. This script will check if `kubectl get node` returns `No resources found` indicating a configuration issue.  If this is detected, the install will fail at this point to allow troubleshooting.
+This Ansible script will confirm k3s is up and running at end of its installation. If any configuration issues exist between k3s, ZVOL mount, etc. then k3s will not be able to deploy properly to reach a "Ready" state. This script will check if `kubectl get node` returns `No resources found` indicating a configuration issue.  If this is detected, the install will fail at this point to allow troubleshooting.
 
 It can be run independently on its own:
 

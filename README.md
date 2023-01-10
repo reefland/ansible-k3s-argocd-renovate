@@ -1,13 +1,12 @@
-# K3s Kubernetes with ContainerD for ZFS & ArgoCD with Renovate for GitOps via Ansible
+# K3s Kubernetes for ZFS with ArgoCD & Renovate for GitOps via Ansible
 
 ![current version tag](https://img.shields.io/github/v/release/reefland/ansible-k3s-argocd-renovate?display_name=tag&include_prereleases)
 
-An Ansible role to provide an automated _K3s Lightweight Distribution of Kubernetes_ initial deployment. The goal is to have Anisble build just enough Kubernetes on each cluster node to get ArgoCD running.  Anisble will then be used to render various application manifest files that ArgoCD will deploy.  Once the initial deployment is successful you do not need Ansible to maintain the cluster applications - ArgoCD will be using an "App of Apps" pattern along with Renovate will handle this.  
+An Ansible role to provide an automated _K3s Lightweight Distribution of Kubernetes_ initial deployment. The goal is to have Anisble build just enough Kubernetes on a cluster node to get ArgoCD running.  Anisble will then be used to render various application manifest files that ArgoCD will deploy.  Once the initial deployment is successful you do not need Ansible to maintain the cluster applications - ArgoCD will use an "App of Apps" pattern to handle this, along with Renovate to maintain current versions.
 
 The following enhancements are part of this Ansible role:
 
 * **non-root** user account for Kubernetes, passwordless access to `kubectl` by default.
-* [containerd](https://containerd.io/) to provide [ZFS snapshotter](https://github.com/containerd/zfs) support.
 * **Centralized cluster system logging** via [rsyslog](https://www.rsyslog.com/) with real-time viewing with [lnav](https://lnav.org/) utility.
 * [Helm Client](https://helm.sh/docs/intro/using_helm/) for installing applications in Kubernetes.
 * [ArgoCD](https://argoproj.github.io/cd/) will deploy all applications used here. They are added to Git repository for ArgoCD and every few minutes it confirms that applications are deployed as configured.
@@ -81,13 +80,14 @@ Hardware Used for my Home Cluster:
 
 ## Packages Installed
 
+* [apparmor](https://packages.ubuntu.com/jammy-updates/apparmor), [apparmor-utils](https://packages.ubuntu.com/jammy/apparmor-utils) required for K3s Containerd to load profiles
 * [lnav](https://lnav.org/) for view centralized cluster system logging
 * [python3-pip](https://pypi.org/project/pip/) (required for Ansible managed nodes)
 * pip packages - [OpenShift](https://pypi.org/project/openshift/), [pyyaml](https://pypi.org/project/PyYAML/), [kubernetes](https://pypi.org/project/kubernetes/) (required for Ansible to execute K8s module)
 * k3s (Runs official script [https://get.k3s.io](https://get.k3s.io))
-* [containerd](https://containerd.io/), container networking-plugins, iptables
-* [helm](https://helm.sh/), [helm diff](https://github.com/databus23/helm-diff), [apt-transport-https](http://manpages.ubuntu.com/manpages/focal/man1/apt-transport-https.1.html) (required for helm client install)
-* [open-iscsi](https://github.com/open-iscsi/open-iscsi), [lsscsi](http://sg.danny.cz/scsi/lsscsi.html), [sg3-utils](https://sg.danny.cz/sg/sg3_utils.html), [multipath-tools](https://github.com/opensvc/multipath-tools), [scsitools](https://packages.ubuntu.com/focal/scsitools-gui) (required by democratic-csi  and by Longhorn)
+* [helm](https://helm.sh/), [helm diff](https://github.com/databus23/helm-diff), [apt-transport-https](http://manpages.ubuntu.com/manpages/jammy/man1/apt-transport-https.1.html) (required for helm client install)
+* [open-iscsi](https://github.com/open-iscsi/open-iscsi), [lsscsi](http://sg.danny.cz/scsi/lsscsi.html), [sg3-utils](https://sg.danny.cz/sg/sg3_utils.html), [multipath-tools](https://github.com/opensvc/multipath-tools), [scsitools](https://packages.ubuntu.com/jammy/scsitools-gui) (required by democratic-csi  and by Longhorn)
+* [xfsprogs](https://packages.ubuntu.com/jammy/xfsprogs) (required for ZFS ZVOL used for K3s installation)
 
 ## Packages Uninstalled
 
@@ -113,7 +113,6 @@ Each of these links provide useful documentation details:
 * Review [Linux OS Settings](docs/os-settings.md)
 * Review [Centralized Cluster System Logs Settings](docs/rsyslog-settings.md)
 * Review [K3S Configuration Settings](docs/k3s-settings.md)
-* Review [Containerd Configuration Settings](docs/containerd-settings.md)
 * Review [ArgoCD Configuration Settings](docs/argocd-settings.md)
 * Review [Renovate Configuration Settings](docs/renovate-settings.md)
 * Review [Sealed Secrets Configuration Settings](docs/sealed-secrets-settings.md)
@@ -138,11 +137,14 @@ Define a group for this playbook to use in your inventory, I like to use YAML fo
 k3s_control:
   hosts:
     k3s01.example.com:                        # Control Node / Master #1
-      containerd_pool: "rpool"
+      k3s_pool: "rpool"
+      k3s_vol_size: "50G"
     k3s02.example.com:                        # Control Node / Master #2
-      containerd_pool: "rpool"
+      k3s_pool: "rpool"
+      k3s_vol_size: "50G"
     k3s03.example.com:                        # Control Node / Master #3
-      containerd_pool: "rpool"
+      k3s_pool: "rpool"
+      k3s_vol_size: "50G"
   vars:                                       # Applies to all control nodes
     longhorn_zfs_pool: "tank"
     longhorn_vol_size: "10G"
@@ -156,11 +158,11 @@ k3s_control:
 k3s_workers:
   hosts:
     k3s04.example.com:                        # Worker #1
-      containerd_pool: "rpool"
     k3s05.example.com:                        # Worker #2 (add more if needed)
-      containerd_pool: "rpool"
 
   vars:                                       # Applies to all worker nodes
+    k3s_pool: "rpool"
+    k3s_vol_size: "30G"
     k3s_labels:
       - "kubernetes.io/role=worker"
       - "node-type=worker"
@@ -228,24 +230,20 @@ For simplicity I show the variables within the inventory file.  You can place th
 
 ---
 
-#### Inventory Variables for containerD
-
-* `containerd_pool` lets you define the ZFS pool that containerd will use for the ZFS snapshotter. You don't have to create a new pool, just specify a a valid existing pool to use.  A dataset for containerd will be created within the pool specified here.
-
 #### Inventory Variables for Longhorn Distributed Storage
 
 _NOTE: After using Longhorn for a while, I have decided not to use it.  It has issues reclaiming disk space and does not seem appropriate for any applications with heavy disk write activity. The amount of space is not a concern, just the amount of disk writes.  Works great for low write volume applications._
 
 * `longhorn_zfs_pool` lets you define the ZFS pool to create Longhorn cluster storage with. It will use the ZFS pool `rpool` if not defined. This can be host specific or group scoped.
-
 * `longhorn_vol_size` specifies how much storage space you wish to dedicate to Longhorn distributed storage. This can be host specific or group scoped.
-
 * `longhorn_backup_target` full NFS share URL path for Longhorn to make backups of the cluster storage volumes.
 
 ---
 
 #### Inventory Variables for K3s Installation
 
+* `k3s_pool` lets you define the ZFS pool to be used for K3s installation and mounted on `/var/lib/rancher`  You don't have to create a new pool, just specify a valid existing pool to use.  A ZVOL will be created within the pool specified here.
+* `k3s_vol_size` specifies the size of the ZVOL to create for the K3s Installation.  30G to 50G is a reasonable starting size.
 * `k3s_cluster_ingress_name` is the Fully Qualified Domain Name (FQDN) you plan to use for the cluster.  This will point to the Traefik Ingress controller's Load Balancer IP Address.  
   * If not provided it will default to `k3s` and the domain name of the Kubernetes Primary Master server... something like `k3s.localdomain` or `k3s.example.com`
   * All of the respective dashboards (Traefik, Longhorn, Prometheus, Grafana, etc) will be available from this FQDN.
@@ -343,7 +341,6 @@ The following tags are supported and should be used in this order:
 * `config_rsyslog`
 * `prep_os`
 * `install_k3s`
-* `install_containerd`
 * `apply_labels`
 * `validate_k3s`
 * `install_helm_client`
@@ -369,7 +366,7 @@ Other handy tags for specific routines:
 
 ## Grafana Dashboards
 
-A K3s cluster monitoring dashboard specific to this installation (Containerd, ZFS backed longhorn, etc.) is available:
+A K3s cluster monitoring dashboard specific to this installation is available:
 
 [https://grafana.com/grafana/dashboards/16450](https://grafana.com/grafana/dashboards/16450)
 
@@ -377,7 +374,7 @@ A K3s cluster monitoring dashboard specific to this installation (Containerd, ZF
 
 ![Cluster Dashboard Screen One](./files/grafana/cluster_dashboard_01.png)
 
-![Cluster Dashbaord Screen Two](./files/grafana/cluster_dashboard_02.png)
+![Cluster Dashboard Screen Two](./files/grafana/cluster_dashboard_02.png)
 
 Additional Dashboards will also be deployed as ConfigMaps (modified from defaults to work with containerd and not docker):
 
@@ -385,7 +382,7 @@ Additional Dashboards will also be deployed as ConfigMaps (modified from default
 * [Cert-Manager](./images/dashboard_cert-manager.png)
 * [Longhorn](./images/dashboard_longhorn-1.png) - [Screen Shot #2](./images/dashboard_longhorn-2.png) - [#3](./images/dashboard_longhorn-3.png)
 * [Traefik](./images/dashboard_traefik-1.png) - [Screen Shot #2](./images/dashboard_traefik-2.png) - [#3](./images/dashboard_traefik-3.png)
-* Several from [dotdc](https://github.com/dotdc/grafana-dashboards-kubernetes) modern dashboards (modified)
+* Several from [dotdc](https://github.com/dotdc/grafana-dashboards-kubernetes) modern dashboards
   * [Global View](./images/dashboard_dotdc-cluster-1.png) - [Screen Short #2](./images/dashboard_dotdc-cluster-2.png) - [#3](./images/dashboard_dotdc-cluster-3.png)
   * [Namespaces](./images/dashboard_dotdc-namespace-1.png)
   * [Nodes](./images/dashboard_dotdc-nodes-1.png) - [Screen Shot#2](./images/dashboard_dotdc-nodes-2.png) - [#3](./images/dashboard_dotdc-nodes-3.png) - [#4](./images/dashboard_dotdc-nodes-4.png) - [#5](./images/dashboard_dotdc-nodes-5.png) - - [#6](./images/dashboard_dotdc-nodes-6.png)

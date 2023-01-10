@@ -49,6 +49,17 @@ install:
       - "--disable traefik"                   # Install a stable Traefik via helm instead
       - "--kube-apiserver-arg=feature-gates=MixedProtocolLBService=true"  # Allow Load Balancer to use TCP & UDP Ports
 
+    # Hint to find the ZFS pool & dataset to create containerd mount point
+    zfs:
+      pool: "{{ k3s_pool | default('rpool') }}"
+
+      zvol:
+        format: "xfs"
+        options:
+          volsize: "{{ k3s_vol_size | default('30G') }}"
+          compression: "lz4"       # "" (inherit), lz4, gzip-9, etc
+          volblocksize: "16k"
+
     # Define handy alias names for commands
     alias:
       enabled: true
@@ -59,25 +70,6 @@ install:
         - { alias_name: "kcurl", command: "kubectl run curl --image=radial/busyboxplus:curl --rm=true --stdin=true --tty=true --restart=Never" }
         # Alias for Kubeseal to include controller name by default
         - { alias_name: "kubeseal", command: "kubeseal --controller-name {{ sealed_secrets.controller_name }}" }
-
-  # [ Containerd Installation Settings ]###########################################################
-  containerd:
-    enabled: true
-
-    # Hint to find the ZFS pool & dataset to create containerd mount point
-    zfs:
-      # detect_uuid will determine the UUID name used for the dataset name and include it.
-      # ZFS on Root guide uses a random set of characters (UUID) in the naming convention
-      # such as:  "rpool/ROOT/ubuntu_3wgs2q" where "3wgs2q" is the UUID to detect.
-
-      # You can set to false and set your own or set uuid to empty string.
-
-      # End result would be a dataset name such as:  rpool/ROOT/ubuntu_3wgs2q/var/lib/containerd
-      detect_uuid: false
-      pool: "{{ containerd_pool | default('rpool') }}"
-      dataset_prefix: "containerd"            # "ROOT/ubuntu"
-      uuid: ""                                # "_"
-      dataset_postfix: ""                     # "/var/lib/containerd"
 
   # [ ArgoCD Installation Settings ]###############################################################
   # ArgoCD will be used to deploy applications to K3s cluster based on manifests checked into

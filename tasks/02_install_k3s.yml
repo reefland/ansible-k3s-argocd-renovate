@@ -5,7 +5,7 @@
   tags:
     - install_k3s
   block:
-    - name: Uninstall Snapd Demon
+    - name: Uninstall Ubuntu Package List
       ansible.builtin.apt:
         name: "{{ install.os.remove_packages.packages }}"
         state: absent
@@ -70,12 +70,6 @@
       when:
         - install.kube_vip.lb.enabled | default(false) | bool
 
-    - name: Merge in containerd options to exec options if containerd is enabled
-      ansible.builtin.set_fact:
-        install_k3s_exec_options: "{{ install_k3s_exec_options + ' ' + k3s.k3s_containerd_options | join(' ') }}"
-      when:
-        - install.containerd.enabled | default(false) | bool
-
     - name: Add in TLS-SAN flag if Kube-VIP is enabled
       ansible.builtin.set_fact:
         install_k3s_exec_options: "{{ install_k3s_exec_options }} --tls-san={{ vip_endpoint_ip }}"
@@ -91,8 +85,8 @@
         chdir: "/home/{{ install.os.non_root_user.name }}"
       register: cmd
       changed_when: cmd.rc == 0
-#      notify:
-#        - Restart k3s Service
+      notify:
+        - Restart k3s Service
 
 # [ Install K3S on Worker Nodes ]##################################################################
 - name: Install k3s Kubernetes Distribution for Worker Nodes Block
@@ -101,11 +95,6 @@
   tags:
     - install_k3s
   block:
-    - name: Set containerd options to exec options if containerd is enabled
-      ansible.builtin.set_fact:
-        install_k3s_exec_options: "{{ k3s.k3s_containerd_options | join(' ') }}"
-      when:
-        - install.containerd.enabled | default(false) | bool
 
     - name: Execute k3s_install.sh and create k3s_install.log
       ansible.builtin.shell: # noqa yaml[line-length]
@@ -113,5 +102,21 @@
         chdir: "/home/{{ install.os.non_root_user.name }}"
       register: cmd
       changed_when: cmd.rc == 0
-#      notify:
-#        - Restart k3s-agent Service
+      notify:
+        - Restart k3s-agent Service
+
+- name: Flush Handlers
+  ansible.builtin.meta: flush_handlers
+  tags:
+    - install_k3s
+
+# [ Wait for node to be ready ]####################################################################
+- name: Wait until the node is ready
+  kubernetes.core.k8s_info:
+    kind: node
+    wait: true
+    name: "{{ inventory_hostname_short }}"
+    wait_sleep: 10
+    wait_timeout: 360
+  tags:
+    - install_k3s
