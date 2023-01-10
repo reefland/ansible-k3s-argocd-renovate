@@ -289,12 +289,43 @@ kubeseal --controller-namespace=sealed-secrets --fetch-cert > publickey.pem
 
 ### Recovering / Backup Sealed Secret Certificate and Private Key
 
-This step will export the certificate and private key used by the controller.
+These steps will export the certificate and private key used by the controller separately.
 
 ```shell
 kubectl get secrets sealed-secrets-key -n sealed-secrets -o jsonpath='{.data.tls\.crt}' | base64 -d > tls.crt
 
 kubectl get secrets sealed-secrets-key -n sealed-secrets -o jsonpath='{.data.tls\.key}' | base64 -d > tls.key
+```
+
+If you needed to reinstall the cluster from scratch with ArgoCD restoring applications as stored within your Git repository:
+
+* You would need the certificate and private key above to be able to decrypt the secrets stored within your Git repository.
+* Place the output of the above keys within: `vars/secrets/main.yml` under the variables `SEALED_SECRETS_PRIVATE_CERT_SECRET` and `SEALED_SECRETS_PRIVATE_KEY_SECRET`
+* Then enable `use_pre_generated_private_key: true`.
+
+This will instruct Ansible to create the secret before the Helm Chart is installed allowing Sealed Secrets to re-use the previous key instead of generating a new key at installation (which would not be able to decrypt existing keys).
+
+* Note that the format within the `vars/secrets/main.yml` needs to be exact, proper spacing and no trailing spaces.  If it is not perfect, you might see an error such as this within the Sealed Secrets pod and the Helm Chart installation will fail:
+
+  ```text
+  2023/01/10 15:20:06 Searching for existing private keys
+  2023/01/10 15:20:06 Error reading key sealed-secrets-key: data does not contain any valid RSA or ECDSA certificates
+  panic: runtime error: index out of range [0] with length 0
+  ```
+
+### Recovering / Backup Sealed Secret Public and Private Key
+
+This step will export the Public and Private keys into a single file.
+
+```shell
+kubectl get secret -n sealed-secrets -l sealedsecrets.bitnami.com/sealed-secrets-key -o yaml >main.key
+```
+
+To restore from a backup after some disaster, just put that secrets back before starting the controller - or if the controller was already started, replace the newly-created secrets and restart the controller:
+
+```shell
+kubectl apply -f main.key
+kubectl delete pod -n sealed-secrets -l name=sealed-secrets-controller
 ```
 
 ---
@@ -328,7 +359,7 @@ Reason: no key could decrypt secret (admin.password, admin.passwordMtime, server
 
 * Without the original master signing key you can not decrypt this sealed secret.  You will have to delete this secret and generate a new sealed secret, which will use this clusters signing key.
 
-**IMPORTANT:** to allow Sealed Secrets to be used easily across multiple clusters then enable `use_pre_generated_private_key`, generate the certificate and private key and add them to the Ansible `vars/secrets/main.yaml` file.
+**IMPORTANT:** to allow Sealed Secrets to be used easily across multiple clusters then enable `use_pre_generated_private_key`, generate the certificate and private key and add them to the Ansible `vars/secrets/main.yaml` file. (Note this pregenerated key will still expire within 30 days.)
 
 ### Kubeseal reports Sealed Secrets Controller Not Found
 
