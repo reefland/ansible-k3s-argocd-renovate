@@ -24,6 +24,26 @@ install:
       fs.inotify.max_user_instances: 8192
       fs.inotify.max_user_watches: 524288
 
+      # Following network changes help with combined etcd and rook-ceph storage:
+      # Feel free to disable and consider using them in the future if needed.
+      # the maximum Send Buffer size for all network protocols:
+      net.core.wmem_max: 8388608
+      # the maximum Receive Buffer size for all network protocols:
+      net.core.rmem_max: 12582912
+      # Increase minimum, default and maximum Send Buffer Size:
+      net.ipv4.tcp_wmem: "8192 32768 8388608"
+      # Increase minimum and maximum Recv Buffer Size:
+      net.ipv4.tcp_rmem: "8192 131072 12582912"
+      # Help with bursty network traffic on multi-gigabit speeds:
+      net.core.netdev_max_backlog: 16384
+      # Increase maximum amount of option memory buffers:
+      net.core.optmem_max: 65536
+      # Enable TCP fast open on incoming and outgoing connections:
+      # (may not be safe of direct internet connected hosts)
+      net.ipv4.tcp_fastopen: 3
+      # Reuse outgoing connections in TIME-WAIT state:
+      net.ipv4.tcp_tw_reuse: 1
+
     # Send all logs to a centralized logging server. This will be the 1st server defined
     # within the "k3s_control" group. All other cluster members will send logs to this system.
     # All logs from k3s hosts will be stored under: /var/log/central/<hostname>.log
@@ -56,7 +76,7 @@ install:
       zvol:
         format: "xfs"
         options:
-          volsize: "{{ k3s_vol_size | default('30G') }}"
+          volsize: "{{ k3s_vol_size | default('35G') }}"
           compression: "lz4"       # "" (inherit), lz4, gzip-9, etc
           volblocksize: "16k"
 
