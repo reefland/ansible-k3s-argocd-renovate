@@ -81,8 +81,9 @@
     - name: Fail if K3s volume is not mounted
       ansible.builtin.fail:
         msg: "K3s volume not mounted as expected."
+      ignore_errors: '{{ ansible_check_mode }}'
       when:
-        - zvol.stdout.find("TARGET") == -1
+        - ('TARGET' not in zvol.stdout)
 
 # [ Setup Longhorn Storage Location ]##############################################################
 # Storage for longhorn needs to be in-place before node joins the cluster.
