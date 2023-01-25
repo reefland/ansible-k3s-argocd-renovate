@@ -16,41 +16,44 @@ configMapGenerator:
 ###[ Define Dashboards ]#######################################################
 # NOTE: Grafana dashboard number included in the name.
 
+# My cluster Dashboard:
   - name: k3s-view-cluster-16450
-    files: [ dashboards/k3s-view-cluster-16450.json ]
+    files: [ k3s/k3s-view-cluster-16450.json ]
 
-  - name: k8s-app-argocd-14584
-    files: [ dashboards/k8s-app-argocd-14584.json ]
-
-  - name: k8s-app-longhorn-13032
-    files: [ dashboards/k8s-app-longhorn-13032.json ]
-
-  - name: k8s-app-traefik-11462
-    files: [ dashboards/k8s-app-traefik-11462.json ]
-
-  - name: k8s-app-traefik-13165
-    files: [ dashboards/k8s-app-traefik-13165.json ]
-
-  - name: k8s-app-cert-manager
-    files: [ dashboards/k8s-app-cert-manager.json ]
-
-  - name: k8s-app-sealed-secrets
-    files: [ dashboards/k8s-app-sealed-secrets.json ]
-
+# External Cluster Dashboards:
   - name: k8s-views-global-15757
-    files: [ dashboards/k8s-views-global-15757.json ]
+    files: [ k8s/k8s-views-global-15757.json ]
 
   - name: k8s-views-nodes-15759
-    files: [ dashboards/k8s-views-nodes-15759.json ]
+    files: [ k8s/k8s-views-nodes-15759.json ]
 
   - name: k8s-views-pods-15760
-    files: [ dashboards/k8s-views-pods-15760.json ]
+    files: [ k8s/k8s-views-pods-15760.json ]
 
   - name: k8s-system-api-server-15761
-    files: [ dashboards/k8s-system-api-server-15761.json ]
+    files: [ k8s/k8s-system-api-server-15761.json ]
 
   - name: k8s-views-namespaces-15758
-    files: [ dashboards/k8s-views-namespaces-15758.json ]
+    files: [ k8s/k8s-views-namespaces-15758.json ]
 
   - name: k8s-system-coredns-15762
-    files: [ dashboards/k8s-system-coredns-15762.json ]
+    files: [ k8s/k8s-system-coredns-15762.json ]
+
+# Application Dashboards:
+  - name: k8s-app-argocd-14584
+    files: [ argocd/k8s-app-argocd-14584.json ]
+
+  - name: k8s-app-longhorn-13032
+    files: [ longhorn/k8s-app-longhorn-13032.json ]
+
+  - name: k8s-app-traefik-11462
+    files: [ traefik/k8s-app-traefik-11462.json ]
+
+  - name: k8s-app-traefik-13165
+    files: [ traefik/k8s-app-traefik-13165.json ]
+
+  - name: k8s-app-cert-manager
+    files: [ cert-manager/k8s-app-cert-manager.json ]
+
+  - name: k8s-app-sealed-secrets
+    files: [ sealed-secrets/k8s-app-sealed-secrets.json ]
