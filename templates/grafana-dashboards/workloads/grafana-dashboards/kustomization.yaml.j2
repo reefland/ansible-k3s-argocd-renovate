@@ -10,6 +10,10 @@ generatorOptions:
     {{install.prometheus_operator.grafana.sidecar.label}}: "true"
 namespace: {{install.prometheus_operator.namespace}}
 
+# Dashboard directories to process
+resources:
+  - k8s
+
 ###[ Generate a ConfigMap for each dashboard ]#################################
 configMapGenerator:
 
@@ -19,25 +23,6 @@ configMapGenerator:
 # My cluster Dashboard:
   - name: k3s-view-cluster-16450
     files: [ k3s/k3s-view-cluster-16450.json ]
-
-# External Cluster Dashboards:
-  - name: k8s-views-global-15757
-    files: [ k8s/k8s-views-global-15757.json ]
-
-  - name: k8s-views-nodes-15759
-    files: [ k8s/k8s-views-nodes-15759.json ]
-
-  - name: k8s-views-pods-15760
-    files: [ k8s/k8s-views-pods-15760.json ]
-
-  - name: k8s-system-api-server-15761
-    files: [ k8s/k8s-system-api-server-15761.json ]
-
-  - name: k8s-views-namespaces-15758
-    files: [ k8s/k8s-views-namespaces-15758.json ]
-
-  - name: k8s-system-coredns-15762
-    files: [ k8s/k8s-system-coredns-15762.json ]
 
 # Application Dashboards:
   - name: k8s-app-argocd-14584

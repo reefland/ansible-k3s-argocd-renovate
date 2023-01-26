@@ -1,0 +1,28 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+###[ Global options ]##########################################################
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    {{install.prometheus_operator.grafana.sidecar.label}}: "true"
+namespace: {{install.prometheus_operator.namespace}}
+
+###[ Generate a ConfigMap for each dashboard ]#################################
+configMapGenerator:
+
+# David Calvert (dotdc) Cluster Dashboards:
+  - name: k8s-views-global-15757
+    files: [ https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-global.json ]
+  - name: k8s-views-nodes-15759
+    files: [ https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-nodes.json ]
+  - name: k8s-views-pods-15760
+    files: [ https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-pods.json ]
+  - name: k8s-system-api-server-15761
+    files: [ https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-system-api-server.json ]
+  - name: k8s-views-namespaces-15758
+    files: [ https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-namespaces.json ]
+  - name: k8s-system-coredns-15762
+    files: [ https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-system-coredns.json ]
