@@ -50,7 +50,7 @@ __usage() {
 ###[ Generate Image List ]###################################################
 # This will load a list of currently cached images that were previously
 # downloaded and store this in array CRI_IMAGES. Images with TAGs defined
-# in SKIP_THESE_TAGS are simply skipped - left for human to deal with. These
+# in SKIP_THESE_TAGS are simply skipped - left for humans to deal with. These
 # images will not be processed.  Some basic statistics are stored as well:
 #
 #    TOTAL_CRI_IMAGES = Integer value of images found minus skipped images
@@ -148,7 +148,7 @@ fi
 # Confirm sudo or root equivilant access
 if [ $(id -u) -ne 0 ]; then
   echo
-  echo "* ERROR: ROOT privilage required to access CRICTL binaries."
+  echo "* ERROR: ROOT privilege required to access CRICTL binaries."
   echo
   __usage
   exit 1
