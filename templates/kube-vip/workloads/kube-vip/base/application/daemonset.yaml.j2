@@ -2,9 +2,6 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  labels:
-    app.kubernetes.io/name: kube-vip-ds
-    app.kubernetes.io/version: {{ kube_vip_install_version|default(install.kube_vip.install_version) }}
   name: kube-vip-ds
   namespace: kube-system
 spec:
@@ -16,7 +13,6 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: kube-vip-ds
-        app.kubernetes.io/version: {{ kube_vip_install_version|default(install.kube_vip.install_version) }}
     spec:
       affinity:
         nodeAffinity:
@@ -63,7 +59,7 @@ spec:
               value: {{ vip_endpoint_ip }}
             - name: vip_configmap
               value: kubevip
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           resources:
             limits:
               cpu: 100m
