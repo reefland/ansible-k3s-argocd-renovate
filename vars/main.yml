@@ -123,6 +123,7 @@ democratic_csi:
   nfs:
     packages:
       - libnfs-utils
+      - nfs-common
 
 # [ Prometheus Operator Installation Settings ]####################################################
 prometheus_op:
