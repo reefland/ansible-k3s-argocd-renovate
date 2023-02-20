@@ -79,7 +79,7 @@
   #  - fail:
   #      msg: "{{ install.k3s.cli_options|join(' ')}} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options}}\" "
 
-    - name: Execute k3s_install.sh and create k3s_install.log
+    - name: Execute k3s_install.sh and create k3s_install.log for Control Plane Node
       ansible.builtin.shell: # noqa yaml[line-length]
         cmd: "{{ install.k3s.cli_options | join(' ') }} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options }}\" /home/{{ install.os.non_root_user.name }}/k3s_install.sh > /home/{{ install.os.non_root_user.name }}/k3s_install.log"
         chdir: "/home/{{ install.os.non_root_user.name }}"
@@ -96,7 +96,11 @@
     - install_k3s
   block:
 
-    - name: Execute k3s_install.sh and create k3s_install.log
+    - name: K3s_exec_options for agent nodes
+      ansible.builtin.set_fact:
+        install_k3s_exec_options: ""
+
+    - name: Execute k3s_install.sh and create k3s_install.log for K3S Agent Node
       ansible.builtin.shell: # noqa yaml[line-length]
         cmd: "INSTALL_K3S_SKIP_START=true K3S_URL=https://{{ groups['k3s_control'][0] }}:6443 K3S_TOKEN={{ K3S_TOKEN | default('top_secret') }} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options }}\" /home/{{ install.os.non_root_user.name }}/k3s_install.sh > /home/{{ install.os.non_root_user.name }}/k3s_install.log"
         chdir: "/home/{{ install.os.non_root_user.name }}"
@@ -120,3 +124,4 @@
     wait_timeout: 360
   tags:
     - install_k3s
+  delegate_to: "{{ groups['k3s_control'][0] }}"
