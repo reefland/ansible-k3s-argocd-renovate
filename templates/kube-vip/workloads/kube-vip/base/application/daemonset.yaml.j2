@@ -14,16 +14,21 @@ spec:
       labels:
         app.kubernetes.io/name: kube-vip-ds
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/master
-                    operator: Exists
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: Exists
+      nodeSelector:
+        node-role.kubernetes.io/master: "true"
+        node-role.kubernetes.io/control-plane: "true"
+
+#      affinity:
+#        nodeAffinity:
+#          requiredDuringSchedulingIgnoredDuringExecution:
+#            nodeSelectorTerms:
+#              - matchExpressions:
+#                  - key: node-role.kubernetes.io/master
+#                    operator: Exists
+#              - matchExpressions:
+#                  - key: node-role.kubernetes.io/control-plane
+#                    operator: Exists
+
       containers:
         - name: kube-vip
           image: ghcr.io/kube-vip/kube-vip:{{ kube_vip_install_version|default(install.kube_vip.install_version) }}
