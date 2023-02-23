@@ -27,13 +27,15 @@ k3s:
   node_token_path: "/var/lib/rancher/k3s/server/node-token"
   manifests_path: "/var/lib/rancher/k3s/server/manifests/"
 
-  # Packages required for Ansible to issue Kubernetes and commands
   packages:
-    - "python3-pip"
-    - "xfsprogs"
-    - "apparmor"
+    - "python3-pip"       # Python Package Manager
+    - "xfsprogs"          # XFS File System Support
+    - "apparmor"          # AppArmor for ContainerD
     - "apparmor-utils"
-  packages_pip:
+    - "usbutils"          # lsusb command
+    - "nfs-common"        # nfs mounts / client support
+
+  packages_pip:           # Packages required for Ansible to issue Kubernetes and commands
     - "openshift"
     - "pyyaml"
     - "kubernetes"
