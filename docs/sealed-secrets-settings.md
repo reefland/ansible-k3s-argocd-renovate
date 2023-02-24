@@ -266,7 +266,7 @@ The secret holding the private certificate and private key must have this label 
 Assuming you have an existing YAML file named `myapp-secret.yaml`, this can be converted into a Sealed Secret via:
 
 ```shell
-kubeseal --controller-name sealed-secrets --scope strict --format=yaml < myapp-secret.yaml > myapp-secret-sealed.yaml
+kubeseal --controller-name sealed-secrets --controller-namespace sealed-secrets --scope strict --format=yaml < myapp-secret.yaml > myapp-secret-sealed.yaml
 ```
 
 The file generated `myapp-secret-sealed.yaml` would be applied to the cluster by saving it within your git repository under `/workloads/secrets` and ArgoCD would apply this to the cluster.
@@ -284,7 +284,7 @@ The original secret `myapp-secret.yaml` should be deleted or stored someplace el
 This step will export the public key used by the controller.
 
 ```shell
-kubeseal --controller-namespace=sealed-secrets --fetch-cert > publickey.pem
+kubeseal --controller-name sealed-secrets --controller-namespace sealed-secrets --fetch-cert > publickey.pem
 ```
 
 ### Recovering / Backup Sealed Secret Certificate and Private Key
@@ -369,12 +369,14 @@ The default sealed secrets controller name used by `kubeseal` is different than 
 $ kubeseal
 
 error: cannot get sealed secret service: services "sealed-secrets-controller" not found
+
+error: cannot get sealed secret service: services "sealed-secrets" not found
 ```
 
 An alternate controller name can be supplied with argument `--controller-name sealed-secrets`. As this can be annoying to remember, this Ansible role will automatically create an alias for you that applies this argument:
 
 ```text
-alias kubeseal='kubeseal --controller-name sealed-secrets'
+alias kubeseal='kubeseal --controller-name sealed-secrets --controller-namespace sealed-secrets'
 ```
 
 ---
