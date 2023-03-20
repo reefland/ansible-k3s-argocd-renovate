@@ -64,6 +64,14 @@ spec:
             controller-expand-secret:
 
         volumeSnapshotClasses: []
+        #  - name: freenas-iscsi-csi
+        #    labels:
+        #      velero.io/csi-volumesnapshot-class: "true"
+        #    parameters:
+        #    # if true, snapshots will be created with zfs send/receive
+        #    detachedSnapshots: "true"
+        #    secrets:
+        #      snapshotter-secret:
 
         driver:
           existingConfigSecret: democratic-csi-iscsi-driver-config
