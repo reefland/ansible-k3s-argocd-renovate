@@ -284,6 +284,10 @@ spec:
         grafana:
           fullnameOverride: "grafana"
           enabled: true
+
+          revisionHistoryLimit: 3
+          useStatefulSet: true
+
           rbac:
             pspEnabled: false
 
