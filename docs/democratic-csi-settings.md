@@ -661,8 +661,8 @@ persistentvolumeclaim/test-claim-nfs-green created
 persistentvolumeclaim/test-claim-nfs-blue created
 service/nginx-pv-green created
 service/nginx-pv-blue created
-middleware.traefik.containo.us/nginx-strip-path-prefix created
-ingressroute.traefik.containo.us/test-claim-ingressroute created
+middleware.traefik.io/nginx-strip-path-prefix created
+ingressroute.traefik.io/test-claim-ingressroute created
 ```
 
 ```shell
@@ -746,8 +746,8 @@ persistentvolumeclaim "test-claim-nfs-green" deleted
 persistentvolumeclaim "test-claim-nfs-blue" deleted
 service "nginx-pv-green" deleted
 service "nginx-pv-blue" deleted
-middleware.traefik.containo.us "nginx-strip-path-prefix" deleted
-ingressroute.traefik.containo.us "test-claim-ingressroute" deleted
+middleware.traefik.io "nginx-strip-path-prefix" deleted
+ingressroute.traefik.io "test-claim-ingressroute" deleted
 
 $ kubectl get pvc -n nfs-test-app
 No resources found

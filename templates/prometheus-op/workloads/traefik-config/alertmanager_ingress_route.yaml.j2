@@ -1,5 +1,5 @@
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   namespace: {{install.prometheus_operator.namespace}}
@@ -10,7 +10,7 @@ spec:
       - {{install.prometheus_operator.alertmanager.dashboard.path|default("/alertmanager")}}
     forceSlash: true
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   namespace: {{install.prometheus_operator.namespace}}

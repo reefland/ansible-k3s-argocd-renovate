@@ -347,8 +347,8 @@ kubectl delete -f traefik_test_apps.yaml
 
 deployment.apps "whoami" deleted
 service "whoami" deleted
-ingressroute.traefik.containo.us "simpleingressroute" deleted
-ingressroute.traefik.containo.us "ingressroutetls" deleted
+ingressroute.traefik.io "simpleingressroute" deleted
+ingressroute.traefik.io "ingressroutetls" deleted
 ```
 
 [Back to README.md](../README.md)
