@@ -24,7 +24,7 @@ spec:
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: system-upgrade
+    namespace: {{install.upgrade_controller.namespace}}
 
   # system-upgrade-controller dynamically mucks with CRD
   ignoreDifferences:

@@ -6,7 +6,6 @@ metadata:
   name: k3s-worker-plan
   namespace: {{install.upgrade_controller.namespace}}
 
-
 spec:
   # renovate: datasource=github-releases depName=k3s-io/k3s
   version: "{{k3s_install_version|default('v1.23.5+k3s1')}}"
