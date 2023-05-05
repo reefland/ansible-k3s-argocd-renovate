@@ -304,7 +304,8 @@ install:
         force: true
         deleteLocalData: true
         ignoreDaemonSets: true
-        skipWaitForDeleteTimeout: 60 # honor pod disruption budgets up to 60 seconds per pod then moves on
+        # honor pod disruption budgets up to 60 seconds per pod then moves on
+        skipWaitForDeleteTimeout: 60
 
     worker_node_upgrade_plan: |
       #cordon: true
@@ -312,7 +313,8 @@ install:
         force: true
         deleteLocalData: true
         ignoreDaemonSets: true
-        skipWaitForDeleteTimeout: 60 # honor pod disruption budgets up to 60 seconds per pod then moves on
+        # honor pod disruption budgets up to 60 seconds per pod then moves on
+        skipWaitForDeleteTimeout: 60
 
   # [ Longhorn Installation Settings ]#############################################################
   longhorn:
