@@ -14,8 +14,14 @@ The [K3s System Upgrade Controller](https://github.com/rancher/system-upgrade-co
 ### The Upgrade Process
 
 * When a new K3s release is made available [See Releases](https://github.com/k3s-io/k3s/releases)
-* Renovate will create the Pull Request for your review and approval
-* Once approved, within minutes the controller will start to upgrade the master nodes one by one and then the worker nodes.
+* When a specific K3s version is specified:
+  * Renovate will create the Pull Request for your review and approval to upgrade to the latest version
+  * Once approved, within minutes the controller will start to upgrade the master nodes one by one and then the worker nodes.
+
+* When an upgrade channel is specified instead:
+  * This bypasses Renovate and no PR is opened
+  * The upgrade controller will act on its own and upgrade the cluster whenever it detects a new version
+  * This can happen at any random time, beware, you have no control
 
 ## Review `defaults/main.yml` for Upgrade Controller Settings
 

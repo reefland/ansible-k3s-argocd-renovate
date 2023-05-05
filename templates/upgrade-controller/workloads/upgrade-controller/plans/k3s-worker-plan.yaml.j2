@@ -1,24 +1,35 @@
 ---
+# yaml-language-server: $schema=https://kubernetes-schemas.devbu.io/upgrade.cattle.io/plan_v1.json
 apiVersion: upgrade.cattle.io/v1
 kind: Plan
 metadata:
-  name: k3s-control-node-plan
+  name: k3s-worker-plan
   namespace: {{install.upgrade_controller.namespace}}
-  labels:
-    k3s-upgrade: control-node
+
+
 spec:
-  concurrency: 1 # Batch size (roughly maps to maximum number of unschedulable nodes)
   # renovate: datasource=github-releases depName=k3s-io/k3s
   version: "{{k3s_install_version|default('v1.23.5+k3s1')}}"
+
+  # Setting channel will by-pass renovate PR process
   # channel: https://update.k3s.io/v1-release/channels/stable
-  # channel: https://update.k3s.io/v1-release/channels/v1.23
+  # channel: https://update.k3s.io/v1-release/channels/v1.25
+
+  serviceAccountName: system-upgrade
+
+  # Batch size (roughly maps to maximum number of unschedulable nodes)
+  concurrency: 1 
+
   nodeSelector:
     matchExpressions:
-      - {key: k3s-upgrade, operator: Exists}
       - {key: k3s-upgrade, operator: NotIn, values: ["disabled", "false"]}
-      - {key: k3os.io/mode, operator: DoesNotExist}
-      - {key: node-role.kubernetes.io/control-plane, operator: Exists}
-  serviceAccountName: system-upgrade
+      - {key: node-role.kubernetes.io/control-plane, operator: DoesNotExist}
+
   {% filter indent(width=2) %}{{install.upgrade_controller.worker_node_upgrade_plan}}{% endfilter %}
+
+  prepare:
+    image: rancher/k3s-upgrade
+    args: ["prepare", "k3s-control-node-plan"]
+
   upgrade:
     image: rancher/k3s-upgrade

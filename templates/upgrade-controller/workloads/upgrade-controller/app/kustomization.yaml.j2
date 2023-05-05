@@ -1,0 +1,29 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # renovate: datasource=docker image=rancher/system-upgrade-controller
+  - https://github.com/rancher/system-upgrade-controller/releases/download/{{install.upgrade_controller.install_version}}/crd.yaml
+  - https://github.com/rancher/system-upgrade-controller?ref={{install.upgrade_controller.install_version}}
+
+images:
+  - name: rancher/system-upgrade-controller
+    newTag: {{install.upgrade_controller.install_version}}
+
+patchesStrategicMerge:
+  # Delete namespace resource
+  - |
+    $patch: delete
+    apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: system-upgrade
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: system-upgrade-controller
+      app.kubernetes.io/instance: system-upgrade-controller
+    includeSelectors: true
+

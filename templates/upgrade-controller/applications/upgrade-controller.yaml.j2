@@ -13,10 +13,14 @@ spec:
   project: system-upgrade
   revisionHistoryLimit: {{install.argocd.revision_History_Limit|default(3)}}
 
-  source:
-    repoURL: '{{install.argocd.repository.url}}.git'
-    targetRevision: HEAD
-    path: workloads/upgrade-controller/
+  sources:
+    - repoURL: '{{install.argocd.repository.url}}.git'
+      targetRevision: HEAD
+      path: workloads/upgrade-controller/app
+
+    - repoURL: '{{install.argocd.repository.url}}.git'
+      targetRevision: HEAD
+      path: workloads/upgrade-controller/plans
 
   destination:
     server: https://kubernetes.default.svc
