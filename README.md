@@ -2,7 +2,7 @@
 
 ![current version tag](https://img.shields.io/github/v/release/reefland/ansible-k3s-argocd-renovate?display_name=tag&include_prereleases)
 
-An Ansible role to provide an automated _K3s Lightweight Distribution of Kubernetes_ initial deployment. The goal is to have Anisble build just enough Kubernetes on a cluster node to get ArgoCD running.  Anisble will then be used to render various application manifest files that ArgoCD will deploy.  Once the initial deployment is successful you do not need Ansible to maintain the cluster applications - ArgoCD will use an "App of Apps" pattern to handle this, along with Renovate to maintain current versions.
+An Ansible role to provide an automated _K3s Lightweight Distribution of Kubernetes_ initial deployment. The goal is to have Anisble build just enough Kubernetes on a cluster node to get ArgoCD running.  Anisble will then be used to render various application manifest files that ArgoCD will deploy.  Once the initial deployment is successful you do not need Ansible to maintain the cluster applications - ArgoCD will use an "App of Apps" pattern to handle this, along with Renovate to maintain and update application versions.
 
 The following enhancements are part of this Ansible role:
 
@@ -41,14 +41,17 @@ Optionally Installed:
 
 ## Home Cluster Hardware
 
-Hardware Used for my Home Cluster:
+[![Grafana](https://img.shields.io/website?logo=grafana&logoColor=white&color=brightgreeen&label=Cluster&nbsp;and&nbsp;Grafana&style=for-the-badge&url=https%3A%2F%2Fbit.ly/3O0z4jv)](https://bit.ly/3O0z4jv)
+
+Home Cluster Hardware Summary:
 
 | Device          | Count | Cores / Threads     | OS Disk Size      | Data Disk Size         | Ram  | Purpose               |
 | --------------- | ----- | ---------------     | ------------      | ---------------------- | ---- | -------------------   |
 | HP T740 Thin PC | 3 | (Ryzen V1756B) 4 / 8 | 118GiB ZFS Mirror | 700Gib Rook-Ceph | 64GB | Kubernetes Master / Ceph Storage |
 | Minisform UM560 | 2 | (Ryzen 5 5625U) 6 / 12 | 120GiB ZFS Mirror | 700Gib Rook-Ceph | 40GB | Kubernetes Worker / Ceph Storage |
+| Custom Build (Fractal Design Node 804 with ASRock B660 Steel Legend)   | 1 | (Intel i5-13500) 6 / 20 | 14TB ZFS zRaid  | 2 TB Rook-Ceph  | 64GB | Kubernetes Worker / Ceph / Intel iGPU
 
-* All devices have 2.5GbE networking to UniFi USW Enterprise 8 Port Switch with dual 10GbE uplinks to main network.
+* All devices have at least 2.5GbE networking (some are 10GbE) to UniFi USW Enterprise 8 Port Switch with dual 10GbE uplinks to main network.
 
 ---
 
