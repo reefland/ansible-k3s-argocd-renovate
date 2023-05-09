@@ -1,0 +1,58 @@
+---
+# Area
+- name: area/github
+  color: "72ccf3"
+  description: >-
+    Changes made in the github directory
+- name: area/README-update
+  color: "72ccf3"
+  description: >-
+    Changes made to a README.md file
+- name: area/documentation
+  color: "72ccf3"
+  description: >-
+    Changes made appear to be for documentation
+- name: area/documentation-images
+  color: "72ccf3"
+  description: >-
+    Changes made appear to be for documentation images
+- name: area/ansible
+  color: "72ccf3"
+  description: >-
+    Changes made to ansible files
+
+# Uncategorized
+- name: bug
+  color: "d73a4a"
+  description: >-
+    Something isn't working
+- name: do-not-merge
+  color: "d73a4a"
+- name: documentation
+  color: "0075ca"
+  description: >-
+    Improvements or additions to documentation
+- name: duplicate
+  color: "cfd3d7"
+  description: >-
+    This issue or pull request already exists
+- name: enhancement
+  color: "a2eeef"
+  description: >-
+    New feature or request
+- name: help wanted
+  color: "008672"
+  description: >-
+    Extra attention is needed
+- name: broken-links
+  color: "7B55D7"
+- name: question
+  color: "d876e3"
+  description: >-
+    Further information is requested
+- name: community
+  color: "0e8a16"
+- name: wontfix
+  color: "ffffff"
+  description: >-
+    This will not be worked on
