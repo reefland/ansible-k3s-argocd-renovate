@@ -15,8 +15,7 @@ on:
     branches: ["main", "master"]
 
   pull_request:
-    branches:
-      branches: ["main", "master"]
+    branches: ["main", "master"]
 
 ###############
 # Set the Job #
