@@ -22,8 +22,8 @@ The following enhancements are part of this Ansible role:
 
 Optionally Installed:
 
-* [kube-vip](https://kube-vip.chipzoller.dev/) for Kubernetes API Load Balancer
-* [kube-vip-cloud-provider](https://kube-vip.chipzoller.dev/) Load Balancer to replace [K3s Klipper](https://github.com/k3s-io/klipper-lb) Load Balancer for ingress traffic.
+* [kube-vip](https://kube-vip.io/) for Kubernetes API Load Balancer
+* [kube-vip-cloud-provider](https://kube-vip.io/docs/usage/cloud-provider/) Load Balancer to replace [K3s Klipper](https://github.com/k3s-io/klipper-lb) Load Balancer for ingress traffic.
 * [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets) for true encrypted secrets safe for public git repositories (still recommend using private repository)
 * [Longhorn](https://longhorn.io/) distributed [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) as default storage class
 * [democratic-csi](https://github.com/democratic-csi/democratic-csi) to provide [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) storage via **iSCSI** and **NFS** from [TrueNAS](https://www.truenas.com/)
