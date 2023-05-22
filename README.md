@@ -2,7 +2,9 @@
 
 ![current version tag](https://img.shields.io/github/v/release/reefland/ansible-k3s-argocd-renovate?display_name=tag&include_prereleases)
 
-An Ansible role to provide an automated _K3s Lightweight Distribution of Kubernetes_ initial deployment. The goal is to have Anisble build just enough Kubernetes on a cluster node to get ArgoCD running.  Anisble will then be used to render various application manifest files that ArgoCD will deploy.  Once the initial deployment is successful you do not need Ansible to maintain the cluster applications - ArgoCD will use an "App of Apps" pattern to handle this, along with Renovate to maintain and update application versions.
+An Ansible role to provide an automated _K3s Lightweight Distribution of Kubernetes_ initial deployment. The goal is to have Anisble build just enough Kubernetes on a cluster node to get ArgoCD running.  Anisble will then be used to render various application manifest files that ArgoCD will deploy.
+
+Once the initial deployment is successful you do not need Ansible to maintain the cluster applications - ArgoCD will use an "App of Apps" pattern to handle this, along with Renovate to maintain and update application versions.
 
 The following enhancements are part of this Ansible role:
 
@@ -66,7 +68,7 @@ Home Cluster Hardware Summary:
 * You should read it. :)
 * A tweaked multi-node Kubernetes cluster based on K3s (no docker used)
 * You will need to setup an Ansible inventory file in a defined way
-* You will need to create a dedicated repository for ArgoCD, ideally a private Github repository (free)
+* You will need to create a dedicated repository for ArgoCD, ideally a private GitHub repository (free)
 * **ArgoCD** will require Ansible secrets set for repository URL, Access Token, etc.
 * Ansible will render all initial application manifest files and commit them to Git repository
 * **ArgoCD** will see remaining missing applications and deploy them as defined
@@ -387,17 +389,17 @@ A K3s cluster monitoring dashboard specific to this installation is available:
 
 Additional Dashboards will also be deployed as ConfigMaps (modified from defaults to work with containerd and not docker):
 
-* [ArgoCD](./images/dashboard_argocd-1.png) - [Screen Shot #2](./images/dashboard_argocd-2.png) - [#3](./images/dashboard_argocd-3.png) - [#4](./images/dashboard_argocd-4.png) - [#5](./images/dashboard_argocd-5.png)
+* [ArgoCD](./images/dashboard_argocd-1.png) - [Screenshot #2](./images/dashboard_argocd-2.png) - [#3](./images/dashboard_argocd-3.png) - [#4](./images/dashboard_argocd-4.png) - [#5](./images/dashboard_argocd-5.png)
 * [Cert-Manager](./images/dashboard_cert-manager.png)
-* [Longhorn](./images/dashboard_longhorn-1.png) - [Screen Shot #2](./images/dashboard_longhorn-2.png) - [#3](./images/dashboard_longhorn-3.png)
-* [Traefik](./images/dashboard_traefik-1.png) - [Screen Shot #2](./images/dashboard_traefik-2.png) - [#3](./images/dashboard_traefik-3.png)
+* [Longhorn](./images/dashboard_longhorn-1.png) - [Screenshot #2](./images/dashboard_longhorn-2.png) - [#3](./images/dashboard_longhorn-3.png)
+* [Traefik](./images/dashboard_traefik-1.png) - [Screenshot #2](./images/dashboard_traefik-2.png) - [#3](./images/dashboard_traefik-3.png)
 * Several from [dotdc](https://github.com/dotdc/grafana-dashboards-kubernetes) modern dashboards
-  * [Global View](./images/dashboard_dotdc-cluster-1.png) - [Screen Short #2](./images/dashboard_dotdc-cluster-2.png) - [#3](./images/dashboard_dotdc-cluster-3.png)
+  * [Global View](./images/dashboard_dotdc-cluster-1.png) - [Screenshot #2](./images/dashboard_dotdc-cluster-2.png) - [#3](./images/dashboard_dotdc-cluster-3.png)
   * [Namespaces](./images/dashboard_dotdc-namespace-1.png)
-  * [Nodes](./images/dashboard_dotdc-nodes-1.png) - [Screen Shot#2](./images/dashboard_dotdc-nodes-2.png) - [#3](./images/dashboard_dotdc-nodes-3.png) - [#4](./images/dashboard_dotdc-nodes-4.png) - [#5](./images/dashboard_dotdc-nodes-5.png) - - [#6](./images/dashboard_dotdc-nodes-6.png)
+  * [Nodes](./images/dashboard_dotdc-nodes-1.png) - [Screenshot#2](./images/dashboard_dotdc-nodes-2.png) - [#3](./images/dashboard_dotdc-nodes-3.png) - [#4](./images/dashboard_dotdc-nodes-4.png) - [#5](./images/dashboard_dotdc-nodes-5.png) - - [#6](./images/dashboard_dotdc-nodes-6.png)
   * [Pods](./images/dashboard_dotdc-pods-1.png)
-  * [API Server](./images/dashboard_dotdc-apiserver-1.png) - [Screen Shot #2](./images/dashboard_dotdc-apiserver-2.png)
-  * [CoreDNS](./images/dashboard_dotdc-coredns-1.png) - [Screen Shot #2](./images/dashboard_dotdc-coredns-2.png)
+  * [API Server](./images/dashboard_dotdc-apiserver-1.png) - [Screenshot #2](./images/dashboard_dotdc-apiserver-2.png)
+  * [CoreDNS](./images/dashboard_dotdc-coredns-1.png) - [Screenshot #2](./images/dashboard_dotdc-coredns-2.png)
 * Several from Kubernetes-Mixin (Deployed by Kube-Prometheus-Stack)
 
 ---
