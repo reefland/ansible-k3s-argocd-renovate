@@ -1,1 +1,2 @@
 vars/secrets/*.yml
+.vscode/
