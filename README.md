@@ -45,9 +45,9 @@ Optionally Installed:
 
 [![Grafana](https://img.shields.io/website?logo=grafana&logoColor=white&color=brightgreeen&label=Cluster&nbsp;and&nbsp;Grafana&style=for-the-badge&url=https%3A%2F%2Fbit.ly/3O0z4jv)](https://bit.ly/3O0z4jv) [![Uptime Kumma](https://img.shields.io/website?logo=uptimekuma&logoColor=white&color=brightgreeen&label=Uptime&nbsp;Kuma&style=for-the-badge&url=https%3A%2F%2Fbit.ly/423PISu)](https://bit.ly/423PISu)
 
-Home Cluster Hardware Summary:
+Home Cluster Compute Hardware Summary:
 
-| Device          | Count | Cores / Threads     | OS Disk Size      | Data Disk Size         | Ram  | Purpose               |
+| Device          | Count | Cores / Threads     | OS Disk Size      | Data Disk Size         | RAM  | Purpose               |
 | --------------- | ----- | ---------------     | ------------      | ---------------------- | ---- | -------------------   |
 | HP T740 Thin PC | 3 | (Ryzen V1756B) 4 / 8 | 118GiB ZFS Mirror | 700Gib Rook-Ceph | 64GB | Kubernetes Master / Ceph Storage |
 | Minisform UM560 | 2 | (Ryzen 5 5625U) 6 / 12 | 120GiB ZFS Mirror | 700Gib Rook-Ceph | 40GB | Kubernetes Worker / Ceph Storage |
@@ -60,6 +60,16 @@ Home Cluster Hardware Summary:
 |![Traefik Ingress](https://uptime.rich-durso.us/api/badge/12/status?label=Traefik&nbsp;Ingress) |![Traefik Ingress](https://uptime.rich-durso.us/api/badge/12/uptime/720?label=30d) | |![PostgreSQL HA Cluster](https://uptime.rich-durso.us/api/badge/17/status?label=PostgreSQL&nbsp;HA&nbsp;Cluster) |![PostgreSQL HA Cluster](https://uptime.rich-durso.us/api/badge/17/uptime/720?label=30d) | |![Redis HA Cluster](https://uptime.rich-durso.us/api/badge/19/status?label=Redis&nbsp;HA&nbsp;Cluster) |![Redis HA Cluster](https://uptime.rich-durso.us/api/badge/19/uptime/720?label=30d) |
 |![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/status?label=Prometheus&nbsp;Monitoring) |![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/uptime/720?label=30d) | |![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/status?label=Mosquitto&nbsp;MQTT&nbsp;Broker) |![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/uptime/720?label=30d) | |![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/10/status?label=Zigbee2MQTT&nbsp;Bridge) |![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/10/uptime/720?label=30d) |
 |![Plex Media Server](https://uptime.rich-durso.us/api/badge/7/status?label=Plex&nbsp;Media&nbsp;Server) |![Plex Media Server](https://uptime.rich-durso.us/api/badge/7/uptime/720?label=30d) |   |![Home Assistant](https://uptime.rich-durso.us/api/badge/11/status?label=Home&nbsp;Assistant) |![Home Assistant](https://uptime.rich-durso.us/api/badge/11/uptime/720?label=30d) | |![Frigate NVR](https://uptime.rich-durso.us/api/badge/10/status?label=Frigate&nbsp;NVR) |![Frigate NVR](https://uptime.rich-durso.us/api/badge/10/uptime/720?label=30d) |
+
+Home Cluster Network Summary:
+
+| Device | Count | Purpose | Specifications | Description |
+|---     | :--:  |---      |---             |---          |
+| Firewall | 1 | Router | Intel i5-5200U CPU@2.20GHz, 8GB RAM, ZFS mirror storage, 4x 1GbE RJ45 ports | Primary network pfSense firewall, router, DNS, Proxy |
+| Switch | 1 | Backbone | MikroTik CloudSwitch CRS309-1G-8S+IN. 8x SPF+ 10GbE ports | Primary Homelab Switch. All other switches and access points are downstream |
+| Switch | 1 | Cluster Switch | UniFi USW Enterprise 8 Port Poe Switch. 8x 2.5GbE RJ45 ports and 2x SPF+ 10GbE ports | Dedicated Kubernetes cluster switch with dual 10GbE uplinks to Backbone switch |
+| UPS | 3| Backup Power Supply | Trip-Lite Smart 1500 LCDt UPS unit | Provide short term backup power and clean stable electricity to all devices |
+| KVM | 2 | Keyboard and Video Switch | 4 HDMI in, 4 USB In, 4 USB Out | Provides console access with keyboard to cluster devices |
 
 ---
 
@@ -80,12 +90,11 @@ Home Cluster Hardware Summary:
 
 ---
 
-## Environments Tested
+## Suggested Environment
 
-* Ubuntu 20.04.x LTS / 22.04.x LTS
+* Ubuntu 22.04.x LTS
   * Based [ZFS on Root](https://github.com/reefland/ansible-zfs_on_root) installation
-* TrueNAS Core 12.x
-* K3s v1.23.x - v1.25.x
+* K3s v1.25.x - v1.26.x
 
 ---
 
@@ -113,7 +122,12 @@ Home Cluster Hardware Summary:
   ```
 
 ---
-I provide a lot of documentation notes below for my own use.  If you find it overwhelming, keep in mind most of it you do not need.  Also note that towards the bottom is a section which shows how to use Ansible to run this in stages (step by step) to built it up in layers using `tags`.
+
+### Comments
+
+* I provide a lot of documentation notes below for my own use.  If you find it overwhelming, keep in mind most of it you do not need.
+* Towards the bottom is a section which shows how to use Ansible to run this in stages (step by step) to built it up in layers using `tags`.
+* I no longer use Longhorn for in-cluster storage.  I currently use Rook-Ceph instead, however that's outside the scope of this project.
 
 ---
 
