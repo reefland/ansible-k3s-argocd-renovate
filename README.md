@@ -43,14 +43,14 @@ Optionally Installed:
 
 ## Home Cluster Hardware
 
-[![Grafana](https://img.shields.io/website?logo=grafana&logoColor=white&color=brightgreeen&label=Cluster&nbsp;and&nbsp;Grafana&style=for-the-badge&url=https%3A%2F%2Fbit.ly/3O0z4jv)](https://bit.ly/3O0z4jv) [![Uptime Kumma](https://img.shields.io/website?logo=uptimekuma&logoColor=white&color=brightgreeen&label=Uptime&nbsp;Kuma&style=for-the-badge&url=https%3A%2F%2Fbit.ly/423PISu)](https://bit.ly/423PISu)
+[![Grafana](https://img.shields.io/website?logo=grafana&logoColor=white&color=brightgreeen&label=Cluster&nbsp;and&nbsp;Grafana&style=for-the-badge&url=https%3A%2F%2Fbit.ly/3O0z4jv)](https://bit.ly/46Ysktl) [![Uptime Kumma](https://img.shields.io/website?logo=uptimekuma&logoColor=white&color=brightgreeen&label=Uptime&nbsp;Kuma&style=for-the-badge&url=https%3A%2F%2Fbit.ly/423PISu)](https://bit.ly/423PISu)
 
 Home Cluster Compute Hardware Summary:
 
 | Device          | Count | Cores / Threads     | OS Disk Size      | Data Disk Size         | RAM  | Purpose               |
 | --------------- | ----- | ---------------     | ------------      | ---------------------- | ---- | -------------------   |
 | HP T740 Thin PC | 3 | (Ryzen V1756B) 4 / 8 | 118GiB ZFS Mirror | 700Gib Rook-Ceph | 64GB | Kubernetes Master / Ceph Storage |
-| Minisform UM560 | 2 | (Ryzen 5 5625U) 6 / 12 | 120GiB ZFS Mirror | 700Gib Rook-Ceph | 40GB | Kubernetes Worker / Ceph Storage |
+| Minisform UM560 | 2 | (Ryzen 5 5625U) 6 / 12 | 120GiB ZFS Mirror | 700Gib Rook-Ceph | 64GB | Kubernetes Worker / Ceph Storage |
 | Custom Build (Fractal Design Node 804 with ASRock B660 Steel Legend)   | 1 | (Intel i5-13500) 6 / 20 | 14TB ZFS zRaid  | 2 TB Rook-Ceph  | 64GB | Kubernetes Worker / Ceph / Intel iGPU
 
 * All devices have at least 2.5GbE networking (some are 10GbE) to UniFi USW Enterprise 8 Port Switch with dual 10GbE uplinks to main network.
