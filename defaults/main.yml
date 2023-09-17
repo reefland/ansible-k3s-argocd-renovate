@@ -79,6 +79,7 @@ install:
           volsize: "{{ k3s_vol_size | default('35G') }}"
           compression: "lz4"       # "" (inherit), lz4, gzip-9, etc
           volblocksize: "16k"
+          sync: "always"
 
     # Define handy alias names for commands
     alias:
