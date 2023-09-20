@@ -30,6 +30,13 @@
         reload: true
       with_dict: "{{ install.os.sysctl_updates }}"
 
+    - name: Place sysctl network tweaks config file
+      ansible.builtin.copy:
+        src: "files/os/sysctl_k3s-network-tweaks.conf"
+        dest: "/etc/sysctl.d/k3s-network-tweaks.conf"
+        mode: "0644"
+        force: "no"
+
 # [ Setup K3s Storage Location ]###################################################################
 # K3s embedded containerd does not include support for ZFS filesystem.  External containerd would
 # need external RunC, iptables, cAdvistor and extra complexity. Until k3s supports ZFS it is easier
