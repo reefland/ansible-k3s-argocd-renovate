@@ -20,7 +20,8 @@
 - name: Detect ZFS Dataset UUID
   ansible.builtin.shell: # noqa command-instead-of-shell
     cmd: "{{ containerd.zfs.zfs_uuid_detect_cmd }}"
-  register: UUID
+  register: uuid
+  changed_when: uuid.rc == 0
   tags: ["always"]
   when:
     - install.containerd.zfs.detect_uuid | default(false) | bool
