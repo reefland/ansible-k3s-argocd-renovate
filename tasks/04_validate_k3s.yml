@@ -9,7 +9,7 @@
         src: "/etc/rancher/k3s/k3s.yaml"
         dest: "{{ kubeconfig_path }}"
         remote_src: true
-        mode: 0600
+        mode: "600"
         owner: "{{ install.os.non_root_user.name }}"
         group: "{{ install.os.non_root_user.name }}"
       when:
@@ -20,7 +20,7 @@
         src: "/etc/rancher/k3s/k3s.yaml"
         dest: "/root/.kube/config"
         remote_src: true
-        mode: 0600
+        mode: "600"
         owner: "root"
         group: "root"
       when:
