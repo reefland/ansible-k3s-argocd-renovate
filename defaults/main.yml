@@ -17,7 +17,7 @@ install:
     remove_packages:
       enabled: false
       packages:
-        - "snapd"                             # Remove Snapd Demon, we don't need it.
+        - "snapd"                             # Remove Snapd Demon if we don't need it.
 
     # Updated to /etc/sysctl.conf
     sysctl_updates:
