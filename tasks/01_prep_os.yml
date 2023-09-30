@@ -60,7 +60,8 @@
     - name: Create ZFS ZVOL for K3s (if does not exist)
       community.general.zfs:
         name: "{{ install.k3s.zfs.pool }}/{{ k3s.zfs.zvol.volume_name }}"
-        extra_zfs_properties: "{{ install.k3s.zfs.zvol.options }}"
+        extra_zfs_properties: "{{ install.k3s.zfs.zvol.options |
+          ansible.builtin.combine((install.k3s.zfs.zvol.encryption | default(false)) | ternary(install.k3s.zfs.zvol.encryption_options, '')) }}"
         state: present
       when:
         - zvol.stdout.find("MOUNTPOINT") == -1

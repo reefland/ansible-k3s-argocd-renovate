@@ -15,7 +15,7 @@ install:
     allow_passwordless_sudo: true             # Allow non-root use to passwordless sudo
 
     remove_packages:
-      enabled: true
+      enabled: false
       packages:
         - "snapd"                             # Remove Snapd Demon, we don't need it.
 
@@ -60,6 +60,11 @@ install:
           compression: "lz4"       # "" (inherit), lz4, gzip-9, etc
           volblocksize: "16k"
           sync: "always"
+        encryption: "{{ k3s_vol_encryption | default(false) | bool }}"
+        encryption_options:
+          encryption: "aes-256-gcm"
+          keyformat: "passphrase"
+          keylocation: "file:///etc/zfs/zroot.key"
 
     # Define handy alias names for commands
     alias:
