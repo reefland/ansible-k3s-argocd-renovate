@@ -8,6 +8,9 @@ Once the initial deployment is successful you do not need Ansible to maintain th
 
 The following enhancements are part of this Ansible role:
 
+* **ZFS Integration** via ZFS ZVOL for K3s.  Unfortunately K3s uses an integrated `containerd` with reduced functionality -- lacks ZFS snapshot support.
+  * Instead a ZFS ZVOL will be created with XFS filesystem to allow K3s to use its native overlay snapshot filesystem.
+  * The ZFS native encryption can be enabled on the ZVOL.
 * **non-root** user account for Kubernetes, passwordless access to `kubectl` by default.
 * **Centralized cluster system logging** via [rsyslog](https://www.rsyslog.com/) with real-time viewing with [lnav](https://lnav.org/) utility.
 * [Helm Client](https://helm.sh/docs/intro/using_helm/) for installing applications in Kubernetes.
@@ -58,7 +61,7 @@ Home Cluster Compute Hardware Summary:
 | Service | 30 Day Stats | | Service | 30 Day Stats | | Service | 30 Day Stats |
 | --: | --- |--- | --: |--- |--- | --: |--- |
 |![Traefik Ingress](https://uptime.rich-durso.us/api/badge/12/status?label=Traefik&nbsp;Ingress) |![Traefik Ingress](https://uptime.rich-durso.us/api/badge/12/uptime/720?label=30d) | |![PostgreSQL HA Cluster](https://uptime.rich-durso.us/api/badge/17/status?label=PostgreSQL&nbsp;HA&nbsp;Cluster) |![PostgreSQL HA Cluster](https://uptime.rich-durso.us/api/badge/17/uptime/720?label=30d) | |![Redis HA Cluster](https://uptime.rich-durso.us/api/badge/19/status?label=Redis&nbsp;HA&nbsp;Cluster) |![Redis HA Cluster](https://uptime.rich-durso.us/api/badge/19/uptime/720?label=30d) |
-|![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/status?label=Prometheus&nbsp;Monitoring) |![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/uptime/720?label=30d) | |![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/status?label=Mosquitto&nbsp;MQTT&nbsp;Broker) |![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/uptime/720?label=30d) | |![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/10/status?label=Zigbee2MQTT&nbsp;Bridge) |![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/10/uptime/720?label=30d) |
+|![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/status?label=Prometheus&nbsp;Monitoring) |![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/uptime/720?label=30d) | |![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/status?label=Mosquitto&nbsp;MQTT&nbsp;Broker) |![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/uptime/720?label=30d) | |![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/20/status?label=Zigbee2MQTT&nbsp;Bridge) |![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/20/uptime/720?label=30d) |
 |![Plex Media Server](https://uptime.rich-durso.us/api/badge/7/status?label=Plex&nbsp;Media&nbsp;Server) |![Plex Media Server](https://uptime.rich-durso.us/api/badge/7/uptime/720?label=30d) |   |![Home Assistant](https://uptime.rich-durso.us/api/badge/11/status?label=Home&nbsp;Assistant) |![Home Assistant](https://uptime.rich-durso.us/api/badge/11/uptime/720?label=30d) | |![Frigate NVR](https://uptime.rich-durso.us/api/badge/10/status?label=Frigate&nbsp;NVR) |![Frigate NVR](https://uptime.rich-durso.us/api/badge/10/uptime/720?label=30d) |
 
 Home Cluster Network Summary:
@@ -94,7 +97,7 @@ Home Cluster Network Summary:
 
 * Ubuntu 22.04.x LTS
   * Based [ZFS on Root](https://github.com/reefland/ansible-zfs_on_root) installation
-* K3s v1.25.x - v1.26.x
+* K3s v1.25.x - v1.27.x
 
 ---
 
@@ -109,17 +112,6 @@ Home Cluster Network Summary:
 * [open-iscsi](https://github.com/open-iscsi/open-iscsi), [lsscsi](http://sg.danny.cz/scsi/lsscsi.html), [sg3-utils](https://sg.danny.cz/sg/sg3_utils.html), [multipath-tools](https://github.com/opensvc/multipath-tools), [scsitools](https://packages.ubuntu.com/jammy/scsitools-gui) (required by democratic-csi  and by Longhorn)
 * [xfsprogs](https://packages.ubuntu.com/jammy/xfsprogs) (required for ZFS ZVOL used for K3s installation)
 
-## Packages Uninstalled
-
-* snapd (we have no use for it on Kubernetes nodes, saves resources)
-  * This can be disabled if you really want to keep it.
-
-  ```yml
-  install:
-    os:
-      remove_snapd:                             # Remove Snapd Demon, we don't need it.
-        remove_it: true
-  ```
 
 ---
 
