@@ -48,7 +48,7 @@ Optionally Installed:
 
 [![Grafana](https://img.shields.io/website?logo=grafana&logoColor=white&color=brightgreeen&label=Cluster&nbsp;and&nbsp;Grafana&style=for-the-badge&url=https%3A%2F%2Fbit.ly/3O0z4jv)](https://bit.ly/46Ysktl) [![Uptime Kumma](https://img.shields.io/website?logo=uptimekuma&logoColor=white&color=brightgreeen&label=Uptime&nbsp;Kuma&style=for-the-badge&url=https%3A%2F%2Fbit.ly/423PISu)](https://bit.ly/423PISu)
 
-Home Cluster Compute Hardware Summary:
+**Home Cluster Compute Hardware Summary:**
 
 | Device          | Count | Cores / Threads     | OS Disk Size      | Data Disk Size         | RAM  | Purpose               |
 | --------------- | ----- | ---------------     | ------------      | ---------------------- | ---- | -------------------   |
@@ -58,17 +58,20 @@ Home Cluster Compute Hardware Summary:
 
 * All devices have at least 2.5GbE networking (some are 10GbE) to UniFi USW Enterprise 8 Port Switch with dual 10GbE uplinks to main network.
 
+**30 Day Service Availability:**
+
 | Service | 30 Day Stats | | Service | 30 Day Stats | | Service | 30 Day Stats |
 | --: | --- |--- | --: |--- |--- | --: |--- |
-|![Traefik Ingress](https://uptime.rich-durso.us/api/badge/12/status?label=Traefik&nbsp;Ingress) |![Traefik Ingress](https://uptime.rich-durso.us/api/badge/12/uptime/720?label=30d) | |![PostgreSQL HA Cluster](https://uptime.rich-durso.us/api/badge/17/status?label=PostgreSQL&nbsp;HA&nbsp;Cluster) |![PostgreSQL HA Cluster](https://uptime.rich-durso.us/api/badge/17/uptime/720?label=30d) | |![Redis HA Cluster](https://uptime.rich-durso.us/api/badge/19/status?label=Redis&nbsp;HA&nbsp;Cluster) |![Redis HA Cluster](https://uptime.rich-durso.us/api/badge/19/uptime/720?label=30d) |
-|![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/status?label=Prometheus&nbsp;Monitoring) |![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/uptime/720?label=30d) | |![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/status?label=Mosquitto&nbsp;MQTT&nbsp;Broker) |![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/uptime/720?label=30d) | |![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/20/status?label=Zigbee2MQTT&nbsp;Bridge) |![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/20/uptime/720?label=30d) |
-|![Plex Media Server](https://uptime.rich-durso.us/api/badge/7/status?label=Plex&nbsp;Media&nbsp;Server) |![Plex Media Server](https://uptime.rich-durso.us/api/badge/7/uptime/720?label=30d) |   |![Home Assistant](https://uptime.rich-durso.us/api/badge/11/status?label=Home&nbsp;Assistant) |![Home Assistant](https://uptime.rich-durso.us/api/badge/11/uptime/720?label=30d) | |![Frigate NVR](https://uptime.rich-durso.us/api/badge/10/status?label=Frigate&nbsp;NVR) |![Frigate NVR](https://uptime.rich-durso.us/api/badge/10/uptime/720?label=30d) |
+|![pfSense Firewall](https://uptime.rich-durso.us/api/badge/4/status?label=pfSense&nbsp;Firewall) |![pfSense Firewall](https://uptime.rich-durso.us/api/badge/4/uptime/720?label=30d) | |![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/status?label=Prometheus&nbsp;Monitoring) |![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/uptime/720?label=30d) | |![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/status?label=Mosquitto&nbsp;MQTT&nbsp;Broker) |![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/uptime/720?label=30d) |
+|![TrueNAS Storage](https://uptime.rich-durso.us/api/badge/5/status?label=True&nbsp;NAS&nbsp;Storage) |![TrueNAS Storage](https://uptime.rich-durso.us/api/badge/5/uptime/720?label=30d) | |![PostgreSQL HA Cluster](https://uptime.rich-durso.us/api/badge/17/status?label=PostgreSQL&nbsp;HA&nbsp;Cluster) |![PostgreSQL HA Cluster](https://uptime.rich-durso.us/api/badge/17/uptime/720?label=30d) | |![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/20/status?label=Zigbee2MQTT&nbsp;Bridge) |![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/20/uptime/720?label=30d) |
+|![MinIO S3 Storage](https://uptime.rich-durso.us/api/badge/16/status?label=MinIO&nbsp;S3&nbsp;Storage) |![MinIO S3 Storage](https://uptime.rich-durso.us/api/badge/16/uptime/720?label=30d) | |![Redis HA Cluster](https://uptime.rich-durso.us/api/badge/19/status?label=Redis&nbsp;HA&nbsp;Cluster) |![Redis HA Cluster](https://uptime.rich-durso.us/api/badge/19/uptime/720?label=30d) | |![Plex Media Server](https://uptime.rich-durso.us/api/badge/7/status?label=Plex&nbsp;Media&nbsp;Server)| ![Plex Media Server](https://uptime.rich-durso.us/api/badge/7/uptime/720?label=30d) |
+|![Traefik Ingress](https://uptime.rich-durso.us/api/badge/12/status?label=Traefik&nbsp;Ingress) |![Traefik Ingress](https://uptime.rich-durso.us/api/badge/12/uptime/720?label=30d) | |![Home Assistant](https://uptime.rich-durso.us/api/badge/11/status?label=Home&nbsp;Assistant) |![Home Assistant](https://uptime.rich-durso.us/api/badge/11/uptime/720?label=30d) | |![Frigate NVR](https://uptime.rich-durso.us/api/badge/10/status?label=Frigate&nbsp;NVR) |![Frigate NVR](https://uptime.rich-durso.us/api/badge/10/uptime/720?label=30d) |
 
-Home Cluster Network Summary:
+**Home Cluster Network Summary:**
 
 | Device | Count | Purpose | Specifications | Description |
 |---     | :--:  |---      |---             |---          |
-| Firewall | 1 | Router | Intel i5-5200U CPU@2.20GHz, 8GB RAM, ZFS mirror storage, 4x 1GbE RJ45 ports | Primary network pfSense firewall, router, DNS, Proxy |
+| Firewall | 1 | Router | Intel i5-5200U CPU, 8GB RAM, ZFS mirror storage, 4x 1GbE RJ45 ports | Primary network pfSense firewall, router, DNS, Proxy |
 | Switch | 1 | Backbone | MikroTik CloudSwitch CRS309-1G-8S+IN. 8x SPF+ 10GbE ports | Primary Homelab Switch. All other switches and access points are downstream |
 | Switch | 1 | Cluster Switch | UniFi USW Enterprise 8 Port Poe Switch. 8x 2.5GbE RJ45 ports and 2x SPF+ 10GbE ports | Dedicated Kubernetes cluster switch with dual 10GbE uplinks to Backbone switch |
 | UPS | 3| Backup Power Supply | Trip-Lite Smart 1500 LCDt UPS unit | Provide short term backup power and clean stable electricity to all devices |
@@ -111,7 +114,6 @@ Home Cluster Network Summary:
 * [helm](https://helm.sh/), [helm diff](https://github.com/databus23/helm-diff), [apt-transport-https](http://manpages.ubuntu.com/manpages/jammy/man1/apt-transport-https.1.html) (required for helm client install)
 * [open-iscsi](https://github.com/open-iscsi/open-iscsi), [lsscsi](http://sg.danny.cz/scsi/lsscsi.html), [sg3-utils](https://sg.danny.cz/sg/sg3_utils.html), [multipath-tools](https://github.com/opensvc/multipath-tools), [scsitools](https://packages.ubuntu.com/jammy/scsitools-gui) (required by democratic-csi  and by Longhorn)
 * [xfsprogs](https://packages.ubuntu.com/jammy/xfsprogs) (required for ZFS ZVOL used for K3s installation)
-
 
 ---
 
