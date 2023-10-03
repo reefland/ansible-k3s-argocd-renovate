@@ -26,7 +26,7 @@ install:
       - "INSTALL_K3S_SKIP_START=true"
       
       # This is to pin a specific version of k3s for initial installation
-      - "INSTALL_K3S_VERSION=v1.25.3+k3s1"
+      - "INSTALL_K3S_VERSION=v1.25.6+k3s1"
       
       # Select installation channel to use (stable, latest, testing)
       #- "INSTALL_K3S_CHANNEL=stable"
@@ -36,17 +36,16 @@ install:
       - "--kube-apiserver-arg=feature-gates=MixedProtocolLBService=true"  # Allow Load Balancer to use TCP & UDP Ports
 ```
 
-* The `INSTALL_K3S_SKIP_START` prevents K3s from starting after installation. It can not be started until the new contrainerd with ZFS support configuration is completed.
-
-* The `INSTALL_K3S_VERSION` lets you pin a specific version to use.  This will make sure a standardized version is used even with different installs over time.  Only you determine which version to use.
-
-* The `INSTALL_K3S_CHANNEL` sets the installation channel to use. It can be set to `stable`, `latest` or `testing`. You probably do not want this as it will result in different versions being installed over time.
-
-* The `k3s_cli_var` allows additional configuration variables to be set.
-  * `--disable traefik` disabled the K3s embedded Traefik installation, as a dedicated Traefik will be installed via ArgoCD as a DaemonSet.
-  * `--kube-apiserver-arg=feature-gates=MixedProtocolLBService=true` enabled a Kubernetes feature disabled by default to allow LoadBalancers to support TCP and UDP ports on the Service.
+| Variable Name | Default   | Description |
+|---            |---        |---          |
+|`INSTALL_K3S_SKIP_START` |`true`  |Prevents K3s from starting after installation. It can not be started until the new containerd with ZFS support configuration is completed.|
+|`INSTALL_K3S_VERSION`    |`v1.25.6+k3s1`  | Lets you pin a specific version to use.  This will make sure a standardized version is used even with different installs over time.  Only you determine which version to use.|
+|`INSTALL_K3S_CHANNEL`    |Not set | Sets the installation channel to use. It can be set to `stable`, `latest` or `testing`. You probably do not want this as it will result in different versions being installed over time. |
+|`k3s_cli_var`            |Multiple values |Allows additional configuration variables to be set.|
+| |`--disable traefik`  | Disable the K3s embedded Traefik installation, instead a dedicated Traefik will be installed via ArgoCD as a DaemonSet.|
+| |`--kube-apiserver-arg=feature-gates=MixedProtocolLBService=true` |Enabled a Kubernetes feature disabled by default to allow LoadBalancers to support TCP and UDP ports on the Service.|
   
-You can add more entries to the `k3s_cli_var` list needed.  See [Installation Options for Scripts](https://rancher.com/docs/k3s/latest/en/installation/install-options/) in Rancher documentation for details.
+* You can add more entries to the `k3s_cli_var` list needed.  See [Installation Options for Scripts](https://rancher.com/docs/k3s/latest/en/installation/install-options/) in Rancher documentation for details.
 
 ---
 
@@ -63,23 +62,52 @@ install:
       zvol:
         format: "xfs"
         options:
-          volsize: "{{ k3s_vol_size | default('30G') }}"
+          volsize: "{{ k3s_vol_size | default('35G') }}"
           compression: "lz4"       # "" (inherit), lz4, gzip-9, etc
           volblocksize: "16k"
+          sync: "always"
 ```
 
-* `zfs.pool` defines the name of the existing pool where the ZVOL should be created.
-* `zfs.zvol.format` defines the filesystem format to use for the ZVOL.
-  * XFS has been tested and works well (easy to expand volume if needed).
-  * XFS is set to use 4KB block-size and 4KB sector-size
-  * This can be changed to `ext4` or some other K3s compatible filesystem if needed.
-* `zfs.zvol.options.volsize` defines how large the ZVOL should be.
-  * 30GB is a resonable starting point. Clusters with a high-density of containers will likely need to increase this.
-  * This ZVOL is not thin-provisioned. ZFS will take a minimum of this amount of space immediately from the ZFS pool (plus whatever overhead ZFS needs).
-* `zfs.zvol.options.compression` defines the underlying ZFS compression method to be applied.
-* `zfs.zvol.options.volblocksize` defines the block size the ZVOL should use.
-  * A value of `16k` has proved effective in testing for the types of files that K3s will store.
-  * Do not go smaller than `16K`, but a larger value such as `32K` could be worth testing in your environment.
+| Variable Name | Default   | Description |
+|---            |---        |---          |
+|`zfs.pool` |'rpool'  |Defines the name of the **existing** pool where the ZVOL should be created.|
+|`zfs.zvol.format`  |`xfs`  |Defines the filesystem format to use for the ZVOL.
+
+* XFS has been tested and works well (easy to expand volume if needed).
+* XFS is set to use 4KB block-size and 4KB sector-size
+* This can be changed to `ext4` or some other K3s compatible filesystem if needed.
+
+| Variable Name | Default   | Description |
+|---            |---        |---          |
+|`zfs.zvol.options.volsize` |`35G`  | Defines how large the ZVOL should be.
+
+* 35GB is a reasonable starting point. Clusters with a high-density of containers will likely need to increase this.
+* This ZVOL is not thin-provisioned. ZFS will take a minimum of this amount of space immediately from the ZFS pool (plus whatever overhead ZFS needs).
+
+| Variable Name | Default   | Description |
+|---            |---        |---          |
+|`zfs.zvol.options.compression` |  `lz4` |Defines the underlying ZFS compression method to be applied.|
+|`zfs.zvol.options.volblocksize`  |`16k`  |Defines the block size the ZVOL should use.|
+
+* A value of `16k` has proved effective in testing for the types of files that K3s will store.
+* Do not go smaller than `16K`, but a larger value such as `32K` could be worth testing in your environment.
+
+| Variable Name | Default   | Description |
+|---            |---        |---          |
+|`zfs.zvol.options.sync`  |`always` |Defines how synchronous writes will be handled by ZFS.|
+
+* ZVOLs should be set to `sync` `always` to reduce chances of filesystem corruption of the embedded XFS filesystem. Otherwise up to the last 5 seconds of writes can be lost should the system hang/freeze.
+
+| Variable Name | Default   | Description |
+|---            |---        |---          |
+|`zfs.zvol.encryption`  |`false`  |Is a boolean value to determine if the ZVOL should be created with ZFS native encryption enabled.|
+|`zfs.zvol.encryption_options.encryption` |`aes-256-gcm`  | Encryption algorithm to use|
+|`zfs.zvol.encryption_options.keyformat`  |`passphrase` | Can be `passphrase`, `hex`, or `raw`. |
+|`zfs.zvol.encryption_options.keylocation`|`file:///etc/zfs/zroot.key`  | Can be `prompt` or a path to an existing key file. |
+
+* When `keylocation` is a path to an existing key file, the file should be `chown root:root` with `chmod 000` and stored on an encrypted dataset.
+
+---
 
 ### Kubernetes Command Aliases
 
@@ -149,7 +177,7 @@ $ ansible-playbook -i inventory kubernetes.yml --tags="validate_k3s"
   MSG:
 
   NAME        STATUS   ROLES                       AGE   VERSION
-  testlinux   Ready    control-plane,etcd,master   18h   v1.25.3+k3s1
+  testlinux   Ready    control-plane,etcd,master   18h   v1.25.6+k3s1
 ```
 
 ---
