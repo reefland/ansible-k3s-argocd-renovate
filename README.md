@@ -46,7 +46,17 @@ Optionally Installed:
 
 ## Home Cluster Hardware
 
+<div align="center">
+
 [![Grafana](https://img.shields.io/website?logo=grafana&logoColor=white&color=brightgreeen&label=Cluster&nbsp;and&nbsp;Grafana&style=for-the-badge&url=https%3A%2F%2Fbit.ly/3O0z4jv)](https://bit.ly/46Ysktl) [![Uptime Kumma](https://img.shields.io/website?logo=uptimekuma&logoColor=white&color=brightgreeen&label=Uptime&nbsp;Kuma&style=for-the-badge&url=https%3A%2F%2Fbit.ly/423PISu)](https://bit.ly/423PISu)
+
+</div>
+
+<div align="center">
+
+[![Age-Days](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_age_days&style=flat-square&label=Cluster&nbsp;Age)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Node-Count](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_node_count&style=flat-square&label=Nodes)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Pod-Count](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_pod_count&style=flat-square&label=Pods)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Container-Count](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_container_count&style=flat-square&label=Containers)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![CPU-Usage](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_cpu_usage&style=flat-square&label=CPU)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![CPU-cores](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_cpu_core_count&style=flat-square&label=Cores)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Memory-Usage](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_memory_usage&style=flat-square&label=Memory)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Memory-Total](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_total_ram&style=flat-square&label=RAM)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;
+
+</div>
 
 **Home Cluster Compute Hardware Summary:**
 
