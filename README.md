@@ -48,7 +48,7 @@ Optionally Installed:
 
 <div align="center">
 
-[![Grafana](https://img.shields.io/website?logo=grafana&logoColor=white&color=brightgreeen&label=Cluster&nbsp;and&nbsp;Grafana&style=for-the-badge&url=https%3A%2F%2Fbit.ly/3O0z4jv)](https://bit.ly/46Ysktl) [![Uptime Kumma](https://img.shields.io/website?logo=uptimekuma&logoColor=white&color=brightgreeen&label=Uptime&nbsp;Kuma&style=for-the-badge&url=https%3A%2F%2Fbit.ly/423PISu)](https://bit.ly/423PISu)
+![Grafana](https://img.shields.io/website?logo=grafana&logoColor=white&color=brightgreeen&label=Cluster&nbsp;and&nbsp;Grafana&style=for-the-badge&url=https%3A%2F%2Fbit.ly/3O0z4jv) [![Uptime Kumma](https://img.shields.io/website?logo=uptimekuma&logoColor=white&color=brightgreeen&label=Uptime&nbsp;Kuma&style=for-the-badge&url=https%3A%2F%2Fbit.ly/423PISu)](https://bit.ly/423PISu)
 
 </div>
 
