@@ -62,9 +62,10 @@ Optionally Installed:
 
 | Device          | Count | Cores / Threads     | OS Disk Size      | Data Disk Size         | RAM  | Purpose               |
 | --------------- | ----- | ---------------     | ------------      | ---------------------- | ---- | -------------------   |
-| HP T740 Thin PC | 3 | (Ryzen V1756B) 4 / 8 | 118GiB ZFS Mirror | 700Gib Rook-Ceph | 64GB | Kubernetes Master / Ceph Storage |
-| Minisform UM560 | 2 | (Ryzen 5 5625U) 6 / 12 | 120GiB ZFS Mirror | 700Gib Rook-Ceph | 64GB | Kubernetes Worker / Ceph Storage |
-| Custom Build (Fractal Design Node 804 with ASRock B660 Steel Legend)   | 1 | (Intel i5-13500) 6 / 20 | 14TB ZFS zRaid  | 2 TB Rook-Ceph  | 64GB | Kubernetes Worker / Ceph / Intel iGPU
+| HP T740 Thin PC | 3 | (Ryzen V1756B) 4 / 8 | 118GiB ZFS Mirror | 800Gib Rook-Ceph | 64GB | Kubernetes Master / Ceph Storage |
+| Minisform UM560 | 2 | (Ryzen 5 5625U) 6 / 12 | 120GiB ZFS Mirror | 2TiB Rook-Ceph | 64GB | Kubernetes Worker / Ceph Storage |
+| Custom Build (Fractal Design Node 804 with ASRock B660 Steel Legend)   | 1 | (Intel i5-13500) 6 / 20 | 14TB ZFS zRaid  | 2 TiB Rook-Ceph  | 64GB | Kubernetes Worker / Ceph / Intel iGPU |
+| Custom Build (Fractal Design Node 804 with ASUS Prime X570-Pro) | 1 | (Ryzen 7 3700X) 8 / 16 | 1 TiB ZFS Mirror | 2 TiB Rook-Ceph | 128GB | Kubernetes Worker / Ceph / NVidia GPU / Desktop |
 
 * All devices have at least 2.5GbE networking (some are 10GbE) to UniFi USW Enterprise 8 Port Switch with dual 10GbE uplinks to main network.
 
