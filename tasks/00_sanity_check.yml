@@ -18,6 +18,7 @@
     - name: Install Kubernetes pip3 packages for Ansible
       ansible.builtin.pip:
         name: "{{ k3s.packages_pip }}"
+        break_system_packages: true
         state: present
 
 # Try to fail early if required values are undefined.
