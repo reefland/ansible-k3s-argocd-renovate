@@ -60,14 +60,13 @@ Optionally Installed:
 
 **Home Cluster Compute Hardware Summary:**
 
-| Device          | Count | Cores / Threads     | OS Disk Size      | Data Disk Size         | RAM  | Purpose               |
-| --------------- | ----- | ---------------     | ------------      | ---------------------- | ---- | -------------------   |
-| HP T740 Thin PC | 3 | (Ryzen V1756B) 4 / 8 | 118GiB ZFS Mirror | 800Gib Rook-Ceph | 64GB | Kubernetes Master / Ceph Storage |
-| Minisform UM560 | 2 | (Ryzen 5 5625U) 6 / 12 | 120GiB ZFS Mirror | 2TiB Rook-Ceph | 64GB | Kubernetes Worker / Ceph Storage |
-| Custom Build (Fractal Design Node 804 with ASRock B660 Steel Legend)   | 1 | (Intel i5-13500) 6 / 20 | 14TB ZFS zRaid  | 2 TiB Rook-Ceph  | 64GB | Kubernetes Worker / Ceph / Intel iGPU |
-| Custom Build (Fractal Design Node 804 with ASUS Prime X570-Pro) | 1 | (Ryzen 7 3700X) 8 / 16 | 1 TiB ZFS Mirror | 2 TiB Rook-Ceph | 128GB | Kubernetes Worker / Ceph / NVidia GPU / Desktop |
-
-* All devices have at least 2.5GbE networking (some are 10GbE) to UniFi USW Enterprise 8 Port Switch with dual 10GbE uplinks to main network.
+| Device           | Count | Cores / Threads     | OS Disk Size      | Data Disk Size         | RAM  | NIC | Purpose               |
+| ---------------  | ----- | ---------------     | ------------      | ---------------------- | ---- | --- | -------------------   |
+| HP T740 Thin PC  | 3 | (Ryzen V1756B) 4 / 8 | 118GiB ZFS Mirror | 0.8Tib Rook-Ceph | 64GB | 2.5 GbE | Kubernetes Master / Ceph Storage |
+| Minisforum MS-01 | 1 | (Intel i5-12600H) 12 / 16 | 150GiB ZFS Mirror | 2TiB Rook-Ceph | 64GB | 10 GbE | Kubernetes Worker / Ceph Storage |
+| Minisforum MS-01 | 1 | (Intel i9-13900H) 14 / 20 | 150GiB ZFS Mirror | 2TiB Rook-Ceph | 96GB | 10 GbE | Kubernetes Worker / Ceph Storage |
+| Fractal Design Node 804 with ASRock B660 Steel Legend   | 1 | (Intel i5-13500) 6 / 20 | 14TB ZFS zRaid  | 2TiB Rook-Ceph  | 64GB | 10 GbE | Kubernetes Worker / Ceph / Intel iGPU |
+| Fractal Design Node 804 with ASUS Prime X570-Pro | 1 | (Ryzen 7 3700X) 8 / 16 | 1 TiB ZFS Mirror | 2TiB Rook-Ceph | 128GB | 10 GbE | Kubernetes Worker / Ceph / NVidia GPU / Desktop |
 
 **Ceph Storage Cluster Summary:**
 
@@ -90,6 +89,7 @@ Optionally Installed:
 | Firewall | 1 | Router | Intel i5-5200U CPU, 8GB RAM, ZFS mirror storage, 4x 1GbE RJ45 ports | Primary network pfSense firewall, router, DNS, Proxy |
 | Switch | 1 | Backbone | MikroTik CloudSwitch CRS309-1G-8S+IN. 8x SPF+ 10GbE ports | Primary Homelab Switch. All other switches and access points are downstream |
 | Switch | 1 | Cluster Switch | UniFi USW Enterprise 8 Port Poe Switch. 8x 2.5GbE RJ45 ports and 2x SPF+ 10GbE ports | Dedicated Kubernetes cluster switch with dual 10GbE uplinks to Backbone switch |
+| Switch | 1 | Cluster Switch | Sodola 8 Port 10GbE Web Managed Switch. 8x 10GbE SFP+ Ports | Dedicated Kubernetes cluster switch for 10 GbE nodes with 10GbE uplink |
 | UPS | 3| Backup Power Supply | Trip-Lite Smart 1500 LCDt UPS unit | Provide short term backup power and clean stable electricity to all devices |
 | KVM | 2 | Keyboard and Video Switch | 4 HDMI in, 4 USB In, 4 USB Out | Provides console access with keyboard to cluster devices |
 
@@ -114,9 +114,9 @@ Optionally Installed:
 
 ## Suggested Environment
 
-* Ubuntu 22.04.x LTS
+* Ubuntu 24.04.x LTS
   * Based [ZFS on Root](https://github.com/reefland/ansible-zfs_on_root) installation
-* K3s v1.25.x - v1.27.x
+* K3s v1.30.x - v1.31.x
 
 ---
 
@@ -210,14 +210,14 @@ k3s:                                          # Group name for all nodes
 
   vars:
     # Install versions are optional, lets you pin newer versions than defaults
-    k3s_install_version: "v1.23.5+k3s1"
-    argocd_install_version: "4.10.5"
-    renovate_install_version: "32.152.0"
-    cert_manager_install_version: "v1.8.2"
-    sealed_secret_install_version: "v2.6.0"
-    system_upgrade_controller_install_version: "v0.9.1"
-    kube_vip_install_version: "v0.5.0"
-    kube_vip_cloud_provider_install_version: "v0.0.3"
+    k3s_install_version: "v1.30.8+k3s1"
+    argocd_install_version: "7.7.11"
+    renovate_install_version: "41.0.7"
+    cert_manager_install_version: "v1.16.2"
+    sealed_secret_install_version: "v2.16.2"
+    system_upgrade_controller_install_version: "v0.14.2"
+    kube_vip_install_version: "v0.8.6"
+    kube_vip_cloud_provider_install_version: "v0.0.10"
     traefik_install_version: "v10.22.0"
     longhorn_install_version: "v1.3.0"
     democratic_csi_install_version: "0.13.4"
