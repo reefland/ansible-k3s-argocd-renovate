@@ -34,6 +34,7 @@ k3s:
     - "apparmor-utils"
     - "usbutils"          # lsusb command
     - "nfs-common"        # nfs mounts / client support
+    - "zstd"              # compression utils
 
   packages_pip:           # Packages required for Ansible to issue Kubernetes and commands
     - "openshift"
