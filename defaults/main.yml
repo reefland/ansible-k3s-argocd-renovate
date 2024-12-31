@@ -40,14 +40,13 @@ install:
 
       # This is to pin a specific version of k3s for initial installation
       # Select Release: https://github.com/k3s-io/k3s/releases
-      - "INSTALL_K3S_VERSION={{ k3s_install_version | default('v1.25.6+k3s1') }}"
+      - "INSTALL_K3S_VERSION={{ k3s_install_version | default('v1.30.8+k3s1') }}"
 
       # Select installation channel to use (stable, latest, testing)
       # - "INSTALL_K3S_CHANNEL=latest"
 
     k3s_cli_var:
       - "--disable traefik"                   # Install a stable Traefik via helm instead
-      - "--kube-apiserver-arg=feature-gates=MixedProtocolLBService=true"  # Allow Load Balancer to use TCP & UDP Ports
 
     # Hint to find the ZFS pool & dataset to create containerd mount point
     zfs:
