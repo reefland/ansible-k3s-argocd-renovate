@@ -54,6 +54,7 @@ k3s:
     - "{{ install.k3s.k3s_cli_var | default('') | join(' ') }}"   # Options set in defaults/main.yml
     - "--kubelet-arg=image-gc-low-threshold=50"                   # End Garbage Collection of Images at 50% disk space free
     - "--kubelet-arg=image-gc-high-threshold=65"                  # Start Garbage Collection of Images at 65% disk space used
+    - "--embedded-registry"                                       # Enable Spegel Embedded Registry Mirror
 
   # When "disable_local_path_as_default_storage_class = true" this will be added to k3s_exec_options
   cli_disable_storage_options:
