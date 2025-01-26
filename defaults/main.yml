@@ -31,6 +31,9 @@ install:
     central_logging:
       log_path: "/var/log/central"            # Directory on central server to hold logs
 
+    # user local bin location for etcd cli scripts on control-plane nodes
+    usr_bin: "/usr/local/bin"
+
   # [ K3s Installation Settings ]##################################################################
   k3s:
     # CLI_options are passed directly to install script "as-is", you can add to list.
