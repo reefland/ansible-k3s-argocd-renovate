@@ -106,7 +106,7 @@
       ansible.builtin.shell:
         cmd: >
           {{ install.k3s.cli_options | join(' ') }} K3S_URL=https://{{ groups['k3s_control'][0] }}:6443
-          K3S_TOKEN={{ K3S_TOKEN | default('top_secret') }} INSTALL_K3S_EXEC=\"{{ install_k3s_exec_options }}\"
+          K3S_TOKEN={{ K3S_TOKEN | default('top_secret') }} INSTALL_K3S_EXEC="{{ install_k3s_exec_options }}"
           /home/{{ install.os.non_root_user.name }}/k3s_install.sh > /home/{{ install.os.non_root_user.name }}/k3s_install.log
         chdir: "/home/{{ install.os.non_root_user.name }}"
       register: cmd
