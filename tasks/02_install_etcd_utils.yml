@@ -1,0 +1,24 @@
+---
+# [ Install ETCD Utils on Control Plane Nodes ]####################################################
+- name: Install ETCD CLI utils on Control-Plane Block
+  when:
+    - inventory_hostname in groups['k3s_control']
+  tags:
+    - install_etc_utils
+  block:
+    - name: Copy etcd cli scripts to Control-Plane nodes
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ install.os.usr_bin }}/{{ item }}"
+        owner: root
+        group: root
+        mode: '0755'
+      with_items:
+        - "files/etcd/install_etcd_cli.sh"
+        - "files/etcd/etcd-defrag.sh"
+
+    - name: Install or upgrade etcd cli utils
+      ansible.builtin.command:
+        cmd: "{{ install.os.usr_bin }}/install_etcd_cli.sh"
+      register: cmd
+      changed_when: cmd.rc == 0
