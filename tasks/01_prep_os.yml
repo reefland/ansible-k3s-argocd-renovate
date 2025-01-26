@@ -12,7 +12,7 @@
         shell: "{{ install.os.non_root_user.shell }}"
         groups: "{{ install.os.non_root_user.groups }}"
         append: true
-        createhome: true
+        create_home: true
 
     - name: Allow non-root user to have passwordless sudo convenience
       ansible.builtin.lineinfile:
