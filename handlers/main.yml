@@ -27,3 +27,17 @@
     enabled: true
     state: restarted
     name: zfs-exporter
+
+- name: Restart k3s-etcd-defrag service
+  ansible.builtin.systemd:
+    daemon_reload: true
+    enabled: true
+    state: restarted
+    name: k3s-etcd-defrag.service
+
+- name: Restart k3s-etcd-defrag timer
+  ansible.builtin.systemd:
+    daemon_reload: true
+    enabled: true
+    state: restarted
+    name: k3s-etcd-defrag.timer

@@ -1,0 +1,8 @@
+[Unit]
+Description=Run Kubernetes ETCD defragment
+Requires=k3s.service
+After=k3s.service
+
+[Service]
+Type=oneshot
+ExecStart={{ install.os.usr_bin }}//etcd-defrag.sh

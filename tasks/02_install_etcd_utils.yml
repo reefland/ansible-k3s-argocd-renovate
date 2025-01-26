@@ -8,17 +8,39 @@
   block:
     - name: Copy etcd cli scripts to Control-Plane nodes
       ansible.builtin.copy:
-        src: "{{ item }}"
+        src: "files/etcd/{{ item }}"
         dest: "{{ install.os.usr_bin }}/{{ item }}"
         owner: root
         group: root
         mode: '0755'
       with_items:
-        - "files/etcd/install_etcd_cli.sh"
-        - "files/etcd/etcd-defrag.sh"
+        - "install_etcd_cli.sh"
+        - "etcd-defrag.sh"
 
     - name: Install or upgrade etcd cli utils
       ansible.builtin.command:
         cmd: "{{ install.os.usr_bin }}/install_etcd_cli.sh"
+      register: cmd
+      changed_when: cmd.rc == 0
+
+    - name: Install K3S ETCD Defrag Systemd Service
+      ansible.builtin.template:
+        src: "etcd/k3s-etcd-defrag.service.j2"
+        dest: "/lib/systemd/system/k3s-etcd-defrag.service"
+        mode: "0644"
+      notify:
+        - Restart k3s-etcd-defrag service
+
+    - name: Install K3S ETCD Defrag Systemd Timer File
+      ansible.builtin.template:
+        src: "etcd/k3s-etcd-defrag.timer.j2"
+        dest: "/lib/systemd/system/k3s-etcd-defrag.timer"
+        mode: "0644"
+      notify:
+        - Restart k3s-etcd-defrag timer
+
+    - name: Confirm ETCD Timer Created
+      ansible.builtin.command: # noqa command-instead-of-module
+        cmd: "systemctl list-timers k3s-etcd-defrag.timer"
       register: cmd
       changed_when: cmd.rc == 0
