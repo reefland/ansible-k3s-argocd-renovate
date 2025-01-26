@@ -40,7 +40,7 @@ install:
 
       # This is to pin a specific version of k3s for initial installation
       # Select Release: https://github.com/k3s-io/k3s/releases
-      - "INSTALL_K3S_VERSION={{ k3s_install_version | default('v1.30.8+k3s1') }}"
+      - "INSTALL_K3S_VERSION={{ k3s_install_version | default('v1.31.4+k3s1') }}"
 
       # Select installation channel to use (stable, latest, testing)
       # - "INSTALL_K3S_CHANNEL=latest"
