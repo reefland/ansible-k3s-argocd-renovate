@@ -25,7 +25,7 @@
       ansible.builtin.apt_repository:
         repo: deb https://baltocdn.com/helm/stable/debian all main
         state: present
-        mode: 0644
+        mode: "0644"
         update_cache: true
 
     - name: Install Helm Client
