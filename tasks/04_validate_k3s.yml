@@ -43,8 +43,8 @@
     - name: Get kubectl node status from control-plane node
       ansible.builtin.command:
         cmd: "kubectl get node {{ ansible_hostname }}"
-      register: kubestl_status
-      changed_when: kubestl_status.rc == 0
+      register: kubectl_status
+      changed_when: kubectl_status.rc == 0
       delegate_to: "{{ groups['k3s_control'][0] }}"
 
     - name: Fail if status is "No resources found"
@@ -52,8 +52,8 @@
         msg: |
           Something went wrong, k3s is reporting no resources.
       when:
-        - kubestl_status.stdout == "No resources found"
+        - kubectl_status.stdout == "No resources found"
 
     - name: Shows kubestl status
       ansible.builtin.debug:
-        msg: "{{ kubestl_status.stdout }}"
+        msg: "{{ kubectl_status.stdout }}"
