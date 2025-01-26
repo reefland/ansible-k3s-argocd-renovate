@@ -11,20 +11,20 @@
 #           and client certificates.
 #          
 # AUTHOR     : Richard J. Durso
-# DATE       : 09/27/2022
-# VERSION    : 0.01
+# DATE       : 01/26/2025
+# VERSION    : 0.02
 #############################################################################
 
-if [ $(id -u) -ne 0 ]; then
+if [ "$(id -u)" -ne 0 ]; then
   echo
-  echo "* ERROR: ROOT privilage required to access etcd certificates."
+  echo "* ERROR: ROOT privilege required to access etcd certificates."
   echo
   exit 1
 fi
 
 __check_file_exists()
 {
-  if [ ! -f $1 ]; then
+  if [ ! -f "$1" ]; then
     echo "ERROR: $1 not found"
     exit 2
   fi
@@ -37,13 +37,13 @@ CLIENT_TLS_CERT="/var/lib/rancher/k3s/server/tls/etcd/server-client.crt" # --cer
 CLIENT_TLS_KEY="/var/lib/rancher/k3s/server/tls/etcd/server-client.key"  # --key
 
 # Confirm certificates can be located
-__check_file_exists ${SERVER_TLS_CERT}
-__check_file_exists ${CLIENT_TLS_CERT}
-__check_file_exists ${CLIENT_TLS_KEY}
+__check_file_exists "${SERVER_TLS_CERT}"
+__check_file_exists "${CLIENT_TLS_CERT}"
+__check_file_exists "${CLIENT_TLS_KEY}"
 
 # Confirm etcdctl can be located
-if [ -x $(which ${ETCDCTL_CMD}) ]; then
-  ${ETCDCTL_CMD} --cacert ${SERVER_TLS_CERT} --cert ${CLIENT_TLS_CERT} --key ${CLIENT_TLS_KEY} defrag
+if [ -x "$(which ${ETCDCTL_CMD})" ]; then
+  "${ETCDCTL_CMD}" --cacert "${SERVER_TLS_CERT}" --cert "${CLIENT_TLS_CERT}" --key "${CLIENT_TLS_KEY}" defrag
 else
   echo "${ETCDCTL_CMD} cli utility not found in path. Is it installed?"
 fi
