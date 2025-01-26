@@ -1,5 +1,5 @@
 ---
-# Configure Centralized logging - !st server defined in master group is centralized server
+# Configure Centralized logging - 1st server defined in master group is centralized server
 
 # [ Configure Central Logging Server ]#############################################################
 - name: Configure Central Logging Server Block
@@ -61,7 +61,6 @@
         line: "*.* @@{{ groups['k3s_control'][0] }}:514"
       notify:
         - Restart rsyslog service
-
 
 # [ Flush Handlers ]###############################################################################
 - name: Flush Handlers
