@@ -50,6 +50,8 @@ Optionally Installed:
 
 [![Uptime Kumma](https://img.shields.io/website?logo=uptimekuma&logoColor=white&color=brightgreen&label=Uptime&nbsp;Kuma&style=for-the-badge&url=https%3A%2F%2Fbit.ly/423PISu)](https://bit.ly/423PISu)
 
+![K3s Cluster Heartbeat](https://healthchecks.io/b/3/8e8a6cc5-1c85-4baa-815c-c451417dd093.svg)
+
 </div>
 
 <div align="center">
@@ -62,7 +64,7 @@ Optionally Installed:
 
 | Device           | Count | Cores / Threads     | OS Disk Size      | Data Disk Size         | RAM  | NIC | Purpose               |
 | ---------------  | ----- | ---------------     | ------------      | ---------------------- | ---- | --- | -------------------   |
-| HP T740 Thin PC  | 3 | (Ryzen V1756B) 4 / 8 | 118GiB ZFS Mirror | 0.8Tib Rook-Ceph | 64GB | 2.5 GbE | Kubernetes Master / Ceph Storage |
+| HP T740 Thin PC  | 3 | (Ryzen V1756B) 4 / 8 | 150GiB ZFS Mirror | 1.2Tib Rook-Ceph | 64GB | 2.5 GbE | Kubernetes Master / Ceph Storage |
 | Minisforum MS-01 | 1 | (Intel i5-12600H) 12 / 16 | 150GiB ZFS Mirror | 2TiB Rook-Ceph | 64GB | 10 GbE | Kubernetes Worker / Ceph Storage |
 | Minisforum MS-01 | 1 | (Intel i9-13900H) 14 / 20 | 150GiB ZFS Mirror | 2TiB Rook-Ceph | 96GB | 10 GbE | Kubernetes Worker / Ceph Storage |
 | Fractal Design Node 804 with ASRock B660 Steel Legend   | 1 | (Intel i5-13500) 6 / 20 | 14TB ZFS zRaid  | 2TiB Rook-Ceph  | 64GB | 10 GbE | Kubernetes Worker / Ceph / Intel iGPU |
@@ -70,8 +72,12 @@ Optionally Installed:
 
 **Ceph Storage Cluster Summary:**
 
+<div align="center">
+
 [![Rook-Ceph Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dceph_health_status&style=flat-square&label=Rook-Ceph&nbsp;Status)](https://github.com/kashalls/kromgo/)
 [![OSDs OUT](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dceph_osd_out&style=flat-square&label=OSDs&nbsp;OUT)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![OSDs DOWN](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dceph_osd_down&style=flat-square&label=OSDs&nbsp;DOWN)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![OSDs UP](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dceph_osd_up&style=flat-square&label=OSDs&nbsp;UP)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![OSDs IN](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dceph_osd_in&style=flat-square&label=OSDs&nbsp;IN)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Storage Capacity](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dceph_storage_capacity&style=flat-square&label=Ceph&nbsp;Capacity)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Ceph Capacity](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dceph_storage_used_percent&style=flat-square&label=Available&nbsp;Capacity)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Objects Stored](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dceph_objects_stored&style=flat-square&label=Objects&nbsp;Stored)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Total PGs](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dceph_pg_total&style=flat-square&label=Total&nbsp;PGs)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Average PGs](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dceph_avg_pgs_per_osd&style=flat-square&label=Average&nbsp;PGs)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;
+
+</div>
 
 **30 Day Service Availability:**
 
@@ -86,12 +92,12 @@ Optionally Installed:
 
 | Device | Count | Purpose | Specifications | Description |
 |---     | :--:  |---      |---             |---          |
-| Firewall | 1 | Router | Intel i5-5200U CPU, 8GB RAM, ZFS mirror storage, 4x 1GbE RJ45 ports | Primary network pfSense firewall, router, DNS, Proxy |
+| Firewall | 1 | Router | Intel Atom C3758 (8 cores) CPU, 16GB RAM, ZFS mirror storage, 5x 2.5GbE RJ45, 4x 10Gbe SFP+ ports | Primary network pfSense firewall, router, DNS, Proxy |
 | Switch | 1 | Backbone | MikroTik CloudSwitch CRS309-1G-8S+IN. 8x SPF+ 10GbE ports | Primary Homelab Switch. All other switches and access points are downstream |
-| Switch | 1 | Cluster Switch | UniFi USW Enterprise 8 Port Poe Switch. 8x 2.5GbE RJ45 ports and 2x SPF+ 10GbE ports | Dedicated Kubernetes cluster switch with dual 10GbE uplinks to Backbone switch |
+| Switch | 1 | Cluster Switch | UniFi USW Enterprise 8 Port Poe Switch. 8x 2.5GbE RJ45 ports and 2x SPF+ 10GbE ports | Dedicated Kubernetes cluster switch with 10Gbe uplinks to Sodola 10Gbe Switch and Backbone switch |
 | Switch | 1 | Cluster Switch | Sodola 8 Port 10GbE Web Managed Switch. 8x 10GbE SFP+ Ports | Dedicated Kubernetes cluster switch for 10 GbE nodes with 10GbE uplink |
 | UPS | 3| Backup Power Supply | Trip-Lite Smart 1500 LCDt UPS unit | Provide short term backup power and clean stable electricity to all devices |
-| KVM | 2 | Keyboard and Video Switch | 4 HDMI in, 4 USB In, 4 USB Out | Provides console access with keyboard to cluster devices |
+| KVM | 1 | Keyboard and Video Switch | 8 HDMI in, 4 USB In, 16 USB Out | Provides console access with keyboard to cluster devices |
 
 ---
 
