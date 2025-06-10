@@ -13,6 +13,7 @@
         argv:
           - /usr/local/bin/kubectl
           - label
+          - --overwrite
           - node
           - "{{ inventory_hostname_short }}"
           - "{{ item }}"
