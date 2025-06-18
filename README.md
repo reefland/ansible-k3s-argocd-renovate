@@ -46,6 +46,7 @@ Optionally Installed:
 
 ## Home Cluster Hardware
 
+<!-- markdownlint-disable-next-line MD033 -->
 <div align="center">
 
 [![Uptime Kumma](https://img.shields.io/website?logo=uptimekuma&logoColor=white&color=brightgreen&label=Uptime&nbsp;Kuma&style=for-the-badge&url=https%3A%2F%2Fbit.ly/423PISu)](https://bit.ly/423PISu)
@@ -54,6 +55,7 @@ Optionally Installed:
 
 </div>
 
+<!-- markdownlint-disable-next-line MD033 -->
 <div align="center">
 
 [![Age-Days](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_age_days&style=flat-square&label=Cluster&nbsp;Age)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Node-Count](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_node_count&style=flat-square&label=Nodes)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Pod-Count](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_pod_count&style=flat-square&label=Pods)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Container-Count](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_container_count&style=flat-square&label=Containers)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![CPU-Usage](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_cpu_usage&style=flat-square&label=CPU)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![CPU-cores](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_cpu_core_count&style=flat-square&label=Cores)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Memory-Usage](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_memory_usage&style=flat-square&label=Memory)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Memory-Total](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dcluster_total_ram&style=flat-square&label=RAM)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;[![Kubernetes-Version](https://img.shields.io/endpoint?logo=kubernetes&logoColor=white&url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dkubernetes_build_version&style=flat-square&label=Kubernetes)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;
@@ -64,14 +66,14 @@ Optionally Installed:
 
 | Device           | Count | Cores / Threads     | OS Disk Size      | Data Disk Size         | RAM  | NIC | Purpose               |
 | ---------------  | ----- | ---------------     | ------------      | ---------------------- | ---- | --- | -------------------   |
-| HP T740 Thin PC  | 3 | (Ryzen V1756B) 4 / 8 | 150GiB ZFS Mirror | 1.2Tib Rook-Ceph | 64GB | 2.5 GbE | Kubernetes Master / Ceph Storage |
-| Minisforum MS-01 | 1 | (Intel i5-12600H) 12 / 16 | 150GiB ZFS Mirror | 2TiB Rook-Ceph | 64GB | 10 GbE | Kubernetes Worker / Ceph Storage |
-| Minisforum MS-01 | 1 | (Intel i9-13900H) 14 / 20 | 150GiB ZFS Mirror | 2TiB Rook-Ceph | 96GB | 10 GbE | Kubernetes Worker / Ceph Storage |
-| Fractal Design Node 804 with ASRock B660 Steel Legend   | 1 | (Intel i5-13500) 6 / 20 | 14TB ZFS zRaid  | 2TiB Rook-Ceph  | 64GB | 10 GbE | Kubernetes Worker / Ceph / Intel iGPU |
-| Fractal Design Node 804 with ASUS Prime X570-Pro | 1 | (Ryzen 7 3700X) 8 / 16 | 1 TiB ZFS Mirror | 2TiB Rook-Ceph | 128GB | 10 GbE | Kubernetes Worker / Ceph / NVidia GPU / Desktop |
+| Minisforum MS-01 | 4 | (Intel i5-12600H) 12 / 16 | 150GiB ZFS Mirror | 2x 1.2 TiB Rook-Ceph | 96GB | 10 GbE | Kubernetes / Ceph Storage / Intel iGPU|
+| Minisforum MS-01 | 1 | (Intel i9-13900H) 14 / 20 | 150GiB ZFS Mirror | 2x 1.2 TiB Rook-Ceph | 96GB | 10 GbE | Kubernetes / Ceph Storage / Intel iGPU|
+| Fractal Design Node 804 with ASRock B660 Steel Legend   | 1 | (Intel i5-13500) 6 / 20 | 14TB ZFS zRaid  | 2TiB Rook-Ceph  | 64GB | 10 GbE | Kubernetes / Ceph / Intel iGPU |
+| Fractal Design Node 804 with ASUS Prime X570-Pro | 1 | (Ryzen 7 3700X) 8 / 16 | 1 TiB ZFS Mirror | 2TiB Rook-Ceph | 128GB | 10 GbE | Kubernetes / Ceph / NVidia GPU / Desktop |
 
 **Ceph Storage Cluster Summary:**
 
+<!-- markdownlint-disable-next-line MD033 -->
 <div align="center">
 
 [![Rook-Ceph Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rich-durso.us%2Fquery%3Fformat%3Dendpoint%26metric%3Dceph_health_status&style=flat-square&label=Rook-Ceph&nbsp;Status)](https://github.com/kashalls/kromgo/)
