@@ -103,7 +103,7 @@ ARGOCD_NOTIFICATIONS_SLACK_TOKEN_SECRET: "xoxb-....."
 * `ARGOCD_REPO_USERNAME_SECRET` typically is just any non-empty value and is not actually used in authentication.
 * `ARGOCD_REPO_PASSWORD_SECRET` is the value of the Personal Access Token.
 * `ARGOCD_NOTIFICATIONS_SLACK_TOKEN_SECRET` can be used to hold the value of the authentication token used for Slack Notifications.
-  * Feel free to add additionals secrets for connecting to Microsoft Teams, or Gmail, etc. You can name the secrets as you wish.
+  * Feel free to add additional secrets for connecting to Microsoft Teams, or Gmail, etc. You can name the secrets as you wish.
 
 **Be sure to encrypt all the secrets above when completed:**
 
@@ -175,7 +175,7 @@ The ArgoCD Settings are in variable namespace `install.argocd`.
 
 * Define ArgoCD Notification settings:
 
-  * See ArgoCD Notifications Project [Documentation](https://argocd-notifications.readthedocs.io/en/stable/services/overview/) for details and ideas
+  * See ArgoCD Notifications [Documentation](https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/) for details and ideas
 
   ```yaml
     # ArgoCD Notifications
@@ -412,7 +412,7 @@ ArgoCD allows applications to be grouped together into projects.  This is a bett
 
 * The project files are stored in the git repository under `/projects/<project-name>-project.yaml`
 * Can can easily create more projects and assign your own applications to projects
-
+<!-- markdownlint-disable MD033 -->
 | Project Name   | Applications Assigned to Project | Description / Comments |
 |     :---:      | :---                             | :---                   |
 | infrastructure      | Kube-vip<br>Kube-vip Cloud Provider | Kubernetes infrastructure services such as Load Balancer providers. |
@@ -420,7 +420,7 @@ ArgoCD allows applications to be grouped together into projects.  This is a bett
 | monitoring     | Kube Stack Prometheus<br/>AlertManager<br/>Grafana<br/>Grafana Dashboards | Kubernetes Monitoring Applications such as Prometheus and it's supporting applications |
 | security       | Sealed Secrets<br>App Secrets (secrets that are sealed)<br>Cert-manager<br>Let's Encrypt Certs | Applications used to provide secuity features such as secrets and certificates. |
 | storage        | Longhorn <br/> Longhorn config (snapshot and backup schedules)<br/> democratic-csi (NFS and iSCSI)  | Kubernetes applications which provide storage services to the cluster such as NFS, iSCSI, block, etc.|
-|system-upgrade  | System Upgrade Controller  | K3s System Upgrade Controller
+|system-upgrade  | System Upgrade Controller  | K3s System Upgrade Controller |
 
 ArgoCD Projects can be reviewed within ArgoCD via `Settings` > `Projects`:
 
