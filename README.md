@@ -68,8 +68,8 @@ Optionally Installed:
 | ---------------  | ----- | ---------------     | ------------      | ---------------------- | ---- | --- | -------------------   |
 | Minisforum MS-01 | 4 | (Intel i5-12600H) 12 / 16 | 150GiB ZFS Mirror | 2x 1.2 TiB Rook-Ceph | 96GB | 10 GbE | Kubernetes / Ceph Storage / Intel iGPU|
 | Minisforum MS-01 | 1 | (Intel i9-13900H) 14 / 20 | 150GiB ZFS Mirror | 2x 1.2 TiB Rook-Ceph | 96GB | 10 GbE | Kubernetes / Ceph Storage / Intel iGPU|
-| Fractal Design Node 804 with ASRock B660 Steel Legend   | 1 | (Intel i5-13500) 6 / 20 | 14TB ZFS zRaid  | 2TiB Rook-Ceph  | 64GB | 10 GbE | Kubernetes / Ceph / Intel iGPU |
-| Fractal Design Node 804 with ASUS Prime X570-Pro | 1 | (Ryzen 7 3700X) 8 / 16 | 1 TiB ZFS Mirror | 2TiB Rook-Ceph | 128GB | 10 GbE | Kubernetes / Ceph / NVidia GPU / Desktop |
+| Fractal Design Node 804 with ASRock B660 Steel Legend   | 1 | (Intel i5-13500) 6 / 20 | 14TB ZFS zRaid  | 2TiB Rook-Ceph  | 64GB | 10 GbE | Kubernetes / Ceph / Nvidia GPU |
+| Fractal Design Node 804 with ASUS Prime X570-Pro | 1 | (Ryzen 7 3700X) 8 / 16 | 1 TiB ZFS Mirror | 2TiB Rook-Ceph | 128GB | 10 GbE | Kubernetes / Ceph / Nvidia GPU / Desktop |
 
 **Ceph Storage Cluster Summary:**
 
