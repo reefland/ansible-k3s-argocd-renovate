@@ -88,7 +88,7 @@
       register: cmd
       changed_when: cmd.rc == 0
       notify:
-        - Restart k3s Service
+        - Start k3s Service
 
 # [ Install K3S on Worker Nodes ]##################################################################
 - name: Install k3s Kubernetes Distribution for Worker Nodes Block
@@ -112,7 +112,7 @@
       register: cmd
       changed_when: cmd.rc == 0
       notify:
-        - Restart k3s-agent Service
+        - Start k3s-agent Service
 
 - name: Flush Handlers
   ansible.builtin.meta: flush_handlers

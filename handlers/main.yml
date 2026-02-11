@@ -1,5 +1,5 @@
 ---
-- name: Restart k3s Service
+- name: Start k3s Service
   ansible.builtin.systemd:
     daemon_reload: true
     state: started
@@ -7,10 +7,26 @@
   when:
     - inventory_hostname in groups['k3s_control']
 
-- name: Restart k3s-agent Service
+- name: Restart k3s Service
+  ansible.builtin.systemd:
+    daemon_reload: true
+    state: restarted
+    name: k3s
+  when:
+    - inventory_hostname in groups['k3s_control']
+
+- name: Start k3s-agent Service
   ansible.builtin.systemd:
     daemon_reload: true
     state: started
+    name: k3s-agent
+  when:
+    - inventory_hostname in groups['k3s_workers']
+
+- name: Restart k3s-agent Service
+  ansible.builtin.systemd:
+    daemon_reload: true
+    state: restarted
     name: k3s-agent
   when:
     - inventory_hostname in groups['k3s_workers']
