@@ -86,10 +86,10 @@ Optionally Installed:
 
 | Service | 30 Day Stats | | Service | 30 Day Stats | | Service | 30 Day Stats |
 | --: | --- |--- | --: |--- |--- | --: |--- |
-|![pfSense Firewall](https://uptime.rich-durso.us/api/badge/4/status?label=pfSense&nbsp;Firewall) |![pfSense Firewall](https://uptime.rich-durso.us/api/badge/4/uptime/720?label=30d) | |![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/status?label=Prometheus&nbsp;Monitoring) |![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/uptime/720?label=30d) | |![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/status?label=Mosquitto&nbsp;MQTT&nbsp;Broker) |![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/uptime/720?label=30d) |
-|![TrueNAS Storage](https://uptime.rich-durso.us/api/badge/5/status?label=True&nbsp;NAS&nbsp;Storage) |![TrueNAS Storage](https://uptime.rich-durso.us/api/badge/5/uptime/720?label=30d) | |![PostgreSQL HA Cluster](https://uptime.rich-durso.us/api/badge/17/status?label=PostgreSQL&nbsp;HA&nbsp;Cluster) |![PostgreSQL HA Cluster](https://uptime.rich-durso.us/api/badge/17/uptime/720?label=30d) | |![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/20/status?label=Zigbee2MQTT&nbsp;Bridge) |![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/20/uptime/720?label=30d) |
-|![MinIO S3 Storage](https://uptime.rich-durso.us/api/badge/16/status?label=MinIO&nbsp;S3&nbsp;Storage) |![MinIO S3 Storage](https://uptime.rich-durso.us/api/badge/16/uptime/720?label=30d) | |![Dragonfly Redis HA Cluster](https://uptime.rich-durso.us/api/badge/26/status?label=Dragonfly&nbsp;HA&nbsp;Cluster) |![Dragonfly HA Cluster](https://uptime.rich-durso.us/api/badge/26/uptime/720?label=30d) | |![Plex Media Server](https://uptime.rich-durso.us/api/badge/7/status?label=Plex&nbsp;Media&nbsp;Server)| ![Plex Media Server](https://uptime.rich-durso.us/api/badge/7/uptime/720?label=30d) |
-|![Traefik Ingress](https://uptime.rich-durso.us/api/badge/12/status?label=Traefik&nbsp;HA&nbsp;Ingress) |![Traefik Ingress](https://uptime.rich-durso.us/api/badge/12/uptime/720?label=30d) | |![Home Assistant](https://uptime.rich-durso.us/api/badge/11/status?label=Home&nbsp;Assistant) |![Home Assistant](https://uptime.rich-durso.us/api/badge/11/uptime/720?label=30d) | |![Frigate NVR](https://uptime.rich-durso.us/api/badge/10/status?label=Frigate&nbsp;NVR) |![Frigate NVR](https://uptime.rich-durso.us/api/badge/10/uptime/720?label=30d) |
+| ![pfSense Firewall](https://uptime.rich-durso.us/api/badge/4/status?label=pfSense&nbsp;Firewall) | ![pfSense Firewall](https://uptime.rich-durso.us/api/badge/4/uptime/720?label=30d) | | ![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/status?label=Prometheus&nbsp;Monitoring) | ![Prometheus Monitoring](https://uptime.rich-durso.us/api/badge/9/uptime/720?label=30d) | | ![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/status?label=Mosquitto&nbsp;MQTT&nbsp;Broker) | ![Mosquitto MQTT Broker](https://uptime.rich-durso.us/api/badge/16/uptime/720?label=30d) |
+| ![TrueNAS Storage](https://uptime.rich-durso.us/api/badge/5/status?label=True&nbsp;NAS&nbsp;Storage) | ![TrueNAS Storage](https://uptime.rich-durso.us/api/badge/5/uptime/720?label=30d) | | ![PostgreSQL HA Cluster](https://uptime.rich-durso.us/api/badge/17/status?label=PostgreSQL&nbsp;HA&nbsp;Cluster) | ![PostgreSQL HA Cluster](https://uptime.rich-durso.us/api/badge/17/uptime/720?label=30d) | | ![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/20/status?label=Zigbee2MQTT&nbsp;Bridge) | ![Zigbee2MQTT Bridge](https://uptime.rich-durso.us/api/badge/20/uptime/720?label=30d) |
+| ![MinIO S3 Storage](https://uptime.rich-durso.us/api/badge/16/status?label=MinIO&nbsp;S3&nbsp;Storage) | ![MinIO S3 Storage](https://uptime.rich-durso.us/api/badge/16/uptime/720?label=30d) | | ![Dragonfly Redis HA Cluster](https://uptime.rich-durso.us/api/badge/26/status?label=Dragonfly&nbsp;HA&nbsp;Cluster) | ![Dragonfly HA Cluster](https://uptime.rich-durso.us/api/badge/26/uptime/720?label=30d) | | ![Plex Media Server](https://uptime.rich-durso.us/api/badge/7/status?label=Plex&nbsp;Media&nbsp;Server) | ![Plex Media Server](https://uptime.rich-durso.us/api/badge/7/uptime/720?label=30d) |
+| ![Traefik Ingress](https://uptime.rich-durso.us/api/badge/12/status?label=Traefik&nbsp;HA&nbsp;Ingress) | ![Traefik Ingress](https://uptime.rich-durso.us/api/badge/12/uptime/720?label=30d) | | ![Home Assistant](https://uptime.rich-durso.us/api/badge/11/status?label=Home&nbsp;Assistant) | ![Home Assistant](https://uptime.rich-durso.us/api/badge/11/uptime/720?label=30d) | | ![Frigate NVR](https://uptime.rich-durso.us/api/badge/10/status?label=Frigate&nbsp;NVR) | ![Frigate NVR](https://uptime.rich-durso.us/api/badge/10/uptime/720?label=30d) |
 
 **Home Cluster Network Summary:**
 
@@ -386,6 +386,7 @@ The following tags are supported and should be used in this order:
 * `prep_os`
 * `install_k3s`
 * `apply_labels`
+* `update_spegel_mirrors`
 * `validate_k3s`
 * `install_helm_client`
 * `install_sealed_secrets`
@@ -401,6 +402,7 @@ The following tags are not run by default but can be used to install this additi
 
 Other handy tags for specific routines:
 
+* `update_spegel_mirrors` - will copy the `files/k3s/registries.yaml` to each node and restart the k3s or k3s-agent service.
 * `update_kubeseal_cli` - will just update the `kubeseal` CLI to be version matched to the Sealed Secrets controller deployed.
 * `update_argocd_cli` - will just update the `argocd` CLI to be version matched to ArgoCD controller deployed.
 * `update_argocd_files` - will process ArgoCD repository files like `install_argocd` does, but will not attempt to try and run Helm install on ArgoCD which would likely error out as it should not be managed by Helm anymore.

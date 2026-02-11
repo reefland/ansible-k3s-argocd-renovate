@@ -1,0 +1,48 @@
+---
+# Update Spegel Registry Mirrors list
+# https://docs.k3s.io/installation/registry-mirror#enabling-registry-mirroring
+- name: Update Spegel Registry Mirrors List Block
+  tags:
+    - update_spegel_mirrors
+  block:
+    - name: Copy Spegel registry file to Control-Plane Node
+      ansible.builtin.copy:
+        src: "files/k3s/registries.yaml"
+        dest: "/etc/rancher/k3s/registries.yaml"
+        mode: "644"
+        owner: "root"
+        group: "root"
+      when:
+        - inventory_hostname in groups['k3s_control']
+      changed_when: true
+      notify:
+        - Restart k3s Service
+
+    - name: Create root /etc/rancher/k3s directory if needed for Worker Node
+      ansible.builtin.file:
+        path: "/etc/rancher/k3s"
+        state: directory
+        mode: "0755"
+        owner: "root"
+        group: "root"
+      when:
+        - inventory_hostname in groups['k3s_workers']
+
+    - name: Copy Spegel registry file to Worker Node
+      ansible.builtin.copy:
+        src: "files/k3s/registries.yaml"
+        dest: "/etc/rancher/k3s/registries.yaml"
+        mode: "644"
+        owner: "root"
+        group: "root"
+      when:
+        - inventory_hostname in groups['k3s_workers']
+      changed_when: true
+      notify:
+        - Restart k3s-agent Service
+
+# [ Flush Handlers ]###############################################################################
+- name: Flush Handlers
+  ansible.builtin.meta: flush_handlers
+  tags:
+    - update_spegel_mirrors

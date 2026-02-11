@@ -1,0 +1,19 @@
+mirrors:
+  # Official Kubernetes registry
+  registry.k8s.io:
+  # Docker Hub mirror
+  docker.io:
+  # Google Container Registry mirror
+  gcr.io:
+  k8s.gcr.io:
+  # Red Hat registry mirror
+  quay.io:
+  #  GitHub Container Registry mirror
+  ghcr.io:
+  # Amazon ECR Public mirror
+  public.ecr.aws:
+  # Linux Server IO registry mirror
+  lscr.io:
+
+  # Wildcard: Enables mirroring for any other registry not listed above
+  #"*":
